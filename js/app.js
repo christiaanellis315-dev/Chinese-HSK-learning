@@ -1,10 +1,11 @@
-// App shell: router between the five screens + persistent bottom nav.
+// App shell: router between the six screens + persistent bottom nav.
 (function () {
   const NAV_ITEMS = [
     { id: 'dashboard', icon: '🏠', label: 'Dashboard' },
     { id: 'lessons', icon: '📖', label: 'Lessons' },
     { id: 'review', icon: '🔁', label: 'Review' },
     { id: 'numbers', icon: '🔢', label: 'Numbers' },
+    { id: 'grammar', icon: '📝', label: 'Grammar' },
     { id: 'pinyin', icon: '🔤', label: 'Pinyin' },
   ];
 
@@ -33,6 +34,7 @@
     else if (screen === 'lessons') Lessons.mount(screenEl, opts, navigate);
     else if (screen === 'review') Review.mount(screenEl);
     else if (screen === 'numbers') NumbersDrill.mount(screenEl, navigate);
+    else if (screen === 'grammar') Grammar.mount(screenEl);
     else if (screen === 'pinyin') Pinyin.mount(screenEl);
   }
 
