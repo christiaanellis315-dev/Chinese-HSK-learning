@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HSK1 Lessons 12-15 — Night Shift Study App</title>
+<style>
+:root {
+  --bg: #14120f; --panel: #1d1a15; --card: #23201a; --amber: #e8a545; --amber-dim: #a97a35;
+  --text: #ede6d8; --text-dim: #9c9384; --green: #7fb069; --red: #c96a5a; --border: #37322a;
+}
+* { box-sizing: border-box; }
+body { background: radial-gradient(ellipse at 50% -10%, #241f16 0%, var(--bg) 55%); color: var(--text); font-family: -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 32px 16px 60px; min-height: 100vh; }
+.wrap { max-width: 560px; margin: 0 auto; }
+.lamp { width: 90px; height: 90px; margin: 0 auto 6px; border-radius: 50%; background: radial-gradient(circle, rgba(232,165,69,0.35) 0%, rgba(232,165,69,0.06) 60%, transparent 75%); }
+h1 { text-align: center; font-size: 20px; font-weight: 600; letter-spacing: 0.3px; margin: -70px 0 2px; color: var(--amber); }
+.sub { text-align: center; color: var(--text-dim); font-size: 13px; margin-bottom: 16px; }
+.autoplay-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px; font-size: 12px; color: var(--text-dim); }
+.switch { position: relative; width: 38px; height: 22px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; flex-shrink: 0; }
+.switch .knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: var(--text-dim); border-radius: 50%; transition: left 0.15s, background 0.15s; }
+.switch.on { border-color: var(--amber); }
+.switch.on .knob { left: 18px; background: var(--amber); }
+.tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.tab { background: var(--panel); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 11px; border-radius: 16px; font-size: 12px; cursor: pointer; }
+.tab.active { color: var(--bg); background: var(--amber); border-color: var(--amber); }
+.mode-toggle { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+.mode-btn { background: var(--panel); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+.mode-btn.active { color: var(--bg); background: var(--amber); border-color: var(--amber); }
+.progress-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-dim); margin-bottom: 10px; padding: 0 4px; }
+.progress-bar { height: 3px; background: var(--border); border-radius: 3px; margin-bottom: 24px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--amber); transition: width 0.3s; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; min-height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px 24px; cursor: pointer; user-select: none; position: relative; }
+.hanzi { font-size: 64px; color: var(--text); margin-bottom: 8px; line-height: 1; }
+.pinyin { font-size: 18px; color: var(--amber); letter-spacing: 0.5px; }
+.pos-tag { font-size: 11px; color: var(--text-dim); border: 1px solid var(--border); border-radius: 10px; padding: 2px 8px; margin-top: 8px; display: inline-block; }
+.tap-hint { position: absolute; bottom: 14px; font-size: 11px; color: var(--text-dim); }
+.back-english { font-size: 22px; color: var(--text); margin-bottom: 10px; }
+.mnemonic { font-size: 14px; color: var(--text-dim); line-height: 1.55; max-width: 400px; margin-bottom: 12px; }
+.mnemonic b { color: var(--amber); font-weight: 600; }
+.example { font-size: 13px; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 12px; margin-top: 6px; max-width: 400px; line-height: 1.6; }
+.example .ex-h { color: var(--text); font-size: 16px; }
+.example .ex-p { color: var(--amber-dim); }
+.speak-btn { background: none; border: 1px solid var(--amber-dim); color: var(--amber); width: 40px; height: 40px; border-radius: 50%; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 10px auto 0; }
+.speak-btn:active { transform: scale(0.94); }
+.speak-btn.speaking { color: var(--bg); background: var(--amber); }
+.type-input { width: 100%; max-width: 300px; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 8px; font-size: 15px; text-align: center; margin-top: 16px; }
+.type-input:focus { outline: none; border-color: var(--amber); }
+.type-input.wrong-input { border-color: var(--red); }
+.submit-btn { background: var(--amber); color: var(--bg); border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px; }
+.error-text { color: var(--red); font-size: 12px; margin-top: 8px; }
+.feedback-badge { font-size: 15px; font-weight: 600; padding: 6px 16px; border-radius: 20px; margin-bottom: 12px; display: inline-block; }
+.feedback-badge.correct { background: rgba(127,176,105,0.15); color: var(--green); }
+.feedback-badge.wrong { background: rgba(201,106,90,0.15); color: var(--red); }
+.your-answer { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
+.listen-play { background: var(--amber); color: var(--bg); border: none; width: 64px; height: 64px; border-radius: 50%; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.listen-play:active { transform: scale(0.95); }
+.listen-hint { font-size: 12px; color: var(--text-dim); margin-bottom: 18px; }
+.question-text { font-size: 16px; color: var(--text); margin-bottom: 4px; }
+.question-hanzi { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; }
+.option-btn { width: 100%; max-width: 340px; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 12px 16px; border-radius: 10px; font-size: 16px; cursor: pointer; margin-bottom: 10px; text-align: left; display: flex; align-items: center; gap: 10px; }
+.option-btn .opt-letter { color: var(--amber); font-weight: 600; }
+.opt-text { display: flex; flex-direction: column; gap: 2px; }
+.opt-pinyin { color: var(--text); font-size: 15px; }
+.opt-hanzi { color: var(--text-dim); font-size: 13px; }
+.option-btn.correct-opt { border-color: var(--green); background: rgba(127,176,105,0.1); }
+.option-btn.wrong-opt { border-color: var(--red); background: rgba(201,106,90,0.1); }
+.controls { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+button.nav { flex: 1; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 10px; font-size: 14px; cursor: pointer; }
+button.know { border-color: var(--green); color: var(--green); }
+button.learning { border-color: var(--red); color: var(--red); }
+button.nav:active { transform: scale(0.97); }
+.stats { display: flex; justify-content: center; gap: 18px; margin-top: 22px; font-size: 12px; color: var(--text-dim); }
+.stats span b { color: var(--text); }
+.reset { display: block; margin: 30px auto 0; background: none; border: none; color: var(--text-dim); font-size: 12px; text-decoration: underline; cursor: pointer; }
+.num-big { font-size: 30px; color: var(--text); margin-bottom: 6px; }
+.num-hint { font-size: 12px; color: var(--text-dim); margin-bottom: 18px; }
+.soon-box { text-align: center; padding: 50px 20px; color: var(--text-dim); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lamp"></div>
+  <h1>Night shift study app</h1>
+  <div class="sub">HSK1 Standard Course — Lessons 12 through 15</div>
+  <div class="autoplay-row">
+    <span>Auto-play audio</span>
+    <div class="switch" id="autoplaySwitch"><div class="knob"></div></div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="mode-toggle" id="modeToggle"></div>
+  <div class="progress-row">
+    <span id="posLabel">1 / 1</span>
+    <span id="lessonLabel"></span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div id="cardArea"></div>
+  <div class="stats" id="statsRow"></div>
+  <button class="reset" id="resetBtn">Reset progress for this lesson &amp; mode</button>
+</div>
+<script>
+const LESSONS = {"12": {"title": "明天天气怎么样 (What will the weather be like tomorrow)", "words": [{"h": "天气", "p": "tiānqì", "pos": "n.", "e": "weather", "m": "天(sky) + 气(air/energy) — literally \"sky air,\" i.e. weather."}, {"h": "怎么样", "p": "zěnmeyàng", "pos": "pron.", "e": "how (about it), how is", "m": "怎么(how) + 样(manner) — asking how something turns out."}, {"h": "太", "p": "tài", "pos": "adv.", "e": "too, extremely", "m": "太 looks like 大(big) with an extra dot — \"even bigger than big.\""}, {"h": "热", "p": "rè", "pos": "adj.", "e": "hot", "m": "灬(fire) radical at the bottom — heat from fire."}, {"h": "冷", "p": "lěng", "pos": "adj.", "e": "cold", "m": "冫(ice) radical on the left — the cold radical."}, {"h": "下雨", "p": "xià yǔ", "pos": "v.phrase", "e": "to rain", "m": "下(fall/come down) + 雨(rain) — rain falling down."}, {"h": "小姐", "p": "xiǎojiě", "pos": "n.", "e": "Miss, young lady", "m": "小(small/young) + 姐(older sister) — a polite address for a young woman."}, {"h": "来", "p": "lái", "pos": "v.", "e": "to come", "m": "The opposite of 去(go) — motion toward the speaker."}, {"h": "身体", "p": "shēntǐ", "pos": "n.", "e": "body, health", "m": "身(body) + 体(body/form) — doubled up for emphasis on the physical body."}, {"h": "爱", "p": "ài", "pos": "v.", "e": "to love", "m": "心(heart) sits inside the traditional form — love comes from the heart."}, {"h": "些", "p": "xiē", "pos": "m.", "e": "some, a few", "m": "Attaches to 一(one) — 一些 = \"some/a few,\" an unspecified small amount."}, {"h": "水果", "p": "shuǐguǒ", "pos": "n.", "e": "fruit", "m": "水(water) + 果(fruit) — juicy \"water fruit.\""}, {"h": "水", "p": "shuǐ", "pos": "n.", "e": "water", "m": "The character itself looks like flowing water/ripples."}], "listening": [{"sentence": "星期五天气很好，星期六会下雨。", "sentenceP": "Xīngqīwǔ tiānqì hěn hǎo, xīngqīliù huì xià yǔ.", "question": "星期五天气怎么样？", "questionP": "Xīngqīwǔ tiānqì zěnmeyàng?", "options": ["很好", "不好", "下雨"], "optionsP": ["hěn hǎo", "bù hǎo", "xià yǔ"], "correct": 0}, {"sentence": "今天太冷了，我不想去了。", "sentenceP": "Jīntiān tài lěng le, wǒ bù xiǎng qù le.", "question": "今天天气怎么样？", "questionP": "Jīntiān tiānqì zěnmeyàng?", "options": ["很好", "太冷了", "太热了"], "optionsP": ["hěn hǎo", "tài lěng le", "tài rè le"], "correct": 1}, {"sentence": "明天上午不会下雨，下午会下雨。", "sentenceP": "Míngtiān shàngwǔ bú huì xià yǔ, xiàwǔ huì xià yǔ.", "question": "明天什么时候会下雨？", "questionP": "Míngtiān shénme shíhou huì xià yǔ?", "options": ["上午", "中午", "下午"], "optionsP": ["shàngwǔ", "zhōngwǔ", "xiàwǔ"], "correct": 2}, {"sentence": "王小姐八点前会来。", "sentenceP": "Wáng xiǎojiě bā diǎn qián huì lái.", "question": "王小姐什么时候会来？", "questionP": "Wáng xiǎojiě shénme shíhou huì lái?", "options": ["八点", "八点前", "八点十分"], "optionsP": ["bā diǎn", "bā diǎn qián", "bā diǎn shí fēn"], "correct": 1}, {"sentence": "我爸爸这个星期身体不太好。", "sentenceP": "Wǒ bàba zhège xīngqī shēntǐ bú tài hǎo.", "question": "他爸爸这个星期身体怎么样？", "questionP": "Tā bàba zhège xīngqī shēntǐ zěnmeyàng?", "options": ["很好", "不太好", "太好了"], "optionsP": ["hěn hǎo", "bú tài hǎo", "tài hǎo le"], "correct": 1}]}, "13": {"title": "他在学做中国菜呢 (He is learning to cook Chinese food)", "words": [{"h": "喂", "p": "wéi", "pos": "interj.", "e": "hello (on the phone)", "m": "口(mouth) radical — the word you say into the phone to answer it."}, {"h": "也", "p": "yě", "pos": "adv.", "e": "also, too", "m": "Short and simple — tack it onto a sentence like \"too\" at the end."}, {"h": "学习", "p": "xuéxí", "pos": "v.", "e": "to learn, to study", "m": "学(study) + 习(practice) — studying combined with practicing."}, {"h": "上午", "p": "shàngwǔ", "pos": "n.", "e": "morning", "m": "上(before/first) + 午(midday) — the half of the day before noon."}, {"h": "睡觉", "p": "shuìjiào", "pos": "v.", "e": "to sleep", "m": "目(eye) radical in 睡 — the eyes closing to sleep."}, {"h": "电视", "p": "diànshì", "pos": "n.", "e": "television", "m": "电(electric) + 视(vision/view) — an \"electric view,\" i.e. TV."}, {"h": "喜欢", "p": "xǐhuan", "pos": "v.", "e": "to like", "m": "喜(joy) + 欢(happy) — feeling joy and happiness about something."}, {"h": "给", "p": "gěi", "pos": "v./prep.", "e": "to give; to, for", "m": "纟(thread) radical historically tied to offering/binding gifts."}, {"h": "打电话", "p": "dǎ diànhuà", "pos": "v.phrase", "e": "to make a phone call", "m": "打(to hit/do) + 电话(telephone) — literally \"to do a phone call.\""}, {"h": "吧", "p": "ba", "pos": "part.", "e": "suggestion/assumption particle", "m": "Tack it on the end of a sentence to soften it into a suggestion: \"let's...\""}, {"h": "大卫", "p": "Dàwèi", "pos": "prop.n.", "e": "David (a name)", "m": "The standard Chinese transliteration of the Western name \"David.\""}], "listening": [{"sentence": "下午我和朋友在家里喝茶。", "sentenceP": "Xiàwǔ wǒ hé péngyou zài jiāli hē chá.", "question": "我和朋友在哪儿喝茶？", "questionP": "Wǒ hé péngyou zài nǎr hē chá?", "options": ["学校", "家里", "饭店"], "optionsP": ["xuéxiào", "jiāli", "fàndiàn"], "correct": 1}, {"sentence": "今天天气不好，我们在家吃饭吧。", "sentenceP": "Jīntiān tiānqì bù hǎo, wǒmen zài jiā chī fàn ba.", "question": "今天天气怎么样？", "questionP": "Jīntiān tiānqì zěnmeyàng?", "options": ["很好", "很热", "不好"], "optionsP": ["hěn hǎo", "hěn rè", "bù hǎo"], "correct": 2}, {"sentence": "88302755是张老师的电话。", "sentenceP": "Bā bā sān líng èr qī wǔ wǔ shì Zhāng lǎoshī de diànhuà.", "question": "张老师的电话是多少？", "questionP": "Zhāng lǎoshī de diànhuà shì duōshao?", "options": ["83302755", "88302775", "88302755"], "optionsP": ["bā sān sān líng èr qī wǔ wǔ", "bā bā sān líng èr qī qī wǔ", "bā bā sān líng èr qī wǔ wǔ"], "correct": 2}, {"sentence": "我没看电视，我在学习呢。", "sentenceP": "Wǒ méi kàn diànshì, wǒ zài xuéxí ne.", "question": "他在做什么呢？", "questionP": "Tā zài zuò shénme ne?", "options": ["看电视", "看电影", "学习"], "optionsP": ["kàn diànshì", "kàn diànyǐng", "xuéxí"], "correct": 2}, {"sentence": "她没在打电话，她在睡觉呢。", "sentenceP": "Tā méi zài dǎ diànhuà, tā zài shuìjiào ne.", "question": "她在做什么呢？", "questionP": "Tā zài zuò shénme ne?", "options": ["打电话", "睡觉", "在家"], "optionsP": ["dǎ diànhuà", "shuìjiào", "zài jiā"], "correct": 1}]}, "14": {"title": "她买了不少衣服 (She has bought quite a few clothes)", "words": [{"h": "东西", "p": "dōngxi", "pos": "n.", "e": "thing, stuff", "m": "东(east) + 西(west) — oddly, \"east-west\" became the word for \"thing.\""}, {"h": "一点儿", "p": "yìdiǎnr", "pos": "m.", "e": "a little, a bit", "m": "一(one) + 点(dot/point) — just one small dot's worth."}, {"h": "苹果", "p": "píngguǒ", "pos": "n.", "e": "apple", "m": "艹(plant) radical in 苹 — apples grow from plants/trees."}, {"h": "看见", "p": "kànjiàn", "pos": "v.", "e": "to see, to catch sight of", "m": "看(look) + 见(see/perceive) — looking that results in actually seeing."}, {"h": "先生", "p": "xiānsheng", "pos": "n.", "e": "Mr., sir", "m": "先(first/before) + 生(born) — literally \"born before,\" an old term of respect."}, {"h": "开", "p": "kāi", "pos": "v.", "e": "to drive, to open", "m": "Pictures two hands prying something open — to open up, including a car's ignition."}, {"h": "车", "p": "chē", "pos": "n.", "e": "car, vehicle", "m": "The character is a simplified top-down sketch of a cart/vehicle."}, {"h": "回来", "p": "huílai", "pos": "v.", "e": "to come back", "m": "回(return) + 来(come) — returning and coming (back here)."}, {"h": "分钟", "p": "fēnzhōng", "pos": "n.", "e": "minute", "m": "分(divide/minute) + 钟(clock/bell) — a minute as measured by the clock."}, {"h": "后", "p": "hòu", "pos": "n.", "e": "after, later", "m": "Used for both physical \"behind\" and time \"after/later.\""}, {"h": "衣服", "p": "yīfu", "pos": "n.", "e": "clothes", "m": "衣(clothing) doubled up into the everyday word for clothes."}, {"h": "漂亮", "p": "piàoliang", "pos": "adj.", "e": "pretty, beautiful", "m": "Sounds like \"pyow-liang\" — imagine a pageant judge shouting \"pyow!\" in approval."}, {"h": "啊", "p": "a", "pos": "part.", "e": "exclamatory particle", "m": "A simple sound tacked onto the end of a sentence for emphasis or feeling."}, {"h": "不少", "p": "bùshǎo", "pos": "adj.", "e": "quite a lot, not few", "m": "不(not) + 少(few) — literally \"not few,\" i.e. quite a lot."}, {"h": "这些", "p": "zhèxiē", "pos": "pron.", "e": "these", "m": "这(this) + 些(some/plural) — \"this\" made plural: these."}, {"h": "都", "p": "dōu", "pos": "adv.", "e": "all, both", "m": "A small but powerful word meaning the whole group, without exception."}, {"h": "张", "p": "Zhāng", "pos": "prop.n.", "e": "Zhang (surname)", "m": "One of the most common Chinese surnames — also means \"to open/stretch\" as a verb."}], "listening": [{"sentence": "我上午买了不少菜，中午做饭。", "sentenceP": "Wǒ shàngwǔ mǎile bùshǎo cài, zhōngwǔ zuò fàn.", "question": "她上午做什么了？", "questionP": "Tā shàngwǔ zuò shénme le?", "options": ["买菜", "做饭", "买苹果"], "optionsP": ["mǎi cài", "zuò fàn", "mǎi píngguǒ"], "correct": 0}, {"sentence": "这些衣服很漂亮，都是张小姐的。", "sentenceP": "Zhèxiē yīfu hěn piàoliang, dōu shì Zhāng xiǎojiě de.", "question": "这些衣服都是谁的？", "questionP": "Zhèxiē yīfu dōu shì shéi de?", "options": ["小王", "张小姐", "王老师"], "optionsP": ["Xiǎo Wáng", "Zhāng xiǎojiě", "Wáng lǎoshī"], "correct": 1}, {"sentence": "王老师去学校了，她三点后能回来。", "sentenceP": "Wáng lǎoshī qù xuéxiào le, tā sān diǎn hòu néng huílai.", "question": "王老师什么时候能回来？", "questionP": "Wáng lǎoshī shénme shíhou néng huílai?", "options": ["两点后", "三点后", "四点后"], "optionsP": ["liǎng diǎn hòu", "sān diǎn hòu", "sì diǎn hòu"], "correct": 1}, {"sentence": "下午我和大卫去学开车了。", "sentenceP": "Xiàwǔ wǒ hé Dàwèi qù xué kāichē le.", "question": "下午大卫做什么了？", "questionP": "Xiàwǔ Dàwèi zuò shénme le?", "options": ["学习", "学开车", "去学校"], "optionsP": ["xuéxí", "xué kāichē", "qù xuéxiào"], "correct": 1}, {"sentence": "我不爱喝水，不爱吃水果。", "sentenceP": "Wǒ bú ài hē shuǐ, bú ài chī shuǐguǒ.", "question": "他不爱吃什么？", "questionP": "Tā bú ài chī shénme?", "options": ["水果", "水", "米饭"], "optionsP": ["shuǐguǒ", "shuǐ", "mǐfàn"], "correct": 0}]}, "15": {"title": "我是坐飞机来的 (I came here by air)", "words": [{"h": "认识", "p": "rènshi", "pos": "v.", "e": "to know, to recognize (a person)", "m": "言(speech) + 人(person) in 认 — to know someone through speaking with them."}, {"h": "年", "p": "nián", "pos": "n.", "e": "year", "m": "An ancient harvest-related character — a year marked by the harvest cycle."}, {"h": "大学", "p": "dàxué", "pos": "n.", "e": "university", "m": "大(big) + 学(study) — the \"big school,\" i.e. university."}, {"h": "饭店", "p": "fàndiàn", "pos": "n.", "e": "hotel, restaurant", "m": "饭(meal) + 店(shop) — a shop for meals, which also came to mean hotel."}, {"h": "出租车", "p": "chūzūchē", "pos": "n.", "e": "taxi", "m": "出租(to rent out) + 车(car) — literally \"a car for rent.\""}, {"h": "一起", "p": "yìqǐ", "pos": "adv.", "e": "together", "m": "一(one) + 起(rise/together) — doing something as one, together."}, {"h": "高兴", "p": "gāoxìng", "pos": "adj.", "e": "happy, glad", "m": "高(high) + 兴(excitement) — spirits running high."}, {"h": "听", "p": "tīng", "pos": "v.", "e": "to listen", "m": "口(mouth) and 耳(ear) combine historically — using your ears to listen."}, {"h": "飞机", "p": "fēijī", "pos": "n.", "e": "airplane", "m": "飞(fly) + 机(machine) — a \"flying machine.\""}], "listening": [{"sentence": "我们是2008年在北京认识的。", "sentenceP": "Wǒmen shì èr líng líng bā nián zài Běijīng rènshi de.", "question": "他们是什么时候认识的？", "questionP": "Tāmen shì shénme shíhou rènshi de?", "options": ["2007年", "2008年", "2009年"], "optionsP": ["èr líng líng qī nián", "èr líng líng bā nián", "èr líng líng jiǔ nián"], "correct": 1}, {"sentence": "我的衣服都是在美国买的，我喜欢美国的衣服。", "sentenceP": "Wǒ de yīfu dōu shì zài Měiguó mǎi de, wǒ xǐhuan Měiguó de yīfu.", "question": "他喜欢哪儿的衣服？", "questionP": "Tā xǐhuan nǎr de yīfu?", "options": ["美国", "中国", "日本"], "optionsP": ["Měiguó", "Zhōngguó", "Rìběn"], "correct": 0}, {"sentence": "王老师不是坐出租车去的。", "sentenceP": "Wáng lǎoshī bú shì zuò chūzūchē qù de.", "question": "王老师是怎么去的？", "questionP": "Wáng lǎoshī shì zěnme qù de?", "options": ["坐出租车", "开车", "不知道"], "optionsP": ["zuò chūzūchē", "kāichē", "bù zhīdào"], "correct": 2}, {"sentence": "李老师是八点去学校的，九点前会到。", "sentenceP": "Lǐ lǎoshī shì bā diǎn qù xuéxiào de, jiǔ diǎn qián huì dào.", "question": "李老师是什么时候去学校的？", "questionP": "Lǐ lǎoshī shì shénme shíhou qù xuéxiào de?", "options": ["八点", "九点", "十点"], "optionsP": ["bā diǎn", "jiǔ diǎn", "shí diǎn"], "correct": 0}, {"sentence": "张先生是坐飞机来的。", "sentenceP": "Zhāng xiānsheng shì zuò fēijī lái de.", "question": "张先生是怎么来的？", "questionP": "Zhāng xiānsheng shì zěnme lái de?", "options": ["坐车", "坐出租车", "坐飞机"], "optionsP": ["zuò chē", "zuò chūzūchē", "zuò fēijī"], "correct": 2}]}};
+const LESSON_ORDER = ["12", "13", "14", "15"];
+const HAS_NUMBERS = false;
+
+let currentLesson = LESSON_ORDER[0];
+let mode = "flip";
+let autoPlayEnabled = true;
+let idx = 0;
+let flipped = false;
+let typed = false;
+let typedAnswer = "";
+let lastCorrect = null;
+let selectedOpt = null;
+let progress = {};
+
+let zhVoice = null;
+function pickVoice() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  zhVoice = voices.find(v => v.lang === 'zh-CN') || voices.find(v => v.lang && v.lang.startsWith('zh')) || null;
+}
+if (window.speechSynthesis) { pickVoice(); window.speechSynthesis.onvoiceschanged = pickVoice; }
+function speak(hanzi, btnId, rate) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(hanzi);
+  utter.lang = 'zh-CN';
+  utter.rate = rate || 0.85;
+  if (zhVoice) utter.voice = zhVoice;
+  const btn = btnId ? document.getElementById(btnId) : null;
+  if (btn) {
+    btn.classList.add('speaking');
+    utter.onend = () => btn.classList.remove('speaking');
+    utter.onerror = () => btn.classList.remove('speaking');
+  }
+  window.speechSynthesis.speak(utter);
+}
+
+function normalize(s) { return s.toLowerCase().trim().replace(/[.!?]/g, ''); }
+function checkAnswer(input, w) {
+  const userN = normalize(input);
+  if (!userN) return false;
+  const candidates = [w.e].concat(w.alt || []);
+  return candidates.some(c => {
+    const cN = normalize(c);
+    return userN === cN || (cN.includes(userN) && userN.length >= 3) || (userN.includes(cN) && cN.length >= 3);
+  });
+}
+
+async function loadProgress(lesson, m) {
+  try {
+    const r = await window.storage.get('hsk-progress:' + lesson + ':' + m, false);
+    progress = r ? JSON.parse(r.value) : {};
+  } catch (e) { progress = {}; }
+}
+async function saveProgress(lesson, m) {
+  try { await window.storage.set('hsk-progress:' + lesson + ':' + m, JSON.stringify(progress), false); } catch (e) {}
+}
+async function loadAutoplay() {
+  try {
+    const r = await window.storage.get('hsk-autoplay', false);
+    autoPlayEnabled = r ? JSON.parse(r.value) : true;
+  } catch (e) { autoPlayEnabled = true; }
+}
+async function saveAutoplay() {
+  try { await window.storage.set('hsk-autoplay', JSON.stringify(autoPlayEnabled), false); } catch (e) {}
+}
+function buildAutoplayToggle() {
+  const el = document.getElementById('autoplaySwitch');
+  el.className = 'switch' + (autoPlayEnabled ? ' on' : '');
+  el.innerHTML = '<div class="knob"></div>';
+  el.onclick = async () => { autoPlayEnabled = !autoPlayEnabled; await saveAutoplay(); buildAutoplayToggle(); };
+}
+
+function buildTabs() {
+  const el = document.getElementById('tabs');
+  el.innerHTML = '';
+  LESSON_ORDER.forEach(key => {
+    const b = document.createElement('div');
+    b.className = 'tab' + (key === currentLesson ? ' active' : '');
+    b.textContent = 'L' + key;
+    b.onclick = () => switchLesson(key);
+    el.appendChild(b);
+  });
+}
+
+function buildModeToggle() {
+  const el = document.getElementById('modeToggle');
+  el.innerHTML = `
+    <div class="mode-btn ${mode === 'flip' ? 'active' : ''}" id="flipModeBtn">Flip &amp; recall</div>
+    <div class="mode-btn ${mode === 'type' ? 'active' : ''}" id="typeModeBtn">Type the answer</div>
+    <div class="mode-btn ${mode === 'listen' ? 'active' : ''}" id="listenModeBtn">Listening (A/B/C)</div>
+    
+  `;
+  document.getElementById('flipModeBtn').onclick = () => switchMode('flip');
+  document.getElementById('typeModeBtn').onclick = () => switchMode('type');
+  document.getElementById('listenModeBtn').onclick = () => switchMode('listen');
+  
+}
+
+async function switchMode(m) {
+  mode = m; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
+  buildModeToggle();
+  if (mode !== 'numbers') await loadProgress(currentLesson, mode);
+  render();
+}
+async function switchLesson(key) {
+  currentLesson = key; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
+  await loadProgress(currentLesson, mode);
+  buildTabs();
+  render();
+}
+
+function currentWords() { return LESSONS[currentLesson].words; }
+function currentListening() { return LESSONS[currentLesson].listening || null; }
+
+function render() {
+  document.getElementById('lessonLabel').textContent = LESSONS[currentLesson].title;
+
+  if (mode === 'flip') {
+    const words = currentWords();
+    if (idx >= words.length) idx = words.length - 1;
+    setProgressBar(idx, words.length);
+    renderFlipMode(words[idx], words.length);
+    renderStats();
+  } else if (mode === 'type') {
+    const words = currentWords();
+    if (idx >= words.length) idx = words.length - 1;
+    setProgressBar(idx, words.length);
+    renderTypeMode(words[idx], words.length);
+    renderStats();
+  } else if (mode === 'listen') {
+    const items = currentListening();
+    if (!items) {
+      document.getElementById('progressFill').style.width = '0%';
+      document.getElementById('posLabel').textContent = '';
+      document.getElementById('cardArea').innerHTML = '<div class="soon-box">Listening drills for this lesson are not built yet.<br>Try Flip &amp; recall or Type the answer instead.</div>';
+      document.getElementById('statsRow').innerHTML = '';
+      return;
+    }
+    if (idx >= items.length) idx = items.length - 1;
+    setProgressBar(idx, items.length);
+    renderListenMode(items[idx], items.length);
+    renderStats();
+  }
+}
+
+function setProgressBar(i, total) {
+  document.getElementById('posLabel').textContent = (i + 1) + ' / ' + total;
+  document.getElementById('progressFill').style.width = (((i + 1) / total) * 100) + '%';
+}
+
+function renderFlipMode(w, total) {
+  const cardArea = document.getElementById('cardArea');
+  if (!flipped) {
+    cardArea.innerHTML = `
+      <div class="card" id="flipCard">
+        <div class="hanzi">${w.h}</div>
+        <div class="pinyin">${w.p}</div>
+        <div class="pos-tag">${w.pos || ''}</div>
+        <button class="speak-btn" id="speakBtnFront" aria-label="Play pronunciation">&#128266;</button>
+        <div class="tap-hint">tap card to reveal meaning</div>
+      </div>
+      <div class="controls">
+        <button class="nav" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
+        <button class="nav" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
+      </div>
+    `;
+    document.getElementById('flipCard').onclick = () => { flipped = true; render(); };
+    document.getElementById('speakBtnFront').onclick = (e) => { e.stopPropagation(); speak(w.h, 'speakBtnFront'); };
+    if (autoPlayEnabled) speak(w.h, 'speakBtnFront');
+    const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn');
+    if (prevBtn) prevBtn.onclick = (e) => { e.stopPropagation(); if (idx > 0) { idx--; flipped = false; render(); } };
+    if (nextBtn) nextBtn.onclick = (e) => { e.stopPropagation(); if (idx < total - 1) { idx++; flipped = false; render(); } };
+  } else {
+    const exampleHtml = w.ex ? `<div class="example"><div class="ex-h">${w.ex}</div><div class="ex-p">${w.exp}</div><div>${w.exe}</div></div>` : '';
+    cardArea.innerHTML = `
+      <div class="card" id="flipCard">
+        <div class="hanzi" style="font-size:34px;">${w.h} <span class="pinyin" style="font-size:16px;">${w.p}</span></div>
+        <button class="speak-btn" id="speakBtnBack" aria-label="Play pronunciation">&#128266;</button>
+        <div class="back-english">${w.e}</div>
+        <div class="mnemonic">${w.m}</div>
+        ${exampleHtml}
+      </div>
+      <div class="controls">
+        <button class="nav learning" id="learnBtn">still learning</button>
+        <button class="nav know" id="knowBtn">I know this</button>
+      </div>
+    `;
+    document.getElementById('flipCard').onclick = () => { flipped = false; render(); };
+    document.getElementById('speakBtnBack').onclick = (e) => { e.stopPropagation(); speak(w.h, 'speakBtnBack'); };
+    document.getElementById('knowBtn').onclick = async (e) => { e.stopPropagation(); progress[w.h] = 'known'; await saveProgress(currentLesson, mode); advanceFlip(); };
+    document.getElementById('learnBtn').onclick = async (e) => { e.stopPropagation(); progress[w.h] = 'learning'; await saveProgress(currentLesson, mode); advanceFlip(); };
+  }
+}
+function advanceFlip() {
+  const total = currentWords().length;
+  flipped = false;
+  if (idx < total - 1) idx++;
+  render();
+}
+
+function renderTypeMode(w, total) {
+  const cardArea = document.getElementById('cardArea');
+  if (!typed) {
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default;">
+        <div class="hanzi">${w.h}</div>
+        <div class="pinyin">${w.p}</div>
+        <button class="speak-btn" id="speakBtnFront" aria-label="Play pronunciation">&#128266;</button>
+        <input type="text" class="type-input" id="typeInput" placeholder="type the English meaning" autocomplete="off">
+        <div class="error-text" id="errorText"></div>
+        <button class="submit-btn" id="submitBtn">Check</button>
+      </div>
+      <div class="controls">
+        <button class="nav" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
+        <button class="nav" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
+      </div>
+    `;
+    document.getElementById('speakBtnFront').onclick = (e) => { e.stopPropagation(); speak(w.h, 'speakBtnFront'); };
+    if (autoPlayEnabled) speak(w.h, 'speakBtnFront');
+    const input = document.getElementById('typeInput');
+    const doSubmit = async () => {
+      const val = input.value;
+      if (!val.trim()) { document.getElementById('errorText').textContent = 'Type an answer first.'; input.classList.add('wrong-input'); return; }
+      lastCorrect = checkAnswer(val, w);
+      progress[w.h] = lastCorrect ? 'known' : 'learning';
+      await saveProgress(currentLesson, mode);
+      typedAnswer = val; typed = true; render();
+    };
+    document.getElementById('submitBtn').onclick = doSubmit;
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSubmit(); });
+    input.addEventListener('input', () => { input.classList.remove('wrong-input'); document.getElementById('errorText').textContent = ''; });
+    input.focus();
+    const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn');
+    if (prevBtn) prevBtn.onclick = () => { if (idx > 0) { idx--; typed = false; render(); } };
+    if (nextBtn) nextBtn.onclick = () => { if (idx < total - 1) { idx++; typed = false; render(); } };
+  } else {
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default;">
+        <div class="feedback-badge ${lastCorrect ? 'correct' : 'wrong'}">${lastCorrect ? 'Correct!' : 'Not quite'}</div>
+        <div class="hanzi" style="font-size:34px;">${w.h} <span class="pinyin" style="font-size:16px;">${w.p}</span></div>
+        <button class="speak-btn" id="speakBtnBack" aria-label="Play pronunciation">&#128266;</button>
+        <div class="your-answer">You typed: "${typedAnswer}"</div>
+        <div class="back-english">${w.e}</div>
+        <div class="mnemonic">${w.m}</div>
+      </div>
+      <div class="controls">
+        <button class="nav" id="nextTypeBtn">${idx < total - 1 ? 'next word \u2192' : 'lesson complete \u2192'}</button>
+      </div>
+    `;
+    document.getElementById('speakBtnBack').onclick = (e) => { e.stopPropagation(); speak(w.h, 'speakBtnBack'); };
+    document.getElementById('nextTypeBtn').onclick = () => { typed = false; if (idx < total - 1) idx++; render(); };
+  }
+}
+
+function renderListenMode(item, total) {
+  const cardArea = document.getElementById('cardArea');
+  const key = currentLesson + '-' + idx;
+  const letters = ['A', 'B', 'C'];
+  if (selectedOpt === null) {
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default; min-height:auto; padding:36px 24px;">
+        <button class="listen-play" id="playBtn" aria-label="Play sentence">&#9658;</button>
+        <div class="listen-hint">tap to hear the full sentence</div>
+        <div class="question-text">${item.questionP}</div>
+        <div class="question-hanzi">${item.question}</div>
+        <div id="optionsWrap" style="width:100%; display:flex; flex-direction:column; align-items:center;"></div>
+      </div>
+      <div class="controls">
+        <button class="nav" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
+        <button class="nav" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
+      </div>
+    `;
+    const optsWrap = document.getElementById('optionsWrap');
+    item.options.forEach((opt, i) => {
+      const b = document.createElement('button');
+      b.className = 'option-btn';
+      b.innerHTML = `<span class="opt-letter">${letters[i]}</span><span class="opt-text"><span class="opt-pinyin">${item.optionsP[i]}</span><span class="opt-hanzi">${opt}</span></span>`;
+      b.onclick = async () => {
+        selectedOpt = i; lastCorrect = (i === item.correct);
+        progress[key] = lastCorrect ? 'known' : 'learning';
+        await saveProgress(currentLesson, mode);
+        render();
+      };
+      optsWrap.appendChild(b);
+    });
+    document.getElementById('playBtn').onclick = () => speak(item.sentence, 'playBtn', 0.75);
+    if (autoPlayEnabled) speak(item.sentence, 'playBtn', 0.75);
+    const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn');
+    if (prevBtn) prevBtn.onclick = () => { if (idx > 0) { idx--; selectedOpt = null; render(); } };
+    if (nextBtn) nextBtn.onclick = () => { if (idx < total - 1) { idx++; selectedOpt = null; render(); } };
+  } else {
+    let optsHtml = '';
+    item.options.forEach((opt, i) => {
+      let cls = 'option-btn';
+      if (i === item.correct) cls += ' correct-opt'; else if (i === selectedOpt) cls += ' wrong-opt';
+      optsHtml += `<div class="${cls}"><span class="opt-letter">${letters[i]}</span><span class="opt-text"><span class="opt-pinyin">${item.optionsP[i]}</span><span class="opt-hanzi">${opt}</span></span></div>`;
+    });
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default; min-height:auto; padding:36px 24px;">
+        <div class="feedback-badge ${lastCorrect ? 'correct' : 'wrong'}">${lastCorrect ? 'Correct!' : 'Not quite'}</div>
+        <button class="speak-btn" id="replayBtn" aria-label="Replay sentence" style="margin-bottom:14px;">&#128266;</button>
+        <div class="question-text">${item.questionP}</div>
+        <div class="question-hanzi">${item.question}</div>
+        <div style="width:100%; display:flex; flex-direction:column; align-items:center;">${optsHtml}</div>
+        <div class="example" style="margin-top:14px;"><div class="ex-p">${item.sentenceP}</div><div class="ex-h">${item.sentence}</div></div>
+      </div>
+      <div class="controls">
+        <button class="nav" id="nextListenBtn">${idx < total - 1 ? 'next question \u2192' : 'lesson complete \u2192'}</button>
+      </div>
+    `;
+    document.getElementById('replayBtn').onclick = () => speak(item.sentence, 'replayBtn', 0.75);
+    document.getElementById('nextListenBtn').onclick = () => { selectedOpt = null; if (idx < total - 1) idx++; render(); };
+  }
+}
+
+function renderStats() {
+  let known = 0, learning = 0, total;
+  if (mode === 'listen') {
+    const items = currentListening();
+    if (!items) return;
+    total = items.length;
+    items.forEach((it, i) => {
+      const key = currentLesson + '-' + i;
+      if (progress[key] === 'known') known++; else if (progress[key] === 'learning') learning++;
+    });
+  } else {
+    const words = currentWords();
+    total = words.length;
+    words.forEach(w => { if (progress[w.h] === 'known') known++; else if (progress[w.h] === 'learning') learning++; });
+  }
+  const label = mode === 'listen' ? ['correct', 'missed', 'not attempted'] : ['known', 'still learning', 'not reviewed'];
+  document.getElementById('statsRow').innerHTML = `<span><b>${known}</b> ${label[0]}</span><span><b>${learning}</b> ${label[1]}</span><span><b>${total - known - learning}</b> ${label[2]}</span>`;
+}
+
+document.getElementById('resetBtn').onclick = async () => {
+  if (mode === 'numbers') { numScore = { correct: 0, total: 0 }; newNumber(); render(); return; }
+  progress = {};
+  await saveProgress(currentLesson, mode);
+  render();
+};
+
+(async () => {
+  await loadAutoplay();
+  buildAutoplayToggle();
+  buildTabs();
+  buildModeToggle();
+  await loadProgress(currentLesson, mode);
+  render();
+})();
+</script>
+</body>
+</html>

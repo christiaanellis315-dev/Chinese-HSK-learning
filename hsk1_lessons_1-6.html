@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HSK1 Lessons 1-6 — Night Shift Study App</title>
+<style>
+:root {
+  --bg: #14120f; --panel: #1d1a15; --card: #23201a; --amber: #e8a545; --amber-dim: #a97a35;
+  --text: #ede6d8; --text-dim: #9c9384; --green: #7fb069; --red: #c96a5a; --border: #37322a;
+}
+* { box-sizing: border-box; }
+body { background: radial-gradient(ellipse at 50% -10%, #241f16 0%, var(--bg) 55%); color: var(--text); font-family: -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 32px 16px 60px; min-height: 100vh; }
+.wrap { max-width: 560px; margin: 0 auto; }
+.lamp { width: 90px; height: 90px; margin: 0 auto 6px; border-radius: 50%; background: radial-gradient(circle, rgba(232,165,69,0.35) 0%, rgba(232,165,69,0.06) 60%, transparent 75%); }
+h1 { text-align: center; font-size: 20px; font-weight: 600; letter-spacing: 0.3px; margin: -70px 0 2px; color: var(--amber); }
+.sub { text-align: center; color: var(--text-dim); font-size: 13px; margin-bottom: 16px; }
+.autoplay-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px; font-size: 12px; color: var(--text-dim); }
+.switch { position: relative; width: 38px; height: 22px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; flex-shrink: 0; }
+.switch .knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: var(--text-dim); border-radius: 50%; transition: left 0.15s, background 0.15s; }
+.switch.on { border-color: var(--amber); }
+.switch.on .knob { left: 18px; background: var(--amber); }
+.tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.tab { background: var(--panel); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 11px; border-radius: 16px; font-size: 12px; cursor: pointer; }
+.tab.active { color: var(--bg); background: var(--amber); border-color: var(--amber); }
+.mode-toggle { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+.mode-btn { background: var(--panel); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+.mode-btn.active { color: var(--bg); background: var(--amber); border-color: var(--amber); }
+.progress-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-dim); margin-bottom: 10px; padding: 0 4px; }
+.progress-bar { height: 3px; background: var(--border); border-radius: 3px; margin-bottom: 24px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--amber); transition: width 0.3s; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; min-height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px 24px; cursor: pointer; user-select: none; position: relative; }
+.hanzi { font-size: 64px; color: var(--text); margin-bottom: 8px; line-height: 1; }
+.pinyin { font-size: 18px; color: var(--amber); letter-spacing: 0.5px; }
+.pos-tag { font-size: 11px; color: var(--text-dim); border: 1px solid var(--border); border-radius: 10px; padding: 2px 8px; margin-top: 8px; display: inline-block; }
+.tap-hint { position: absolute; bottom: 14px; font-size: 11px; color: var(--text-dim); }
+.back-english { font-size: 22px; color: var(--text); margin-bottom: 10px; }
+.mnemonic { font-size: 14px; color: var(--text-dim); line-height: 1.55; max-width: 400px; margin-bottom: 12px; }
+.mnemonic b { color: var(--amber); font-weight: 600; }
+.example { font-size: 13px; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 12px; margin-top: 6px; max-width: 400px; line-height: 1.6; }
+.example .ex-h { color: var(--text); font-size: 16px; }
+.example .ex-p { color: var(--amber-dim); }
+.speak-btn { background: none; border: 1px solid var(--amber-dim); color: var(--amber); width: 40px; height: 40px; border-radius: 50%; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 10px auto 0; }
+.speak-btn:active { transform: scale(0.94); }
+.speak-btn.speaking { color: var(--bg); background: var(--amber); }
+.type-input { width: 100%; max-width: 300px; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 8px; font-size: 15px; text-align: center; margin-top: 16px; }
+.type-input:focus { outline: none; border-color: var(--amber); }
+.type-input.wrong-input { border-color: var(--red); }
+.submit-btn { background: var(--amber); color: var(--bg); border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px; }
+.error-text { color: var(--red); font-size: 12px; margin-top: 8px; }
+.feedback-badge { font-size: 15px; font-weight: 600; padding: 6px 16px; border-radius: 20px; margin-bottom: 12px; display: inline-block; }
+.feedback-badge.correct { background: rgba(127,176,105,0.15); color: var(--green); }
+.feedback-badge.wrong { background: rgba(201,106,90,0.15); color: var(--red); }
+.your-answer { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
+.listen-play { background: var(--amber); color: var(--bg); border: none; width: 64px; height: 64px; border-radius: 50%; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.listen-play:active { transform: scale(0.95); }
+.listen-hint { font-size: 12px; color: var(--text-dim); margin-bottom: 18px; }
+.question-text { font-size: 16px; color: var(--text); margin-bottom: 4px; }
+.question-hanzi { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; }
+.option-btn { width: 100%; max-width: 340px; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 12px 16px; border-radius: 10px; font-size: 16px; cursor: pointer; margin-bottom: 10px; text-align: left; display: flex; align-items: center; gap: 10px; }
+.option-btn .opt-letter { color: var(--amber); font-weight: 600; }
+.opt-text { display: flex; flex-direction: column; gap: 2px; }
+.opt-pinyin { color: var(--text); font-size: 15px; }
+.opt-hanzi { color: var(--text-dim); font-size: 13px; }
+.option-btn.correct-opt { border-color: var(--green); background: rgba(127,176,105,0.1); }
+.option-btn.wrong-opt { border-color: var(--red); background: rgba(201,106,90,0.1); }
+.controls { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+button.nav { flex: 1; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 10px; font-size: 14px; cursor: pointer; }
+button.know { border-color: var(--green); color: var(--green); }
+button.learning { border-color: var(--red); color: var(--red); }
+button.nav:active { transform: scale(0.97); }
+.stats { display: flex; justify-content: center; gap: 18px; margin-top: 22px; font-size: 12px; color: var(--text-dim); }
+.stats span b { color: var(--text); }
+.reset { display: block; margin: 30px auto 0; background: none; border: none; color: var(--text-dim); font-size: 12px; text-decoration: underline; cursor: pointer; }
+.num-big { font-size: 30px; color: var(--text); margin-bottom: 6px; }
+.num-hint { font-size: 12px; color: var(--text-dim); margin-bottom: 18px; }
+.soon-box { text-align: center; padding: 50px 20px; color: var(--text-dim); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lamp"></div>
+  <h1>Night shift study app</h1>
+  <div class="sub">HSK1 Standard Course — Lessons 1 through 6</div>
+  <div class="autoplay-row">
+    <span>Auto-play audio</span>
+    <div class="switch" id="autoplaySwitch"><div class="knob"></div></div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="mode-toggle" id="modeToggle"></div>
+  <div class="progress-row">
+    <span id="posLabel">1 / 1</span>
+    <span id="lessonLabel"></span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div id="cardArea"></div>
+  <div class="stats" id="statsRow"></div>
+  <button class="reset" id="resetBtn">Reset progress for this lesson &amp; mode</button>
+</div>
+<script>
+const LESSONS = {"1": {"title": "你好 (Hello)", "words": [{"h": "你", "p": "nǐ", "pos": "pron.", "e": "you", "m": "The most basic pronoun — 亻(person) radical on the left."}, {"h": "好", "p": "hǎo", "pos": "adj.", "e": "good, well, fine", "m": "女(woman) + 子(child) — a mother with her child was seen as a picture of \"good.\""}, {"h": "您", "p": "nín", "pos": "pron.", "e": "you (polite/formal)", "m": "你 (you) sitting on top of 心 (heart) — a \"you\" said with heart, i.e. respectfully."}, {"h": "你们", "p": "nǐmen", "pos": "pron.", "e": "you (plural)", "m": "你(you) + 们(plural suffix) — more than one \"you.\""}, {"h": "对不起", "p": "duìbuqǐ", "pos": "v.", "e": "sorry, excuse me", "m": "Literally \"cannot face you\" — a classic apology phrase."}, {"h": "没关系", "p": "méi guānxi", "pos": "phrase", "e": "it doesn't matter, never mind", "m": "没(not) + 关系(relation/matter) — \"it doesn't concern anything,\" i.e. no big deal."}]}, "2": {"title": "谢谢你 (Thank you)", "words": [{"h": "谢谢", "p": "xièxie", "pos": "v.", "e": "thank you", "m": "Doubled character — repetition makes it feel warmer, like saying \"thanks, thanks.\""}, {"h": "不", "p": "bù", "pos": "adv.", "e": "no, not", "m": "The single most common negator in Chinese — short, sharp, and everywhere."}, {"h": "不客气", "p": "bú kèqi", "pos": "phrase", "e": "you're welcome", "m": "不(not) + 客气(polite/formal) — \"no need to be so formal about it.\""}, {"h": "再见", "p": "zàijiàn", "pos": "v.", "e": "goodbye", "m": "再(again) + 见(see) — literally \"see you again.\""}]}, "3": {"title": "你叫什么名字 (What's your name)", "words": [{"h": "叫", "p": "jiào", "pos": "v.", "e": "to be called, to call", "m": "口(mouth) radical — calling out someone's name uses your mouth."}, {"h": "什么", "p": "shénme", "pos": "pron.", "e": "what", "m": "Sounds like \"shummuh\" — the go-to question word for \"what.\""}, {"h": "名字", "p": "míngzi", "pos": "n.", "e": "name", "m": "名(name) has 夕(evening)+口(mouth) — calling a name out in the dark to know who's there."}, {"h": "我", "p": "wǒ", "pos": "pron.", "e": "I, me", "m": "One of the first words anyone learns — the self."}, {"h": "是", "p": "shì", "pos": "v.", "e": "to be", "m": "The core linking verb — \"is/am/are\" all rolled into one character."}, {"h": "老师", "p": "lǎoshī", "pos": "n.", "e": "teacher", "m": "老(old/venerable) + 师(master) — an old, respected master of a craft."}, {"h": "吗", "p": "ma", "pos": "part.", "e": "question particle", "m": "Tack it onto the end of a statement to turn it into a yes/no question."}, {"h": "学生", "p": "xuésheng", "pos": "n.", "e": "student", "m": "学(study) + 生(life/person) — one whose life is studying."}, {"h": "人", "p": "rén", "pos": "n.", "e": "person", "m": "Literally looks like a pair of legs walking — a person in motion."}, {"h": "李月", "p": "Lǐ Yuè", "pos": "prop.n.", "e": "Li Yue (a name)", "m": "A common surname (李, Li) + given name (月, moon)."}, {"h": "中国", "p": "Zhōngguó", "pos": "prop.n.", "e": "China", "m": "中(middle) + 国(country) — the \"middle kingdom.\""}, {"h": "美国", "p": "Měiguó", "pos": "prop.n.", "e": "USA", "m": "美(beautiful) + 国(country) — literally \"beautiful country.\""}]}, "4": {"title": "她是我的汉语老师 (She is my Chinese teacher)", "words": [{"h": "她", "p": "tā", "pos": "pron.", "e": "she, her", "m": "Female version of 他 — same sound, different radical (女, woman) on the left."}, {"h": "谁", "p": "shéi", "pos": "pron.", "e": "who, whom", "m": "Sounds like \"shay\" — \"Shay, who is that?\"", "ex": "她是谁？", "exp": "Tā shì shéi?", "exe": "Who is she?"}, {"h": "的", "p": "de", "pos": "part.", "e": "possessive particle", "m": "The most common character in Chinese — think of it as an apostrophe-s: 我的 = \"my\"."}, {"h": "汉语", "p": "Hànyǔ", "pos": "n.", "e": "Chinese (language)", "m": "汉(Han) + 语(language) — the language of the Han people.", "alt": ["chinese", "mandarin"]}, {"h": "哪", "p": "nǎ", "pos": "pron.", "e": "which", "m": "Sounds like \"nah\" — \"Nah, which one do you mean?\"", "alt": ["which one"], "ex": "你是哪国人？", "exp": "Nǐ shì nǎ guó rén?", "exe": "Which country are you from?"}, {"h": "国", "p": "guó", "pos": "n.", "e": "country, nation", "m": "A box (囗) with a jade treasure (玉) inside — a country is a walled-in treasure."}, {"h": "呢", "p": "ne", "pos": "part.", "e": "question particle (...and you?)", "m": "A soft trailing sound — like leaving a question hanging in the air.", "alt": ["and you", "question particle"]}, {"h": "他", "p": "tā", "pos": "pron.", "e": "he, him", "m": "人(person) radical on the left — the default \"he\" pronoun."}, {"h": "同学", "p": "tóngxué", "pos": "n.", "e": "classmate", "m": "同(same) + 学(study) — someone who studies the same class as you."}, {"h": "朋友", "p": "péngyou", "pos": "n.", "e": "friend", "m": "Two 月(moon) shapes side by side — two moons hanging out together."}], "listening": [{"sentence": "他叫李朋，他是中国人。", "sentenceP": "Tā jiào Lǐ Péng, tā shì Zhōngguó rén.", "question": "他是哪国人？", "questionP": "Tā shì nǎ guó rén?", "options": ["美国人", "法国人", "中国人"], "optionsP": ["Měiguó rén", "Fǎguó rén", "Zhōngguó rén"], "correct": 2}, {"sentence": "她是中国人，她是我的汉语老师。", "sentenceP": "Tā shì Zhōngguó rén, tā shì wǒ de Hànyǔ lǎoshī.", "question": "她是谁？", "questionP": "Tā shì shéi?", "options": ["我的朋友", "我的同学", "我的老师"], "optionsP": ["wǒ de péngyou", "wǒ de tóngxué", "wǒ de lǎoshī"], "correct": 2}, {"sentence": "她叫安妮，她不是我同学，她是我朋友。", "sentenceP": "Tā jiào Ānnī, tā bú shì wǒ tóngxué, tā shì wǒ péngyou.", "question": "她是谁？", "questionP": "Tā shì shéi?", "options": ["我的朋友", "我的同学", "我的老师"], "optionsP": ["wǒ de péngyou", "wǒ de tóngxué", "wǒ de lǎoshī"], "correct": 0}, {"sentence": "她叫李心，是我的中国朋友。", "sentenceP": "Tā jiào Lǐ Xīn, shì wǒ de Zhōngguó péngyou.", "question": "她叫什么名字？", "questionP": "Tā jiào shénme míngzi?", "options": ["王方", "李心", "安妮"], "optionsP": ["Wáng Fāng", "Lǐ Xīn", "Ānnī"], "correct": 1}]}, "5": {"title": "她女儿今年二十岁 (Her daughter is 20 years old this year)", "words": [{"h": "家", "p": "jiā", "pos": "n.", "e": "family, home", "m": "A pig (豕) under a roof (宀) — a home was wherever the livestock lived too."}, {"h": "有", "p": "yǒu", "pos": "v.", "e": "to have, there be", "m": "Looks like a hand holding meat — to have something in your grasp."}, {"h": "口", "p": "kǒu", "pos": "m.", "e": "measure word for family members", "m2": "", "m": "Literally a mouth-shaped box — used to count \"mouths to feed\" in a household."}, {"h": "女儿", "p": "nǚ'ér", "pos": "n.", "e": "daughter", "m": "女(woman) + 儿(child) — a female child."}, {"h": "几", "p": "jǐ", "pos": "pron.", "e": "how many", "m": "Short and small-looking, just like the small numbers it usually asks about."}, {"h": "岁", "p": "suì", "pos": "m.", "e": "year (of age)", "m": "Sounds like \"sway\" — imagine candles swaying on a birthday cake as you count years."}, {"h": "了", "p": "le", "pos": "part.", "e": "indicates a change or new circumstance", "m": "A tiny hook-shaped character — a hook that grabs onto a sentence to mark \"now it's different.\""}, {"h": "今年", "p": "jīnnián", "pos": "n.", "e": "this year", "m": "今(now) + 年(year) — the year that is now."}, {"h": "多", "p": "duō", "pos": "adv.", "e": "indicating degree (how...)", "m": "Two 夕(evening) stacked — many evenings passing means \"a lot.\""}, {"h": "大", "p": "dà", "pos": "adj.", "e": "(of age) old, big", "m": "A person (人) stretching their arms wide — as big as you can be."}], "listening": [{"sentence": "李老师的女儿今年4岁了。", "sentenceP": "Lǐ lǎoshī de nǚ'ér jīnnián sì suì le.", "question": "谁今年4岁了？", "questionP": "Shéi jīnnián sì suì le?", "options": ["张老师", "李老师", "李老师的女儿"], "optionsP": ["Zhāng lǎoshī", "Lǐ lǎoshī", "Lǐ lǎoshī de nǚ'ér"], "correct": 2}, {"sentence": "他是我的汉语老师，他今年45岁。", "sentenceP": "Tā shì wǒ de Hànyǔ lǎoshī, tā jīnnián sìshíwǔ suì.", "question": "我的汉语老师今年多大？", "questionP": "Wǒ de Hànyǔ lǎoshī jīnnián duō dà?", "options": ["40岁", "45岁", "50岁"], "optionsP": ["sìshí suì", "sìshíwǔ suì", "wǔshí suì"], "correct": 1}, {"sentence": "他是我的中国朋友，他家有3口人。", "sentenceP": "Tā shì wǒ de Zhōngguó péngyou, tā jiā yǒu sān kǒu rén.", "question": "谁家有3口人？", "questionP": "Shéi jiā yǒu sān kǒu rén?", "options": ["我家", "我的中国朋友家", "我的美国朋友家"], "optionsP": ["wǒ jiā", "wǒ de Zhōngguó péngyou jiā", "wǒ de Měiguó péngyou jiā"], "correct": 1}, {"sentence": "他叫大卫，他是美国学生，他今年22岁。", "sentenceP": "Tā jiào Dàwèi, tā shì Měiguó xuésheng, tā jīnnián èrshí'èr suì.", "question": "大卫今年多大？", "questionP": "Dàwèi jīnnián duō dà?", "options": ["20岁", "21岁", "22岁"], "optionsP": ["èrshí suì", "èrshíyī suì", "èrshí'èr suì"], "correct": 2}]}, "6": {"title": "我会说汉语 (I can speak Chinese)", "words": [{"h": "会", "p": "huì", "pos": "mod.", "e": "can, to be able to", "m": "Sounds like \"hway\" — \"Hey, I know how to do that!\""}, {"h": "说", "p": "shuō", "pos": "v.", "e": "to speak, to say", "m": "言(speech) radical on the left — anything with 言 involves talking."}, {"h": "妈妈", "p": "māma", "pos": "n.", "e": "mother", "m": "女(woman) radical + repeated \"ma\" — just like \"mama\" in English."}, {"h": "菜", "p": "cài", "pos": "n.", "e": "dish, cuisine", "m": "艹(grass/plant) on top — dishes grown from the earth."}, {"h": "很", "p": "hěn", "pos": "adv.", "e": "very, quite", "m": "Sounds like \"hun\" — \"Hun, I very much agree.\"", "alt": ["very"]}, {"h": "好吃", "p": "hǎochī", "pos": "adj.", "e": "delicious, tasty", "m": "好(good) + 吃(eat) — literally \"good to eat.\""}, {"h": "做", "p": "zuò", "pos": "v.", "e": "to make, to produce", "m": "人(person) radical — a person's action of making something."}, {"h": "写", "p": "xiě", "pos": "v.", "e": "to write", "m": "A roof-like shape over a hook — a pen scratching under a lamp late at night."}, {"h": "汉字", "p": "Hànzì", "pos": "n.", "e": "Chinese character", "m": "汉(Han) + 字(character) — the writing system of the Han people."}, {"h": "字", "p": "zì", "pos": "n.", "e": "character, word", "m": "A child (子) under a roof (宀) — characters are \"born\" under the roof of language."}, {"h": "怎么", "p": "zěnme", "pos": "pron.", "e": "how (manner)", "m": "Sounds like \"zen-muh\" — calmly asking, in a zen tone, \"how does this work?\""}, {"h": "读", "p": "dú", "pos": "v.", "e": "to read", "m": "言(speech) radical — reading aloud involves speech."}], "listening": [{"sentence": "我会做中国菜，中国菜很好吃。", "sentenceP": "Wǒ huì zuò Zhōngguó cài, Zhōngguó cài hěn hǎochī.", "question": "他会做什么菜？", "questionP": "Tā huì zuò shénme cài?", "options": ["中国菜", "美国菜", "法国菜"], "optionsP": ["Zhōngguó cài", "Měiguó cài", "Fǎguó cài"], "correct": 0}, {"sentence": "我的汉语名字是李朋，我会写我的汉语名字。", "sentenceP": "Wǒ de Hànyǔ míngzi shì Lǐ Péng, wǒ huì xiě wǒ de Hànyǔ míngzi.", "question": "他的汉语名字是什么？", "questionP": "Tā de Hànyǔ míngzi shì shénme?", "options": ["张朋", "王朋", "李朋"], "optionsP": ["Zhāng Péng", "Wáng Péng", "Lǐ Péng"], "correct": 2}, {"sentence": "我的好朋友是中国人，他会说汉语。", "sentenceP": "Wǒ de hǎo péngyou shì Zhōngguó rén, tā huì shuō Hànyǔ.", "question": "他的好朋友会说什么？", "questionP": "Tā de hǎo péngyou huì shuō shénme?", "options": ["英语", "汉语", "法语"], "optionsP": ["Yīngyǔ", "Hànyǔ", "Fǎyǔ"], "correct": 1}, {"sentence": "我妈妈不会写汉字，我会写汉字。", "sentenceP": "Wǒ māma bú huì xiě Hànzì, wǒ huì xiě Hànzì.", "question": "谁会写汉字？", "questionP": "Shéi huì xiě Hànzì?", "options": ["我", "我妈妈", "我朋友"], "optionsP": ["wǒ", "wǒ māma", "wǒ péngyou"], "correct": 0}]}};
+const LESSON_ORDER = ["1", "2", "3", "4", "5", "6"];
+const HAS_NUMBERS = true;
+
+let currentLesson = LESSON_ORDER[0];
+let mode = "flip";
+let autoPlayEnabled = true;
+let idx = 0;
+let flipped = false;
+let typed = false;
+let typedAnswer = "";
+let lastCorrect = null;
+let selectedOpt = null;
+let progress = {};
+
+let zhVoice = null;
+function pickVoice() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  zhVoice = voices.find(v => v.lang === 'zh-CN') || voices.find(v => v.lang && v.lang.startsWith('zh')) || null;
+}
+if (window.speechSynthesis) { pickVoice(); window.speechSynthesis.onvoiceschanged = pickVoice; }
+function speak(hanzi, btnId, rate) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(hanzi);
+  utter.lang = 'zh-CN';
+  utter.rate = rate || 0.85;
+  if (zhVoice) utter.voice = zhVoice;
+  const btn = btnId ? document.getElementById(btnId) : null;
+  if (btn) {
+    btn.classList.add('speaking');
+    utter.onend = () => btn.classList.remove('speaking');
+    utter.onerror = () => btn.classList.remove('speaking');
+  }
+  window.speechSynthesis.speak(utter);
+}
+
+function normalize(s) { return s.toLowerCase().trim().replace(/[.!?]/g, ''); }
+function checkAnswer(input, w) {
+  const userN = normalize(input);
+  if (!userN) return false;
+  const candidates = [w.e].concat(w.alt || []);
+  return candidates.some(c => {
+    const cN = normalize(c);
+    return userN === cN || (cN.includes(userN) && userN.length >= 3) || (userN.includes(cN) && cN.length >= 3);
+  });
+}
+
+async function loadProgress(lesson, m) {
+  try {
+    const r = await window.storage.get('hsk-progress:' + lesson + ':' + m, false);
+    progress = r ? JSON.parse(r.value) : {};
+  } catch (e) { progress = {}; }
+}
+async function saveProgress(lesson, m) {
+  try { await window.storage.set('hsk-progress:' + lesson + ':' + m, JSON.stringify(progress), false); } catch (e) {}
+}
+async function loadAutoplay() {
+  try {
+    const r = await window.storage.get('hsk-autoplay', false);
+    autoPlayEnabled = r ? JSON.parse(r.value) : true;
+  } catch (e) { autoPlayEnabled = true; }
+}
+async function saveAutoplay() {
+  try { await window.storage.set('hsk-autoplay', JSON.stringify(autoPlayEnabled), false); } catch (e) {}
+}
+function buildAutoplayToggle() {
+  const el = document.getElementById('autoplaySwitch');
+  el.className = 'switch' + (autoPlayEnabled ? ' on' : '');
+  el.innerHTML = '<div class="knob"></div>';
+  el.onclick = async () => { autoPlayEnabled = !autoPlayEnabled; await saveAutoplay(); buildAutoplayToggle(); };
+}
+
+function buildTabs() {
+  const el = document.getElementById('tabs');
+  el.innerHTML = '';
+  LESSON_ORDER.forEach(key => {
+    const b = document.createElement('div');
+    b.className = 'tab' + (key === currentLesson ? ' active' : '');
+    b.textContent = 'L' + key;
+    b.onclick = () => switchLesson(key);
+    el.appendChild(b);
+  });
+}
+
+function buildModeToggle() {
+  const el = document.getElementById('modeToggle');
+  el.innerHTML = `
+    <div class="mode-btn ${mode === 'flip' ? 'active' : ''}" id="flipModeBtn">Flip &amp; recall</div>
+    <div class="mode-btn ${mode === 'type' ? 'active' : ''}" id="typeModeBtn">Type the answer</div>
+    <div class="mode-btn ${mode === 'listen' ? 'active' : ''}" id="listenModeBtn">Listening (A/B/C)</div>
+    <div class="mode-btn ${mode === 'numbers' ? 'active' : ''}" id="numbersModeBtn">Numbers 1-99</div>
+  `;
+  document.getElementById('flipModeBtn').onclick = () => switchMode('flip');
+  document.getElementById('typeModeBtn').onclick = () => switchMode('type');
+  document.getElementById('listenModeBtn').onclick = () => switchMode('listen');
+  document.getElementById('numbersModeBtn').onclick = () => switchMode('numbers');
+}
+
+async function switchMode(m) {
+  mode = m; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
+  buildModeToggle();
+  if (mode !== 'numbers') await loadProgress(currentLesson, mode);
+  render();
+}
+async function switchLesson(key) {
+  currentLesson = key; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
+  await loadProgress(currentLesson, mode);
+  buildTabs();
+  render();
+}
+
+function currentWords() { return LESSONS[currentLesson].words; }
+function currentListening() { return LESSONS[currentLesson].listening || null; }
+
+function render() {
+  document.getElementById('lessonLabel').textContent = LESSONS[currentLesson].title;
+
+  if (mode === 'flip') {
+    const words = currentWords();
+    if (idx >= words.length) idx = words.length - 1;
+    setProgressBar(idx, words.length);
+    renderFlipMode(words[idx], words.length);
+    renderStats();
+  } else if (mode === 'type') {
+    const words = currentWords();
+    if (idx >= words.length) idx = words.length - 1;
+    setProgressBar(idx, words.length);
+    renderTypeMode(words[idx], words.length);
+    renderStats();
+  } else if (mode === 'listen') {
+    const items = currentListening();
+    if (!items) {
+      document.getElementById('progressFill').style.width = '0%';
+      document.getElementById('posLabel').textContent = '';
+      document.getElementById('cardArea').innerHTML = '<div class="soon-box">Listening drills for this lesson are not built yet.<br>Try Flip &amp; recall or Type the answer instead.</div>';
+      document.getElementById('statsRow').innerHTML = '';
+      return;
+    }
+    if (idx >= items.length) idx = items.length - 1;
+    setProgressBar(idx, items.length);
+    renderListenMode(items[idx], items.length);
+    renderStats();
+  } else if (mode === 'numbers') { renderNumbersMode(); }
+}
+
+function setProgressBar(i, total) {
+  document.getElementById('posLabel').textContent = (i + 1) + ' / ' + total;
+  document.getElementById('progressFill').style.width = (((i + 1) / total) * 100) + '%';
+}
+
+function renderFlipMode(w, total) {
+  const cardArea = document.getElementById('cardArea');
+  if (!flipped) {
+    cardArea.innerHTML = `
+      <div class="card" id="flipCard">
+        <div class="hanzi">${w.h}</div>
+        <div class="pinyin">${w.p}</div>
+        <div class="pos-tag">${w.pos || ''}</div>
+        <button class="speak-btn" id="speakBtnFront" aria-label="Play pronunciation">&#128266;</button>
+        <div class="tap-hint">tap card to reveal meaning</div>
+      </div>
+      <div class="controls">
+        <button class="nav" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
+        <button class="nav" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
+      </div>
+    `;
+    document.getElementById('flipCard').onclick = () => { flipped = true; render(); };
+    document.getElementById('speakBtnFront').onclick = (e) => { e.stopPropagation(); speak(w.h, 'speakBtnFront'); };
+    if (autoPlayEnabled) speak(w.h, 'speakBtnFront');
+    const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn');
+    if (prevBtn) prevBtn.onclick = (e) => { e.stopPropagation(); if (idx > 0) { idx--; flipped = false; render(); } };
+    if (nextBtn) nextBtn.onclick = (e) => { e.stopPropagation(); if (idx < total - 1) { idx++; flipped = false; render(); } };
+  } else {
+    const exampleHtml = w.ex ? `<div class="example"><div class="ex-h">${w.ex}</div><div class="ex-p">${w.exp}</div><div>${w.exe}</div></div>` : '';
+    cardArea.innerHTML = `
+      <div class="card" id="flipCard">
+        <div class="hanzi" style="font-size:34px;">${w.h} <span class="pinyin" style="font-size:16px;">${w.p}</span></div>
+        <button class="speak-btn" id="speakBtnBack" aria-label="Play pronunciation">&#128266;</button>
+        <div class="back-english">${w.e}</div>
+        <div class="mnemonic">${w.m}</div>
+        ${exampleHtml}
+      </div>
+      <div class="controls">
+        <button class="nav learning" id="learnBtn">still learning</button>
+        <button class="nav know" id="knowBtn">I know this</button>
+      </div>
+    `;
+    document.getElementById('flipCard').onclick = () => { flipped = false; render(); };
+    document.getElementById('speakBtnBack').onclick = (e) => { e.stopPropagation(); speak(w.h, 'speakBtnBack'); };
+    document.getElementById('knowBtn').onclick = async (e) => { e.stopPropagation(); progress[w.h] = 'known'; await saveProgress(currentLesson, mode); advanceFlip(); };
+    document.getElementById('learnBtn').onclick = async (e) => { e.stopPropagation(); progress[w.h] = 'learning'; await saveProgress(currentLesson, mode); advanceFlip(); };
+  }
+}
+function advanceFlip() {
+  const total = currentWords().length;
+  flipped = false;
+  if (idx < total - 1) idx++;
+  render();
+}
+
+function renderTypeMode(w, total) {
+  const cardArea = document.getElementById('cardArea');
+  if (!typed) {
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default;">
+        <div class="hanzi">${w.h}</div>
+        <div class="pinyin">${w.p}</div>
+        <button class="speak-btn" id="speakBtnFront" aria-label="Play pronunciation">&#128266;</button>
+        <input type="text" class="type-input" id="typeInput" placeholder="type the English meaning" autocomplete="off">
+        <div class="error-text" id="errorText"></div>
+        <button class="submit-btn" id="submitBtn">Check</button>
+      </div>
+      <div class="controls">
+        <button class="nav" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
+        <button class="nav" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
+      </div>
+    `;
+    document.getElementById('speakBtnFront').onclick = (e) => { e.stopPropagation(); speak(w.h, 'speakBtnFront'); };
+    if (autoPlayEnabled) speak(w.h, 'speakBtnFront');
+    const input = document.getElementById('typeInput');
+    const doSubmit = async () => {
+      const val = input.value;
+      if (!val.trim()) { document.getElementById('errorText').textContent = 'Type an answer first.'; input.classList.add('wrong-input'); return; }
+      lastCorrect = checkAnswer(val, w);
+      progress[w.h] = lastCorrect ? 'known' : 'learning';
+      await saveProgress(currentLesson, mode);
+      typedAnswer = val; typed = true; render();
+    };
+    document.getElementById('submitBtn').onclick = doSubmit;
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSubmit(); });
+    input.addEventListener('input', () => { input.classList.remove('wrong-input'); document.getElementById('errorText').textContent = ''; });
+    input.focus();
+    const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn');
+    if (prevBtn) prevBtn.onclick = () => { if (idx > 0) { idx--; typed = false; render(); } };
+    if (nextBtn) nextBtn.onclick = () => { if (idx < total - 1) { idx++; typed = false; render(); } };
+  } else {
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default;">
+        <div class="feedback-badge ${lastCorrect ? 'correct' : 'wrong'}">${lastCorrect ? 'Correct!' : 'Not quite'}</div>
+        <div class="hanzi" style="font-size:34px;">${w.h} <span class="pinyin" style="font-size:16px;">${w.p}</span></div>
+        <button class="speak-btn" id="speakBtnBack" aria-label="Play pronunciation">&#128266;</button>
+        <div class="your-answer">You typed: "${typedAnswer}"</div>
+        <div class="back-english">${w.e}</div>
+        <div class="mnemonic">${w.m}</div>
+      </div>
+      <div class="controls">
+        <button class="nav" id="nextTypeBtn">${idx < total - 1 ? 'next word \u2192' : 'lesson complete \u2192'}</button>
+      </div>
+    `;
+    document.getElementById('speakBtnBack').onclick = (e) => { e.stopPropagation(); speak(w.h, 'speakBtnBack'); };
+    document.getElementById('nextTypeBtn').onclick = () => { typed = false; if (idx < total - 1) idx++; render(); };
+  }
+}
+
+function renderListenMode(item, total) {
+  const cardArea = document.getElementById('cardArea');
+  const key = currentLesson + '-' + idx;
+  const letters = ['A', 'B', 'C'];
+  if (selectedOpt === null) {
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default; min-height:auto; padding:36px 24px;">
+        <button class="listen-play" id="playBtn" aria-label="Play sentence">&#9658;</button>
+        <div class="listen-hint">tap to hear the full sentence</div>
+        <div class="question-text">${item.questionP}</div>
+        <div class="question-hanzi">${item.question}</div>
+        <div id="optionsWrap" style="width:100%; display:flex; flex-direction:column; align-items:center;"></div>
+      </div>
+      <div class="controls">
+        <button class="nav" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
+        <button class="nav" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
+      </div>
+    `;
+    const optsWrap = document.getElementById('optionsWrap');
+    item.options.forEach((opt, i) => {
+      const b = document.createElement('button');
+      b.className = 'option-btn';
+      b.innerHTML = `<span class="opt-letter">${letters[i]}</span><span class="opt-text"><span class="opt-pinyin">${item.optionsP[i]}</span><span class="opt-hanzi">${opt}</span></span>`;
+      b.onclick = async () => {
+        selectedOpt = i; lastCorrect = (i === item.correct);
+        progress[key] = lastCorrect ? 'known' : 'learning';
+        await saveProgress(currentLesson, mode);
+        render();
+      };
+      optsWrap.appendChild(b);
+    });
+    document.getElementById('playBtn').onclick = () => speak(item.sentence, 'playBtn', 0.75);
+    if (autoPlayEnabled) speak(item.sentence, 'playBtn', 0.75);
+    const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn');
+    if (prevBtn) prevBtn.onclick = () => { if (idx > 0) { idx--; selectedOpt = null; render(); } };
+    if (nextBtn) nextBtn.onclick = () => { if (idx < total - 1) { idx++; selectedOpt = null; render(); } };
+  } else {
+    let optsHtml = '';
+    item.options.forEach((opt, i) => {
+      let cls = 'option-btn';
+      if (i === item.correct) cls += ' correct-opt'; else if (i === selectedOpt) cls += ' wrong-opt';
+      optsHtml += `<div class="${cls}"><span class="opt-letter">${letters[i]}</span><span class="opt-text"><span class="opt-pinyin">${item.optionsP[i]}</span><span class="opt-hanzi">${opt}</span></span></div>`;
+    });
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default; min-height:auto; padding:36px 24px;">
+        <div class="feedback-badge ${lastCorrect ? 'correct' : 'wrong'}">${lastCorrect ? 'Correct!' : 'Not quite'}</div>
+        <button class="speak-btn" id="replayBtn" aria-label="Replay sentence" style="margin-bottom:14px;">&#128266;</button>
+        <div class="question-text">${item.questionP}</div>
+        <div class="question-hanzi">${item.question}</div>
+        <div style="width:100%; display:flex; flex-direction:column; align-items:center;">${optsHtml}</div>
+        <div class="example" style="margin-top:14px;"><div class="ex-p">${item.sentenceP}</div><div class="ex-h">${item.sentence}</div></div>
+      </div>
+      <div class="controls">
+        <button class="nav" id="nextListenBtn">${idx < total - 1 ? 'next question \u2192' : 'lesson complete \u2192'}</button>
+      </div>
+    `;
+    document.getElementById('replayBtn').onclick = () => speak(item.sentence, 'replayBtn', 0.75);
+    document.getElementById('nextListenBtn').onclick = () => { selectedOpt = null; if (idx < total - 1) idx++; render(); };
+  }
+}
+
+const digitsHan = ['','\u4e00','\u4e8c','\u4e09','\u56db','\u4e94','\u516d','\u4e03','\u516b','\u4e5d'];
+function numberToHanzi(n) {
+  if (n < 10) return digitsHan[n];
+  if (n === 10) return '\u5341';
+  if (n < 20) return '\u5341' + digitsHan[n - 10];
+  const tens = Math.floor(n / 10), ones = n % 10;
+  if (ones === 0) return digitsHan[tens] + '\u5341';
+  return digitsHan[tens] + '\u5341' + digitsHan[ones];
+}
+function numberToPinyin(n) {
+  const pin = { 1:'y\u012b',2:'\u00e8r',3:'s\u0101n',4:'s\u00ec',5:'w\u01d4',6:'li\u00f9',7:'q\u012b',8:'b\u0101',9:'ji\u01d4' };
+  if (n < 10) return pin[n];
+  if (n === 10) return 'sh\u00ed';
+  if (n < 20) { const ones = n - 10; return 'sh\u00ed' + (ones === 2 ? "'" : '') + pin[ones]; }
+  const tens = Math.floor(n / 10), ones = n % 10;
+  let s = pin[tens] + 'sh\u00ed';
+  if (ones === 0) return s;
+  return s + (ones === 2 ? "'" : '') + pin[ones];
+}
+let currentNumber = null, numAnswered = false, numCorrect = null, numScore = { correct: 0, total: 0 };
+function newNumber() { currentNumber = 1 + Math.floor(Math.random() * 99); numAnswered = false; numCorrect = null; }
+function renderNumbersMode() {
+  if (currentNumber === null) newNumber();
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('posLabel').textContent = numScore.total + ' answered';
+  document.getElementById('lessonLabel').textContent = 'Numbers below 100';
+  const cardArea = document.getElementById('cardArea');
+  if (!numAnswered) {
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default;">
+        <div class="num-big">${numberToPinyin(currentNumber)}</div>
+        <div class="num-hint">listen and type the number</div>
+        <button class="speak-btn" id="speakNumBtn" aria-label="Play number">&#128266;</button>
+        <input type="text" class="type-input" id="numInput" placeholder="e.g. 23" autocomplete="off" inputmode="numeric">
+        <div class="error-text" id="numError"></div>
+        <button class="submit-btn" id="numSubmitBtn">Check</button>
+      </div>
+      <div class="controls"><button class="nav" id="numSkipBtn">skip &rarr;</button></div>
+    `;
+    document.getElementById('speakNumBtn').onclick = () => speak(numberToHanzi(currentNumber), 'speakNumBtn', 0.8);
+    if (autoPlayEnabled) speak(numberToHanzi(currentNumber), 'speakNumBtn', 0.8);
+    const input = document.getElementById('numInput');
+    const doSubmit = () => {
+      const val = input.value.trim();
+      if (!val) { document.getElementById('numError').textContent = 'Type a number first.'; input.classList.add('wrong-input'); return; }
+      numCorrect = (parseInt(val, 10) === currentNumber);
+      numScore.total++; if (numCorrect) numScore.correct++;
+      numAnswered = true; renderNumbersMode();
+    };
+    document.getElementById('numSubmitBtn').onclick = doSubmit;
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSubmit(); });
+    input.addEventListener('input', () => { input.classList.remove('wrong-input'); document.getElementById('numError').textContent = ''; });
+    input.focus();
+    document.getElementById('numSkipBtn').onclick = () => { newNumber(); renderNumbersMode(); };
+  } else {
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default;">
+        <div class="feedback-badge ${numCorrect ? 'correct' : 'wrong'}">${numCorrect ? 'Correct!' : 'Not quite'}</div>
+        <div class="num-big">${numberToPinyin(currentNumber)}</div>
+        <button class="speak-btn" id="speakNumBtn2" aria-label="Play number">&#128266;</button>
+        <div class="back-english">${currentNumber} &nbsp;&mdash;&nbsp; ${numberToHanzi(currentNumber)}</div>
+      </div>
+      <div class="controls"><button class="nav" id="numNextBtn">next number &rarr;</button></div>
+    `;
+    document.getElementById('speakNumBtn2').onclick = () => speak(numberToHanzi(currentNumber), 'speakNumBtn2', 0.8);
+    document.getElementById('numNextBtn').onclick = () => { newNumber(); renderNumbersMode(); };
+  }
+  document.getElementById('statsRow').innerHTML = `<span><b>${numScore.correct}</b> correct</span><span><b>${numScore.total - numScore.correct}</b> missed</span><span><b>${numScore.total}</b> total</span>`;
+}
+
+function renderStats() {
+  let known = 0, learning = 0, total;
+  if (mode === 'listen') {
+    const items = currentListening();
+    if (!items) return;
+    total = items.length;
+    items.forEach((it, i) => {
+      const key = currentLesson + '-' + i;
+      if (progress[key] === 'known') known++; else if (progress[key] === 'learning') learning++;
+    });
+  } else {
+    const words = currentWords();
+    total = words.length;
+    words.forEach(w => { if (progress[w.h] === 'known') known++; else if (progress[w.h] === 'learning') learning++; });
+  }
+  const label = mode === 'listen' ? ['correct', 'missed', 'not attempted'] : ['known', 'still learning', 'not reviewed'];
+  document.getElementById('statsRow').innerHTML = `<span><b>${known}</b> ${label[0]}</span><span><b>${learning}</b> ${label[1]}</span><span><b>${total - known - learning}</b> ${label[2]}</span>`;
+}
+
+document.getElementById('resetBtn').onclick = async () => {
+  if (mode === 'numbers') { numScore = { correct: 0, total: 0 }; newNumber(); render(); return; }
+  progress = {};
+  await saveProgress(currentLesson, mode);
+  render();
+};
+
+(async () => {
+  await loadAutoplay();
+  buildAutoplayToggle();
+  buildTabs();
+  buildModeToggle();
+  await loadProgress(currentLesson, mode);
+  render();
+})();
+</script>
+</body>
+</html>

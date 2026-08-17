@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pinyin Pronunciation Reference — Night Shift Study App</title>
+<style>
+  :root {
+    --bg: #14120f; --panel: #1d1a15; --card: #23201a; --amber: #e8a545; --amber-dim: #a97a35;
+    --text: #ede6d8; --text-dim: #9c9384; --green: #7fb069; --red: #c96a5a; --border: #37322a;
+  }
+  * { box-sizing: border-box; }
+  body { background: radial-gradient(ellipse at 50% -10%, #241f16 0%, var(--bg) 55%); color: var(--text); font-family: -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 32px 16px 60px; min-height: 100vh; }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  .lamp { width: 90px; height: 90px; margin: 0 auto 6px; border-radius: 50%; background: radial-gradient(circle, rgba(232,165,69,0.35) 0%, rgba(232,165,69,0.06) 60%, transparent 75%); }
+  h1 { text-align: center; font-size: 20px; font-weight: 600; letter-spacing: 0.3px; margin: -70px 0 2px; color: var(--amber); }
+  .sub { text-align: center; color: var(--text-dim); font-size: 13px; margin-bottom: 16px; }
+  .autoplay-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 22px; font-size: 15px; color: var(--text-dim); }
+  .switch { position: relative; width: 56px; height: 32px; background: var(--panel); border: 1px solid var(--border); border-radius: 17px; cursor: pointer; flex-shrink: 0; }
+  .switch .knob { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; background: var(--text-dim); border-radius: 50%; transition: left 0.15s, background 0.15s; }
+  .switch.on { border-color: var(--amber); }
+  .switch.on .knob { left: 27px; background: var(--amber); }
+  .tabs { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
+  .tab { background: var(--panel); border: 1px solid var(--border); color: var(--text-dim); padding: 18px 32px; border-radius: 28px; font-size: 17px; font-weight: 600; cursor: pointer; min-height: 58px; display: flex; align-items: center; }
+  .tab.active { color: var(--bg); background: var(--amber); border-color: var(--amber); }
+  .section-title { font-size: 16px; font-weight: 600; color: var(--amber); margin: 26px 0 4px; }
+  .section-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; line-height: 1.5; }
+  .tone-shape { font-size: 22px; color: var(--amber-dim); letter-spacing: 2px; margin-right: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+  .tile {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 22px 14px; text-align: center; cursor: pointer; user-select: none;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    min-height: 108px; justify-content: center;
+  }
+  .tile:active { transform: scale(0.96); }
+  .tile.speaking { border-color: var(--amber); background: rgba(232,165,69,0.08); }
+  .tile .pinyin { font-size: 19px; color: var(--text); font-weight: 600; }
+  .tile .hanzi { font-size: 26px; color: var(--amber); line-height: 1.1; }
+  .tile .meaning { font-size: 11px; color: var(--text-dim); }
+  .tile .tag { font-size: 9px; color: var(--text-dim); border: 1px solid var(--border); border-radius: 8px; padding: 1px 6px; margin-top: 2px; }
+  .letter-header { font-size: 12px; color: var(--text-dim); margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .rare-note { font-size: 10px; color: var(--red); margin-top: 2px; }
+  .top-row { display:flex; justify-content:center; gap:10px; margin-bottom: 16px; }
+  .speed-btn { background: var(--panel); border: 1px solid var(--border); color: var(--text-dim); padding: 16px 20px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; min-height: 56px; display: flex; align-items: center; flex: 1; max-width: 150px; justify-content: center; }
+  .speed-btn.active { color: var(--bg); background: var(--amber-dim); border-color: var(--amber-dim); }
+  .voice-row { display: flex; justify-content: center; margin-bottom: 18px; }
+  .voice-select {
+    background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    padding: 16px 18px; border-radius: 14px; font-size: 17px; max-width: 340px; min-height: 58px; width: 100%;
+  }
+  .voice-note { text-align: center; font-size: 13px; color: var(--text-dim); margin-bottom: 18px; line-height: 1.5; padding: 0 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lamp"></div>
+  <h1>Pinyin pronunciation reference</h1>
+  <div class="sub">Tap any tile to hear it — tones, initials &amp; finals, cross-referenced to lessons you've studied</div>
+
+  <div class="autoplay-row">
+    <span>Auto-play on tab switch</span>
+    <div class="switch" id="autoplaySwitch"><div class="knob"></div></div>
+  </div>
+
+  <div class="top-row" id="speedRow"></div>
+  <div class="voice-row" id="voiceRow"></div>
+  <div class="voice-note" id="voiceNote"></div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div id="content"></div>
+</div>
+
+<script>
+// ===== DATA =====
+// Each entry: pinyin (with tone mark), hanzi, meaning, optional "note" (rare final flag), optional "lesson" tag
+const TONES = {
+  "1st tone — high & flat": {
+    shape: "ˉ", desc: "Hold it high and level, like humming one steady note — no rise, no dip.",
+    words: [
+      {h:"妈", p:"mā", e:"mom", tag:"L6"},
+      {h:"三", p:"sān", e:"three", tag:"numbers"},
+      {h:"八", p:"bā", e:"eight", tag:"numbers"},
+      {h:"天", p:"tiān", e:"day/sky", tag:"L7"},
+      {h:"高", p:"gāo", e:"tall/high", tag:"L15"},
+      {h:"说", p:"shuō", e:"to speak", tag:"L6"}
+    ]
+  },
+  "2nd tone — rising": {
+    shape: "ˊ", desc: "Starts mid, shoots up — like asking \"what?!\" in disbelief.",
+    words: [
+      {h:"学", p:"xué", e:"study", tag:"L7"},
+      {h:"朋", p:"péng", e:"friend (from 朋友)", tag:"L4"},
+      {h:"谁", p:"shéi", e:"who", tag:"L4"},
+      {h:"十", p:"shí", e:"ten", tag:"numbers"},
+      {h:"来", p:"lái", e:"to come", tag:"L12"},
+      {h:"读", p:"dú", e:"to read", tag:"L6"}
+    ]
+  },
+  "3rd tone — dip then rise": {
+    shape: "ˇ", desc: "Drop low, then curl back up — like a slow, doubtful \"hmmm...\"",
+    words: [
+      {h:"你", p:"nǐ", e:"you", tag:"L1"},
+      {h:"好", p:"hǎo", e:"good", tag:"L1"},
+      {h:"九", p:"jiǔ", e:"nine", tag:"numbers"},
+      {h:"我", p:"wǒ", e:"I / me", tag:"L3"},
+      {h:"北", p:"běi", e:"north (from 北京)", tag:"L11"},
+      {h:"写", p:"xiě", e:"to write", tag:"L6"}
+    ]
+  },
+  "4th tone — sharp fall": {
+    shape: "ˋ", desc: "Start high, drop fast — like snapping out a firm \"NO.\"",
+    words: [
+      {h:"是", p:"shì", e:"to be", tag:"L3"},
+      {h:"大", p:"dà", e:"big / old", tag:"L5"},
+      {h:"号", p:"hào", e:"date", tag:"L7"},
+      {h:"去", p:"qù", e:"to go", tag:"L7"},
+      {h:"汉", p:"hàn", e:"Han (from 汉语)", tag:"L4"},
+      {h:"爱", p:"ài", e:"to love", tag:"L12"}
+    ]
+  },
+  "Neutral tone — light & quick": {
+    shape: "·", desc: "No real pitch at all — just a soft, unstressed beat tacked onto the syllable before it.",
+    words: [
+      {h:"吗", p:"ma", e:"question particle", tag:"L3"},
+      {h:"的", p:"de", e:"possessive particle", tag:"L4"},
+      {h:"了", p:"le", e:"change particle", tag:"L5"},
+      {h:"呢", p:"ne", e:"question particle", tag:"L4"},
+      {h:"么", p:"me", e:"(from 什么)", tag:"L3"},
+      {h:"们", p:"men", e:"plural suffix", tag:"L11"}
+    ]
+  }
+};
+
+const INITIALS = [
+  {h:"八", p:"bā", i:"b", e:"eight", tag:"numbers"},
+  {h:"朋", p:"péng", i:"p", e:"friend", tag:"L4"},
+  {h:"妈", p:"mā", i:"m", e:"mom", tag:"L6"},
+  {h:"飞", p:"fēi", i:"f", e:"to fly", tag:"L15"},
+  {h:"大", p:"dà", i:"d", e:"big", tag:"L5"},
+  {h:"天", p:"tiān", i:"t", e:"day/sky", tag:"L7"},
+  {h:"你", p:"nǐ", i:"n", e:"you", tag:"L1"},
+  {h:"老", p:"lǎo", i:"l", e:"old (from 老师)", tag:"L3"},
+  {h:"国", p:"guó", i:"g", e:"country", tag:"L4"},
+  {h:"看", p:"kàn", i:"k", e:"to look", tag:"L7"},
+  {h:"好", p:"hǎo", i:"h", e:"good", tag:"L1"},
+  {h:"叫", p:"jiào", i:"j", e:"to be called", tag:"L3"},
+  {h:"请", p:"qǐng", i:"q", e:"please", tag:"L7"},
+  {h:"谢", p:"xiè", i:"x", e:"thanks", tag:"L2"},
+  {h:"中", p:"zhōng", i:"zh", e:"middle (from 中国)", tag:"L3"},
+  {h:"吃", p:"chī", i:"ch", e:"to eat", tag:"L8"},
+  {h:"是", p:"shì", i:"sh", e:"to be", tag:"L3"},
+  {h:"人", p:"rén", i:"r", e:"person", tag:"L3"},
+  {h:"再", p:"zài", i:"z", e:"again (from 再见)", tag:"L2"},
+  {h:"菜", p:"cài", i:"c", e:"dish", tag:"L6"},
+  {h:"三", p:"sān", i:"s", e:"three", tag:"numbers"},
+  {h:"一", p:"yī", i:"y", e:"one", tag:"numbers"},
+  {h:"我", p:"wǒ", i:"w", e:"I / me", tag:"L3"}
+];
+
+const FINALS = {
+  "a — group": [
+    {h:"妈", p:"mā", e:"mom", tag:"L6"},
+    {h:"太", p:"tài", e:"too / extremely (ai)", tag:"L12"},
+    {h:"好", p:"hǎo", e:"good (ao)", tag:"L1"},
+    {h:"三", p:"sān", e:"three (an)", tag:"numbers"},
+    {h:"上", p:"shàng", e:"on / above (ang)", tag:"L10"}
+  ],
+  "e — group": [
+    {h:"车", p:"chē", e:"car (e)", tag:"L14"},
+    {h:"谁", p:"shéi", e:"who (ei)", tag:"L4"},
+    {h:"很", p:"hěn", e:"very (en)", tag:"L6"},
+    {h:"冷", p:"lěng", e:"cold (eng)", tag:"L12"}
+  ],
+  "o / ou / ong — group": [
+    {h:"做", p:"zuò", e:"to make — closest plain-o example (o)", tag:"L6"},
+    {h:"都", p:"dōu", e:"all / both (ou)", tag:"L14"},
+    {h:"中", p:"zhōng", e:"middle (ong)", tag:"L4"}
+  ],
+  "i — group": [
+    {h:"你", p:"nǐ", e:"you (i)", tag:"L1"},
+    {h:"家", p:"jiā", e:"family / home (ia)", tag:"L5"},
+    {h:"谢", p:"xiè", e:"thanks (ie)", tag:"L2"},
+    {h:"叫", p:"jiào", e:"to be called (iao)", tag:"L3"},
+    {h:"六", p:"liù", e:"six (iu)", tag:"numbers"},
+    {h:"天", p:"tiān", e:"day/sky (ian)", tag:"L7"},
+    {h:"您", p:"nín", e:"you, polite (in)", tag:"L1"},
+    {h:"想", p:"xiǎng", e:"would like to (iang)", tag:"L8"},
+    {h:"请", p:"qǐng", e:"please (ing)", tag:"L7"},
+    {h:"熊", p:"xióng", e:"bear — rare final, standalone reference (iong)", tag:"ref"}
+  ],
+  "u — group": [
+    {h:"五", p:"wǔ", e:"five (u)", tag:"numbers"},
+    {h:"花", p:"huā", e:"flower — standalone reference (ua)", tag:"ref"},
+    {h:"说", p:"shuō", e:"to speak (uo)", tag:"L6"},
+    {h:"块", p:"kuài", e:"currency unit (uai)", tag:"L8"},
+    {h:"会", p:"huì", e:"can / to be able to (ui)", tag:"L6"},
+    {h:"短", p:"duǎn", e:"short — standalone reference (uan)", tag:"ref"},
+    {h:"春", p:"chūn", e:"spring — standalone reference (un)", tag:"ref"},
+    {h:"床", p:"chuáng", e:"bed — standalone reference (uang)", tag:"ref"},
+    {h:"翁", p:"wēng", e:"old man — rare final, standalone (ueng)", tag:"ref"}
+  ],
+  "ü — group (written u after j/q/x/y)": [
+    {h:"去", p:"qù", e:"to go (ü)", tag:"L7"},
+    {h:"学", p:"xué", e:"to study (üe)", tag:"L7"},
+    {h:"元", p:"yuán", e:"currency unit — standalone reference (üan)", tag:"ref"},
+    {h:"云", p:"yún", e:"cloud — standalone reference (ün)", tag:"ref"}
+  ],
+  "er — standalone": [
+    {h:"儿", p:"ér", e:"child / son suffix (from 儿子)", tag:"L9"}
+  ]
+};
+
+// ===== SPEECH =====
+let zhVoices = [];
+let selectedVoiceIndex = 0;
+let rate = 0.75;
+let voicesReady = false;
+
+function pickVoice() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  zhVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith('zh'));
+  if (!voicesReady && zhVoices.length) {
+    voicesReady = true;
+    buildVoiceRow();
+  }
+}
+if (window.speechSynthesis) {
+  pickVoice();
+  window.speechSynthesis.onvoiceschanged = pickVoice;
+  // Some Android browsers never fire onvoiceschanged reliably — poll briefly as a fallback.
+  let pollCount = 0;
+  const pollVoices = setInterval(() => {
+    pollCount++;
+    pickVoice();
+    if (voicesReady || pollCount > 10) clearInterval(pollVoices);
+  }, 300);
+}
+
+function guessGender(voice) {
+  const n = voice.name.toLowerCase();
+  if (n.includes('female') || n.includes('yaoyao') || n.includes('huihui') || n.includes('female')) return ' (likely female)';
+  if (n.includes('male') || n.includes('kangkang')) return ' (likely male)';
+  return '';
+}
+
+function buildVoiceRow() {
+  const row = document.getElementById('voiceRow');
+  const note = document.getElementById('voiceNote');
+  if (zhVoices.length <= 1) {
+    row.innerHTML = '';
+    note.textContent = zhVoices.length === 1
+      ? 'Your device only exposes one Mandarin voice (' + zhVoices[0].name + ') \u2014 no alternate voice to switch to here.'
+      : 'No Mandarin voice detected yet \u2014 audio may not play until one loads.';
+    return;
+  }
+  note.textContent = 'Your device has ' + zhVoices.length + ' Mandarin voices available \u2014 pick one:';
+  const select = document.createElement('select');
+  select.className = 'voice-select';
+  select.innerHTML = zhVoices.map((v, i) => `<option value="${i}">${v.name}${guessGender(v)}</option>`).join('');
+  select.value = selectedVoiceIndex;
+  select.onchange = () => {
+    selectedVoiceIndex = parseInt(select.value, 10);
+    speak('你好', null);
+  };
+  row.innerHTML = '';
+  row.appendChild(select);
+}
+
+function speak(hanzi, tileEl) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(hanzi);
+  utter.lang = 'zh-CN';
+  utter.rate = rate;
+  if (zhVoices.length) utter.voice = zhVoices[selectedVoiceIndex] || zhVoices[0];
+  if (tileEl) {
+    tileEl.classList.add('speaking');
+    utter.onend = () => tileEl.classList.remove('speaking');
+    utter.onerror = () => tileEl.classList.remove('speaking');
+  }
+  window.speechSynthesis.speak(utter);
+}
+
+// ===== STATE =====
+let currentTab = "tones";
+let autoPlayEnabled = false;
+
+async function loadAutoplay() {
+  try {
+    const r = await window.storage.get('pinyin-ref-autoplay', false);
+    autoPlayEnabled = r ? JSON.parse(r.value) : false;
+  } catch (e) { autoPlayEnabled = false; }
+}
+async function saveAutoplay() {
+  try { await window.storage.set('pinyin-ref-autoplay', JSON.stringify(autoPlayEnabled), false); } catch (e) {}
+}
+function buildAutoplayToggle() {
+  const el = document.getElementById('autoplaySwitch');
+  el.className = 'switch' + (autoPlayEnabled ? ' on' : '');
+  el.innerHTML = '<div class="knob"></div>';
+  el.onclick = async () => { autoPlayEnabled = !autoPlayEnabled; await saveAutoplay(); buildAutoplayToggle(); };
+}
+
+function buildSpeedRow() {
+  const el = document.getElementById('speedRow');
+  const speeds = [{label:'Slow', val:0.6}, {label:'Normal', val:0.75}, {label:'Natural', val:0.95}];
+  el.innerHTML = speeds.map(s => `<div class="speed-btn ${rate === s.val ? 'active' : ''}" data-val="${s.val}">${s.label}</div>`).join('');
+  el.querySelectorAll('.speed-btn').forEach(btn => {
+    btn.onclick = () => { rate = parseFloat(btn.dataset.val); buildSpeedRow(); };
+  });
+}
+
+function buildTabs() {
+  const el = document.getElementById('tabs');
+  const tabs = [["tones","Tones"], ["initials","Initials"], ["finals","Finals"]];
+  el.innerHTML = tabs.map(([id, label]) => `<div class="tab ${currentTab === id ? 'active' : ''}" data-id="${id}">${label}</div>`).join('');
+  el.querySelectorAll('.tab').forEach(t => {
+    t.onclick = () => { currentTab = t.dataset.id; buildTabs(); render(); };
+  });
+}
+
+function makeTile(word) {
+  const tile = document.createElement('div');
+  tile.className = 'tile';
+  tile.innerHTML = `
+    <div class="pinyin">${word.p}</div>
+    <div class="hanzi">${word.h}</div>
+    <div class="meaning">${word.e}</div>
+    ${word.tag ? `<div class="tag">${word.tag === 'ref' ? 'reference' : word.tag}</div>` : ''}
+  `;
+  tile.onclick = () => speak(word.h, tile);
+  return tile;
+}
+
+function render() {
+  const content = document.getElementById('content');
+  content.innerHTML = '';
+
+  if (currentTab === 'tones') {
+    Object.keys(TONES).forEach(toneName => {
+      const t = TONES[toneName];
+      const titleEl = document.createElement('div');
+      titleEl.className = 'section-title';
+      titleEl.innerHTML = `<span class="tone-shape">${t.shape}</span>${toneName}`;
+      content.appendChild(titleEl);
+
+      const subEl = document.createElement('div');
+      subEl.className = 'section-sub';
+      subEl.textContent = t.desc;
+      content.appendChild(subEl);
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      t.words.forEach(w => grid.appendChild(makeTile(w)));
+      content.appendChild(grid);
+
+      if (autoPlayEnabled) speak(t.words[0].h, null);
+    });
+  } else if (currentTab === 'initials') {
+    const titleEl = document.createElement('div');
+    titleEl.className = 'section-title';
+    titleEl.textContent = 'Initials — sounds at the start of a syllable';
+    content.appendChild(titleEl);
+    const subEl = document.createElement('div');
+    subEl.className = 'section-sub';
+    subEl.textContent = 'Each tile leads with a real word from a lesson you\u2019ve studied, so the sound has context.';
+    content.appendChild(subEl);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    INITIALS.forEach(w => {
+      const tile = makeTile(w);
+      const initTag = document.createElement('div');
+      initTag.style.cssText = 'font-size:10px;color:var(--amber-dim);margin-bottom:2px;';
+      initTag.textContent = w.i + '-';
+      tile.insertBefore(initTag, tile.firstChild);
+      grid.appendChild(tile);
+    });
+    content.appendChild(grid);
+    if (autoPlayEnabled) speak(INITIALS[0].h, null);
+  } else if (currentTab === 'finals') {
+    const titleEl = document.createElement('div');
+    titleEl.className = 'section-title';
+    titleEl.textContent = 'Finals — sounds at the end of a syllable';
+    content.appendChild(titleEl);
+    const subEl = document.createElement('div');
+    subEl.className = 'section-sub';
+    subEl.textContent = 'Grouped the same way your textbook groups them. Tiles marked "reference" aren\u2019t from your vocab yet — they\u2019re just the clearest example of that sound.';
+    content.appendChild(subEl);
+
+    Object.keys(FINALS).forEach(groupName => {
+      const h = document.createElement('div');
+      h.className = 'letter-header';
+      h.textContent = groupName;
+      content.appendChild(h);
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      FINALS[groupName].forEach(w => grid.appendChild(makeTile(w)));
+      content.appendChild(grid);
+    });
+    if (autoPlayEnabled) speak(FINALS["a — group"][0].h, null);
+  }
+}
+
+(async () => {
+  await loadAutoplay();
+  buildAutoplayToggle();
+  buildSpeedRow();
+  buildVoiceRow();
+  buildTabs();
+  render();
+})();
+</script>
+</body>
+</html>

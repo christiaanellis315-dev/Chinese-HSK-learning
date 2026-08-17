@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HSK1 Lessons 7-11 — Night Shift Study App</title>
+<style>
+:root {
+  --bg: #14120f; --panel: #1d1a15; --card: #23201a; --amber: #e8a545; --amber-dim: #a97a35;
+  --text: #ede6d8; --text-dim: #9c9384; --green: #7fb069; --red: #c96a5a; --border: #37322a;
+}
+* { box-sizing: border-box; }
+body { background: radial-gradient(ellipse at 50% -10%, #241f16 0%, var(--bg) 55%); color: var(--text); font-family: -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 32px 16px 60px; min-height: 100vh; }
+.wrap { max-width: 560px; margin: 0 auto; }
+.lamp { width: 90px; height: 90px; margin: 0 auto 6px; border-radius: 50%; background: radial-gradient(circle, rgba(232,165,69,0.35) 0%, rgba(232,165,69,0.06) 60%, transparent 75%); }
+h1 { text-align: center; font-size: 20px; font-weight: 600; letter-spacing: 0.3px; margin: -70px 0 2px; color: var(--amber); }
+.sub { text-align: center; color: var(--text-dim); font-size: 13px; margin-bottom: 16px; }
+.autoplay-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px; font-size: 12px; color: var(--text-dim); }
+.switch { position: relative; width: 38px; height: 22px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; flex-shrink: 0; }
+.switch .knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: var(--text-dim); border-radius: 50%; transition: left 0.15s, background 0.15s; }
+.switch.on { border-color: var(--amber); }
+.switch.on .knob { left: 18px; background: var(--amber); }
+.tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.tab { background: var(--panel); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 11px; border-radius: 16px; font-size: 12px; cursor: pointer; }
+.tab.active { color: var(--bg); background: var(--amber); border-color: var(--amber); }
+.mode-toggle { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+.mode-btn { background: var(--panel); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+.mode-btn.active { color: var(--bg); background: var(--amber); border-color: var(--amber); }
+.progress-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-dim); margin-bottom: 10px; padding: 0 4px; }
+.progress-bar { height: 3px; background: var(--border); border-radius: 3px; margin-bottom: 24px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--amber); transition: width 0.3s; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; min-height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px 24px; cursor: pointer; user-select: none; position: relative; }
+.hanzi { font-size: 64px; color: var(--text); margin-bottom: 8px; line-height: 1; }
+.pinyin { font-size: 18px; color: var(--amber); letter-spacing: 0.5px; }
+.pos-tag { font-size: 11px; color: var(--text-dim); border: 1px solid var(--border); border-radius: 10px; padding: 2px 8px; margin-top: 8px; display: inline-block; }
+.tap-hint { position: absolute; bottom: 14px; font-size: 11px; color: var(--text-dim); }
+.back-english { font-size: 22px; color: var(--text); margin-bottom: 10px; }
+.mnemonic { font-size: 14px; color: var(--text-dim); line-height: 1.55; max-width: 400px; margin-bottom: 12px; }
+.mnemonic b { color: var(--amber); font-weight: 600; }
+.example { font-size: 13px; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 12px; margin-top: 6px; max-width: 400px; line-height: 1.6; }
+.example .ex-h { color: var(--text); font-size: 16px; }
+.example .ex-p { color: var(--amber-dim); }
+.speak-btn { background: none; border: 1px solid var(--amber-dim); color: var(--amber); width: 40px; height: 40px; border-radius: 50%; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 10px auto 0; }
+.speak-btn:active { transform: scale(0.94); }
+.speak-btn.speaking { color: var(--bg); background: var(--amber); }
+.type-input { width: 100%; max-width: 300px; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 8px; font-size: 15px; text-align: center; margin-top: 16px; }
+.type-input:focus { outline: none; border-color: var(--amber); }
+.type-input.wrong-input { border-color: var(--red); }
+.submit-btn { background: var(--amber); color: var(--bg); border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px; }
+.error-text { color: var(--red); font-size: 12px; margin-top: 8px; }
+.feedback-badge { font-size: 15px; font-weight: 600; padding: 6px 16px; border-radius: 20px; margin-bottom: 12px; display: inline-block; }
+.feedback-badge.correct { background: rgba(127,176,105,0.15); color: var(--green); }
+.feedback-badge.wrong { background: rgba(201,106,90,0.15); color: var(--red); }
+.your-answer { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
+.listen-play { background: var(--amber); color: var(--bg); border: none; width: 64px; height: 64px; border-radius: 50%; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.listen-play:active { transform: scale(0.95); }
+.listen-hint { font-size: 12px; color: var(--text-dim); margin-bottom: 18px; }
+.question-text { font-size: 16px; color: var(--text); margin-bottom: 4px; }
+.question-hanzi { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; }
+.option-btn { width: 100%; max-width: 340px; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 12px 16px; border-radius: 10px; font-size: 16px; cursor: pointer; margin-bottom: 10px; text-align: left; display: flex; align-items: center; gap: 10px; }
+.option-btn .opt-letter { color: var(--amber); font-weight: 600; }
+.opt-text { display: flex; flex-direction: column; gap: 2px; }
+.opt-pinyin { color: var(--text); font-size: 15px; }
+.opt-hanzi { color: var(--text-dim); font-size: 13px; }
+.option-btn.correct-opt { border-color: var(--green); background: rgba(127,176,105,0.1); }
+.option-btn.wrong-opt { border-color: var(--red); background: rgba(201,106,90,0.1); }
+.controls { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+button.nav { flex: 1; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 10px; font-size: 14px; cursor: pointer; }
+button.know { border-color: var(--green); color: var(--green); }
+button.learning { border-color: var(--red); color: var(--red); }
+button.nav:active { transform: scale(0.97); }
+.stats { display: flex; justify-content: center; gap: 18px; margin-top: 22px; font-size: 12px; color: var(--text-dim); }
+.stats span b { color: var(--text); }
+.reset { display: block; margin: 30px auto 0; background: none; border: none; color: var(--text-dim); font-size: 12px; text-decoration: underline; cursor: pointer; }
+.num-big { font-size: 30px; color: var(--text); margin-bottom: 6px; }
+.num-hint { font-size: 12px; color: var(--text-dim); margin-bottom: 18px; }
+.soon-box { text-align: center; padding: 50px 20px; color: var(--text-dim); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lamp"></div>
+  <h1>Night shift study app</h1>
+  <div class="sub">HSK1 Standard Course — Lessons 7 through 11</div>
+  <div class="autoplay-row">
+    <span>Auto-play audio</span>
+    <div class="switch" id="autoplaySwitch"><div class="knob"></div></div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="mode-toggle" id="modeToggle"></div>
+  <div class="progress-row">
+    <span id="posLabel">1 / 1</span>
+    <span id="lessonLabel"></span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div id="cardArea"></div>
+  <div class="stats" id="statsRow"></div>
+  <button class="reset" id="resetBtn">Reset progress for this lesson &amp; mode</button>
+</div>
+<script>
+const LESSONS = {"7": {"title": "今天几号 (What's the date today)", "words": [{"h": "请", "p": "qǐng", "pos": "v.", "e": "please", "m": "言(speech) radical — a polite word spoken to soften a request."}, {"h": "问", "p": "wèn", "pos": "v.", "e": "to ask", "m": "门(door) + 口(mouth) — asking a question at someone's door."}, {"h": "今天", "p": "jīntiān", "pos": "n.", "e": "today", "m": "今(now) + 天(day) — the day that is now."}, {"h": "号", "p": "hào", "pos": "n.", "e": "date, number (day of month)", "m": "Used after a number to mean \"the ___th\" of the month."}, {"h": "月", "p": "yuè", "pos": "n.", "e": "month", "m": "The character is a crescent moon shape — months were tracked by the moon."}, {"h": "星期", "p": "xīngqī", "pos": "n.", "e": "week", "m": "星(star) + 期(period) — a period marked out like the stars in a cycle."}, {"h": "昨天", "p": "zuótiān", "pos": "n.", "e": "yesterday", "m": "昨(past) + 天(day) — the day just past."}, {"h": "明天", "p": "míngtiān", "pos": "n.", "e": "tomorrow", "m": "明(bright/next) + 天(day) — the next, bright day ahead."}, {"h": "去", "p": "qù", "pos": "v.", "e": "to go", "m": "Short and forward-moving — the basic verb of going somewhere."}, {"h": "学校", "p": "xuéxiào", "pos": "n.", "e": "school", "m": "学(study) + 校(institution) — the institution where you study."}, {"h": "看", "p": "kàn", "pos": "v.", "e": "to look, to read, to watch", "m": "A hand (手) shading the eyes (目) — looking at something closely."}, {"h": "书", "p": "shū", "pos": "n.", "e": "book", "m": "A simple vertical character — think of it as a stack of bound pages."}], "listening": [{"sentence": "明天是3月19号，星期三。", "sentenceP": "Míngtiān shì sān yuè shíjiǔ hào, xīngqīsān.", "question": "明天星期几？", "questionP": "Míngtiān xīngqī jǐ?", "options": ["星期一", "星期二", "星期三"], "optionsP": ["xīngqī yī", "xīngqī èr", "xīngqī sān"], "correct": 2}, {"sentence": "昨天是8月20号。", "sentenceP": "Zuótiān shì bā yuè èrshí hào.", "question": "今天是几月几号？", "questionP": "Jīntiān shì jǐ yuè jǐ hào?", "options": ["8月19号", "8月20号", "8月21号"], "optionsP": ["bā yuè shíjiǔ hào", "bā yuè èrshí hào", "bā yuè èrshíyī hào"], "correct": 2}, {"sentence": "妈妈的生日是1月22号。", "sentenceP": "Māma de shēngrì shì yī yuè èrshí'èr hào.", "question": "妈妈的生日是几月几号？", "questionP": "Māma de shēngrì shì jǐ yuè jǐ hào?", "options": ["1月22号", "7月22号", "3月22号"], "optionsP": ["yī yuè èrshí'èr hào", "qī yuè èrshí'èr hào", "sān yuè èrshí'èr hào"], "correct": 0}, {"sentence": "我朋友会做中国菜，明天我去他家吃中国菜。", "sentenceP": "Wǒ péngyou huì zuò Zhōngguó cài, míngtiān wǒ qù tā jiā chī Zhōngguó cài.", "question": "明天我做什么？", "questionP": "Míngtiān wǒ zuò shénme?", "options": ["去学校", "去医院", "去朋友家"], "optionsP": ["qù xuéxiào", "qù yīyuàn", "qù péngyou jiā"], "correct": 2}]}, "8": {"title": "我想喝茶 (I'd like some tea)", "words": [{"h": "想", "p": "xiǎng", "pos": "mod.", "e": "would like to, to want to", "m": "心(heart) at the bottom — wanting something comes from the heart."}, {"h": "喝", "p": "hē", "pos": "v.", "e": "to drink", "m": "口(mouth) radical — drinking uses your mouth."}, {"h": "茶", "p": "chá", "pos": "n.", "e": "tea", "m": "艹(grass/plant) on top — tea comes from a plant."}, {"h": "吃", "p": "chī", "pos": "v.", "e": "to eat", "m": "口(mouth) radical — eating uses your mouth too."}, {"h": "米饭", "p": "mǐfàn", "pos": "n.", "e": "(cooked) rice", "m": "米(rice grain) + 饭(cooked meal) — rice that's been cooked into a meal."}, {"h": "下午", "p": "xiàwǔ", "pos": "n.", "e": "afternoon", "m": "下(below/after) + 午(noon) — the time after noon."}, {"h": "商店", "p": "shāngdiàn", "pos": "n.", "e": "shop, store", "m": "商(commerce) + 店(shop) — a place of commerce."}, {"h": "买", "p": "mǎi", "pos": "v.", "e": "to buy", "m": "A net (罒) over shell (贝, ancient money) — gathering up money to purchase."}, {"h": "个", "p": "gè", "pos": "m.", "e": "general measure word", "m": "The all-purpose counting word — like saying \"a piece of\" before almost anything."}, {"h": "杯子", "p": "bēizi", "pos": "n.", "e": "cup, glass", "m": "木(wood) radical historically — a vessel you drink from."}, {"h": "这", "p": "zhè", "pos": "pron.", "e": "this", "m": "Snap your fingers close to you: \"this, right here.\""}, {"h": "多少", "p": "duōshao", "pos": "pron.", "e": "how much, how many", "m": "多(many) + 少(few) — asking across the whole range, \"how much/many?\""}, {"h": "钱", "p": "qián", "pos": "n.", "e": "money", "m": "金(metal/gold) radical on the left — money was historically metal coins."}, {"h": "块", "p": "kuài", "pos": "m.", "e": "measure word for yuan (currency)", "m": "The everyday spoken word for the basic unit of Chinese money."}, {"h": "那", "p": "nà", "pos": "pron.", "e": "that", "m": "Point far away and say \"nà\" — \"that one over there,\" opposite of 这 (this)."}], "listening": [{"sentence": "明天他想去商店买一个杯子。", "sentenceP": "Míngtiān tā xiǎng qù shāngdiàn mǎi yí gè bēizi.", "question": "他想买什么？", "questionP": "Tā xiǎng mǎi shénme?", "options": ["桌子", "椅子", "杯子"], "optionsP": ["zhuōzi", "yǐzi", "bēizi"], "correct": 2}, {"sentence": "我想喝茶。你呢？", "sentenceP": "Wǒ xiǎng hē chá. Nǐ ne?", "question": "他想喝什么？", "questionP": "Tā xiǎng hē shénme?", "options": ["茶", "咖啡", "米饭"], "optionsP": ["chá", "kāfēi", "mǐfàn"], "correct": 0}, {"sentence": "大卫今天下午去中国朋友家喝茶。", "sentenceP": "Dàwèi jīntiān xiàwǔ qù Zhōngguó péngyou jiā hē chá.", "question": "大卫今天下午去哪儿？", "questionP": "Dàwèi jīntiān xiàwǔ qù nǎr?", "options": ["商店", "学校", "朋友家"], "optionsP": ["shāngdiàn", "xuéxiào", "péngyou jiā"], "correct": 2}, {"sentence": "这个菜38块，那个菜49块。", "sentenceP": "Zhège cài sānshíbā kuài, nàge cài sìshíjiǔ kuài.", "question": "那个菜多少钱？", "questionP": "Nàge cài duōshao qián?", "options": ["38块", "79块", "49块"], "optionsP": ["sānshíbā kuài", "qīshíjiǔ kuài", "sìshíjiǔ kuài"], "correct": 2}]}, "9": {"title": "你儿子在哪儿工作 (Where does your son work)", "words": [{"h": "小", "p": "xiǎo", "pos": "adj.", "e": "small", "m": "Three tiny strokes — the character itself looks small."}, {"h": "猫", "p": "māo", "pos": "n.", "e": "cat", "m": "犭(animal) radical + 苗(sounds like \"meow\") — a cat that goes \"meow.\""}, {"h": "在", "p": "zài", "pos": "v./prep.", "e": "to be at/in; at, in, on", "m": "One of the most common location words — where something \"is.\""}, {"h": "那儿", "p": "nàr", "pos": "pron.", "e": "there", "m": "那(that) + 儿(retroflex suffix) — \"that place,\" i.e. there."}, {"h": "狗", "p": "gǒu", "pos": "n.", "e": "dog", "m": "犭(animal) radical on the left — marks it as an animal word."}, {"h": "椅子", "p": "yǐzi", "pos": "n.", "e": "chair", "m": "木(wood) radical — chairs were traditionally made of wood."}, {"h": "下面", "p": "xiàmiàn", "pos": "n.", "e": "under, below", "m": "下(down/below) + 面(side/surface) — the side that's below."}, {"h": "哪儿", "p": "nǎr", "pos": "pron.", "e": "where", "m": "哪(which) + 儿(retroflex suffix) — \"which place,\" i.e. where."}, {"h": "工作", "p": "gōngzuò", "pos": "v./n.", "e": "to work; job, work", "m": "工(work/labor) + 作(do) — literally \"to do work.\""}, {"h": "儿子", "p": "érzi", "pos": "n.", "e": "son", "m": "儿 looks like little legs — a small child, a son."}, {"h": "医院", "p": "yīyuàn", "pos": "n.", "e": "hospital", "m": "医(medicine) + 院(institution/courtyard) — the institution of medicine."}, {"h": "医生", "p": "yīshēng", "pos": "n.", "e": "doctor", "m": "医(medicine) + 生(life) — one devoted to the practice of medicine."}, {"h": "爸爸", "p": "bàba", "pos": "n.", "e": "dad", "m": "Repeated syllable, just like \"papa\" in English."}], "listening": [{"sentence": "这是我的小猫，在椅子下面。", "sentenceP": "Zhè shì wǒ de xiǎo māo, zài yǐzi xiàmiàn.", "question": "他的猫在哪儿？", "questionP": "Tā de māo zài nǎr?", "options": ["椅子上", "桌子上", "椅子下"], "optionsP": ["yǐzi shàng", "zhuōzi shàng", "yǐzi xià"], "correct": 2}, {"sentence": "他儿子叫李朋，在商店工作。", "sentenceP": "Tā érzi jiào Lǐ Péng, zài shāngdiàn gōngzuò.", "question": "他儿子在哪儿工作？", "questionP": "Tā érzi zài nǎr gōngzuò?", "options": ["商店", "医院", "学校"], "optionsP": ["shāngdiàn", "yīyuàn", "xuéxiào"], "correct": 0}, {"sentence": "他爸爸是医生，妈妈不工作。", "sentenceP": "Tā bàba shì yīshēng, māma bù gōngzuò.", "question": "他妈妈在哪儿工作？", "questionP": "Tā māma zài nǎr gōngzuò?", "options": ["商店", "学校", "不工作"], "optionsP": ["shāngdiàn", "xuéxiào", "bù gōngzuò"], "correct": 2}, {"sentence": "她儿子在中国，她女儿在美国。", "sentenceP": "Tā érzi zài Zhōngguó, tā nǚ'ér zài Měiguó.", "question": "她女儿在哪儿？", "questionP": "Tā nǚ'ér zài nǎr?", "options": ["中国", "美国", "家"], "optionsP": ["Zhōngguó", "Měiguó", "jiā"], "correct": 1}]}, "10": {"title": "我能坐这儿吗 (Can I sit here)", "words": [{"h": "桌子", "p": "zhuōzi", "pos": "n.", "e": "table, desk", "m": "木(wood) radical — tables are traditionally made of wood."}, {"h": "上", "p": "shàng", "pos": "n.", "e": "on, above", "m": "A simple upward stroke over a line — pointing up, \"on top.\""}, {"h": "电脑", "p": "diànnǎo", "pos": "n.", "e": "computer", "m": "电(electric) + 脑(brain) — literally an \"electric brain.\""}, {"h": "和", "p": "hé", "pos": "conj.", "e": "and", "m": "禾(grain) + 口(mouth) — grain and mouths together, a picture of togetherness."}, {"h": "本", "p": "běn", "pos": "m.", "e": "measure word for books", "m": "A tree (木) with a root marked at the base — the \"root\" or bound volume of a book."}, {"h": "里", "p": "lǐ", "pos": "n.", "e": "inside", "m": "衣(clothes) with 里 inside historically — the \"lining,\" i.e. the inside."}, {"h": "前面", "p": "qiánmiàn", "pos": "n.", "e": "front, in front of", "m": "前(front/before) + 面(side) — the side that's in front."}, {"h": "后面", "p": "hòumiàn", "pos": "n.", "e": "back, behind", "m": "后(behind/after) + 面(side) — the side that's behind."}, {"h": "这儿", "p": "zhèr", "pos": "pron.", "e": "here", "m": "这(this) + 儿(retroflex suffix) — \"this place,\" i.e. here."}, {"h": "没有", "p": "méiyǒu", "pos": "v.", "e": "to not have; there is not", "m": "没(not) + 有(have) — the negative of 有."}, {"h": "能", "p": "néng", "pos": "mod.", "e": "can, to be able to", "m": "A modal verb for physical/permitted ability — \"I can (am allowed to).\""}, {"h": "坐", "p": "zuò", "pos": "v.", "e": "to sit", "m": "Two 人(people) sitting on 土(earth) — a picture of people sitting down."}, {"h": "王方", "p": "Wáng Fāng", "pos": "prop.n.", "e": "Wang Fang (a name)", "m": "A common surname (王, Wang) + given name (方, Fang)."}, {"h": "谢朋", "p": "Xiè Péng", "pos": "prop.n.", "e": "Xie Peng (a name)", "m": "A surname (谢, Xie) + given name (朋, Peng, meaning \"friend\")."}], "listening": [{"sentence": "桌子上有一个杯子和一本书。", "sentenceP": "Zhuōzi shàng yǒu yí gè bēizi hé yì běn shū.", "question": "桌子上有什么？", "questionP": "Zhuōzi shàng yǒu shénme?", "options": ["椅子", "电脑", "杯子和书"], "optionsP": ["yǐzi", "diànnǎo", "bēizi hé shū"], "correct": 2}, {"sentence": "我能看看你的书吗？", "sentenceP": "Wǒ néng kànkan nǐ de shū ma?", "question": "他想做什么？", "questionP": "Tā xiǎng zuò shénme?", "options": ["看书", "喝茶", "写汉字"], "optionsP": ["kàn shū", "hē chá", "xiě Hànzì"], "correct": 0}, {"sentence": "前面那个人是谢朋的同学，他在学校工作。", "sentenceP": "Qiánmiàn nàge rén shì Xiè Péng de tóngxué, tā zài xuéxiào gōngzuò.", "question": "前面的人是谁？", "questionP": "Qiánmiàn de rén shì shéi?", "options": ["医生", "谢朋", "谢朋的同学"], "optionsP": ["yīshēng", "Xiè Péng", "Xiè Péng de tóngxué"], "correct": 2}, {"sentence": "我的小狗在那儿，桌子下面。", "sentenceP": "Wǒ de xiǎo gǒu zài nàr, zhuōzi xiàmiàn.", "question": "桌子下面有什么？", "questionP": "Zhuōzi xiàmiàn yǒu shénme?", "options": ["小猫", "小狗", "椅子"], "optionsP": ["xiǎo māo", "xiǎo gǒu", "yǐzi"], "correct": 1}]}, "11": {"title": "现在几点 (What's the time now)", "words": [{"h": "现在", "p": "xiànzài", "pos": "n.", "e": "now", "m": "现(present) + 在(at) — \"at the present,\" i.e. now."}, {"h": "点", "p": "diǎn", "pos": "m.", "e": "o'clock", "m": "点 also means \"dot/point\" — a specific point in time."}, {"h": "分", "p": "fēn", "pos": "m.", "e": "minute", "m": "分 also means \"to divide\" — an hour divided into minutes."}, {"h": "中午", "p": "zhōngwǔ", "pos": "n.", "e": "noon", "m": "中(middle) + 午(midday) — the middle of the day."}, {"h": "吃饭", "p": "chī fàn", "pos": "v.phrase", "e": "to eat (a meal)", "m": "吃(eat) + 饭(cooked meal/rice) — the everyday phrase for having a meal."}, {"h": "时候", "p": "shíhou", "pos": "n.", "e": "time, moment", "m": "日(sun) in 时 — time historically tracked by the sun's position."}, {"h": "回", "p": "huí", "pos": "v.", "e": "to return", "m": "A box within a box — a loop that returns to where it started."}, {"h": "我们", "p": "wǒmen", "pos": "pron.", "e": "we, us", "m": "我(I) + 们(plural suffix) — more than one \"I.\""}, {"h": "电影", "p": "diànyǐng", "pos": "n.", "e": "movie, film", "m": "电(electric) + 影(shadow/image) — moving electric shadows on a screen."}, {"h": "住", "p": "zhù", "pos": "v.", "e": "to live (reside)", "m": "亻(person) radical — where a person stays/lives."}, {"h": "前", "p": "qián", "pos": "n.", "e": "before, ago, front", "m": "Used both for physical front and for time \"ago/before.\""}, {"h": "北京", "p": "Běijīng", "pos": "prop.n.", "e": "Beijing", "m": "北(north) + 京(capital) — the \"northern capital.\""}], "listening": [{"sentence": "我十点去工作，现在在家。", "sentenceP": "Wǒ shí diǎn qù gōngzuò, xiànzài zài jiā.", "question": "他几点工作？", "questionP": "Tā jǐ diǎn gōngzuò?", "options": ["九点", "十点", "十一点"], "optionsP": ["jiǔ diǎn", "shí diǎn", "shíyī diǎn"], "correct": 1}, {"sentence": "现在八点，我们九点前去看电影。", "sentenceP": "Xiànzài bā diǎn, wǒmen jiǔ diǎn qián qù kàn diànyǐng.", "question": "他们几点去看电影？", "questionP": "Tāmen jǐ diǎn qù kàn diànyǐng?", "options": ["八点五十分", "九点十分", "九点三十分"], "optionsP": ["bā diǎn wǔshí fēn", "jiǔ diǎn shí fēn", "jiǔ diǎn sānshí fēn"], "correct": 0}, {"sentence": "我下午喝茶，中午十二点前不喝茶。", "sentenceP": "Wǒ xiàwǔ hē chá, zhōngwǔ shí'èr diǎn qián bù hē chá.", "question": "她什么时候喝茶？", "questionP": "Tā shénme shíhou hē chá?", "options": ["十点", "十二点", "两点"], "optionsP": ["shí diǎn", "shí'èr diǎn", "liǎng diǎn"], "correct": 2}, {"sentence": "他在北京住三天，星期五回家。", "sentenceP": "Tā zài Běijīng zhù sān tiān, xīngqīwǔ huí jiā.", "question": "他什么时候回家？", "questionP": "Tā shénme shíhou huí jiā?", "options": ["星期三", "星期五", "不回家"], "optionsP": ["xīngqī sān", "xīngqī wǔ", "bù huí jiā"], "correct": 1}]}};
+const LESSON_ORDER = ["7", "8", "9", "10", "11"];
+const HAS_NUMBERS = false;
+
+let currentLesson = LESSON_ORDER[0];
+let mode = "flip";
+let autoPlayEnabled = true;
+let idx = 0;
+let flipped = false;
+let typed = false;
+let typedAnswer = "";
+let lastCorrect = null;
+let selectedOpt = null;
+let progress = {};
+
+let zhVoice = null;
+function pickVoice() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  zhVoice = voices.find(v => v.lang === 'zh-CN') || voices.find(v => v.lang && v.lang.startsWith('zh')) || null;
+}
+if (window.speechSynthesis) { pickVoice(); window.speechSynthesis.onvoiceschanged = pickVoice; }
+function speak(hanzi, btnId, rate) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(hanzi);
+  utter.lang = 'zh-CN';
+  utter.rate = rate || 0.85;
+  if (zhVoice) utter.voice = zhVoice;
+  const btn = btnId ? document.getElementById(btnId) : null;
+  if (btn) {
+    btn.classList.add('speaking');
+    utter.onend = () => btn.classList.remove('speaking');
+    utter.onerror = () => btn.classList.remove('speaking');
+  }
+  window.speechSynthesis.speak(utter);
+}
+
+function normalize(s) { return s.toLowerCase().trim().replace(/[.!?]/g, ''); }
+function checkAnswer(input, w) {
+  const userN = normalize(input);
+  if (!userN) return false;
+  const candidates = [w.e].concat(w.alt || []);
+  return candidates.some(c => {
+    const cN = normalize(c);
+    return userN === cN || (cN.includes(userN) && userN.length >= 3) || (userN.includes(cN) && cN.length >= 3);
+  });
+}
+
+async function loadProgress(lesson, m) {
+  try {
+    const r = await window.storage.get('hsk-progress:' + lesson + ':' + m, false);
+    progress = r ? JSON.parse(r.value) : {};
+  } catch (e) { progress = {}; }
+}
+async function saveProgress(lesson, m) {
+  try { await window.storage.set('hsk-progress:' + lesson + ':' + m, JSON.stringify(progress), false); } catch (e) {}
+}
+async function loadAutoplay() {
+  try {
+    const r = await window.storage.get('hsk-autoplay', false);
+    autoPlayEnabled = r ? JSON.parse(r.value) : true;
+  } catch (e) { autoPlayEnabled = true; }
+}
+async function saveAutoplay() {
+  try { await window.storage.set('hsk-autoplay', JSON.stringify(autoPlayEnabled), false); } catch (e) {}
+}
+function buildAutoplayToggle() {
+  const el = document.getElementById('autoplaySwitch');
+  el.className = 'switch' + (autoPlayEnabled ? ' on' : '');
+  el.innerHTML = '<div class="knob"></div>';
+  el.onclick = async () => { autoPlayEnabled = !autoPlayEnabled; await saveAutoplay(); buildAutoplayToggle(); };
+}
+
+function buildTabs() {
+  const el = document.getElementById('tabs');
+  el.innerHTML = '';
+  LESSON_ORDER.forEach(key => {
+    const b = document.createElement('div');
+    b.className = 'tab' + (key === currentLesson ? ' active' : '');
+    b.textContent = 'L' + key;
+    b.onclick = () => switchLesson(key);
+    el.appendChild(b);
+  });
+}
+
+function buildModeToggle() {
+  const el = document.getElementById('modeToggle');
+  el.innerHTML = `
+    <div class="mode-btn ${mode === 'flip' ? 'active' : ''}" id="flipModeBtn">Flip &amp; recall</div>
+    <div class="mode-btn ${mode === 'type' ? 'active' : ''}" id="typeModeBtn">Type the answer</div>
+    <div class="mode-btn ${mode === 'listen' ? 'active' : ''}" id="listenModeBtn">Listening (A/B/C)</div>
+    
+  `;
+  document.getElementById('flipModeBtn').onclick = () => switchMode('flip');
+  document.getElementById('typeModeBtn').onclick = () => switchMode('type');
+  document.getElementById('listenModeBtn').onclick = () => switchMode('listen');
+  
+}
+
+async function switchMode(m) {
+  mode = m; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
+  buildModeToggle();
+  if (mode !== 'numbers') await loadProgress(currentLesson, mode);
+  render();
+}
+async function switchLesson(key) {
+  currentLesson = key; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
+  await loadProgress(currentLesson, mode);
+  buildTabs();
+  render();
+}
+
+function currentWords() { return LESSONS[currentLesson].words; }
+function currentListening() { return LESSONS[currentLesson].listening || null; }
+
+function render() {
+  document.getElementById('lessonLabel').textContent = LESSONS[currentLesson].title;
+
+  if (mode === 'flip') {
+    const words = currentWords();
+    if (idx >= words.length) idx = words.length - 1;
+    setProgressBar(idx, words.length);
+    renderFlipMode(words[idx], words.length);
+    renderStats();
+  } else if (mode === 'type') {
+    const words = currentWords();
+    if (idx >= words.length) idx = words.length - 1;
+    setProgressBar(idx, words.length);
+    renderTypeMode(words[idx], words.length);
+    renderStats();
+  } else if (mode === 'listen') {
+    const items = currentListening();
+    if (!items) {
+      document.getElementById('progressFill').style.width = '0%';
+      document.getElementById('posLabel').textContent = '';
+      document.getElementById('cardArea').innerHTML = '<div class="soon-box">Listening drills for this lesson are not built yet.<br>Try Flip &amp; recall or Type the answer instead.</div>';
+      document.getElementById('statsRow').innerHTML = '';
+      return;
+    }
+    if (idx >= items.length) idx = items.length - 1;
+    setProgressBar(idx, items.length);
+    renderListenMode(items[idx], items.length);
+    renderStats();
+  }
+}
+
+function setProgressBar(i, total) {
+  document.getElementById('posLabel').textContent = (i + 1) + ' / ' + total;
+  document.getElementById('progressFill').style.width = (((i + 1) / total) * 100) + '%';
+}
+
+function renderFlipMode(w, total) {
+  const cardArea = document.getElementById('cardArea');
+  if (!flipped) {
+    cardArea.innerHTML = `
+      <div class="card" id="flipCard">
+        <div class="hanzi">${w.h}</div>
+        <div class="pinyin">${w.p}</div>
+        <div class="pos-tag">${w.pos || ''}</div>
+        <button class="speak-btn" id="speakBtnFront" aria-label="Play pronunciation">&#128266;</button>
+        <div class="tap-hint">tap card to reveal meaning</div>
+      </div>
+      <div class="controls">
+        <button class="nav" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
+        <button class="nav" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
+      </div>
+    `;
+    document.getElementById('flipCard').onclick = () => { flipped = true; render(); };
+    document.getElementById('speakBtnFront').onclick = (e) => { e.stopPropagation(); speak(w.h, 'speakBtnFront'); };
+    if (autoPlayEnabled) speak(w.h, 'speakBtnFront');
+    const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn');
+    if (prevBtn) prevBtn.onclick = (e) => { e.stopPropagation(); if (idx > 0) { idx--; flipped = false; render(); } };
+    if (nextBtn) nextBtn.onclick = (e) => { e.stopPropagation(); if (idx < total - 1) { idx++; flipped = false; render(); } };
+  } else {
+    const exampleHtml = w.ex ? `<div class="example"><div class="ex-h">${w.ex}</div><div class="ex-p">${w.exp}</div><div>${w.exe}</div></div>` : '';
+    cardArea.innerHTML = `
+      <div class="card" id="flipCard">
+        <div class="hanzi" style="font-size:34px;">${w.h} <span class="pinyin" style="font-size:16px;">${w.p}</span></div>
+        <button class="speak-btn" id="speakBtnBack" aria-label="Play pronunciation">&#128266;</button>
+        <div class="back-english">${w.e}</div>
+        <div class="mnemonic">${w.m}</div>
+        ${exampleHtml}
+      </div>
+      <div class="controls">
+        <button class="nav learning" id="learnBtn">still learning</button>
+        <button class="nav know" id="knowBtn">I know this</button>
+      </div>
+    `;
+    document.getElementById('flipCard').onclick = () => { flipped = false; render(); };
+    document.getElementById('speakBtnBack').onclick = (e) => { e.stopPropagation(); speak(w.h, 'speakBtnBack'); };
+    document.getElementById('knowBtn').onclick = async (e) => { e.stopPropagation(); progress[w.h] = 'known'; await saveProgress(currentLesson, mode); advanceFlip(); };
+    document.getElementById('learnBtn').onclick = async (e) => { e.stopPropagation(); progress[w.h] = 'learning'; await saveProgress(currentLesson, mode); advanceFlip(); };
+  }
+}
+function advanceFlip() {
+  const total = currentWords().length;
+  flipped = false;
+  if (idx < total - 1) idx++;
+  render();
+}
+
+function renderTypeMode(w, total) {
+  const cardArea = document.getElementById('cardArea');
+  if (!typed) {
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default;">
+        <div class="hanzi">${w.h}</div>
+        <div class="pinyin">${w.p}</div>
+        <button class="speak-btn" id="speakBtnFront" aria-label="Play pronunciation">&#128266;</button>
+        <input type="text" class="type-input" id="typeInput" placeholder="type the English meaning" autocomplete="off">
+        <div class="error-text" id="errorText"></div>
+        <button class="submit-btn" id="submitBtn">Check</button>
+      </div>
+      <div class="controls">
+        <button class="nav" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
+        <button class="nav" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
+      </div>
+    `;
+    document.getElementById('speakBtnFront').onclick = (e) => { e.stopPropagation(); speak(w.h, 'speakBtnFront'); };
+    if (autoPlayEnabled) speak(w.h, 'speakBtnFront');
+    const input = document.getElementById('typeInput');
+    const doSubmit = async () => {
+      const val = input.value;
+      if (!val.trim()) { document.getElementById('errorText').textContent = 'Type an answer first.'; input.classList.add('wrong-input'); return; }
+      lastCorrect = checkAnswer(val, w);
+      progress[w.h] = lastCorrect ? 'known' : 'learning';
+      await saveProgress(currentLesson, mode);
+      typedAnswer = val; typed = true; render();
+    };
+    document.getElementById('submitBtn').onclick = doSubmit;
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSubmit(); });
+    input.addEventListener('input', () => { input.classList.remove('wrong-input'); document.getElementById('errorText').textContent = ''; });
+    input.focus();
+    const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn');
+    if (prevBtn) prevBtn.onclick = () => { if (idx > 0) { idx--; typed = false; render(); } };
+    if (nextBtn) nextBtn.onclick = () => { if (idx < total - 1) { idx++; typed = false; render(); } };
+  } else {
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default;">
+        <div class="feedback-badge ${lastCorrect ? 'correct' : 'wrong'}">${lastCorrect ? 'Correct!' : 'Not quite'}</div>
+        <div class="hanzi" style="font-size:34px;">${w.h} <span class="pinyin" style="font-size:16px;">${w.p}</span></div>
+        <button class="speak-btn" id="speakBtnBack" aria-label="Play pronunciation">&#128266;</button>
+        <div class="your-answer">You typed: "${typedAnswer}"</div>
+        <div class="back-english">${w.e}</div>
+        <div class="mnemonic">${w.m}</div>
+      </div>
+      <div class="controls">
+        <button class="nav" id="nextTypeBtn">${idx < total - 1 ? 'next word \u2192' : 'lesson complete \u2192'}</button>
+      </div>
+    `;
+    document.getElementById('speakBtnBack').onclick = (e) => { e.stopPropagation(); speak(w.h, 'speakBtnBack'); };
+    document.getElementById('nextTypeBtn').onclick = () => { typed = false; if (idx < total - 1) idx++; render(); };
+  }
+}
+
+function renderListenMode(item, total) {
+  const cardArea = document.getElementById('cardArea');
+  const key = currentLesson + '-' + idx;
+  const letters = ['A', 'B', 'C'];
+  if (selectedOpt === null) {
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default; min-height:auto; padding:36px 24px;">
+        <button class="listen-play" id="playBtn" aria-label="Play sentence">&#9658;</button>
+        <div class="listen-hint">tap to hear the full sentence</div>
+        <div class="question-text">${item.questionP}</div>
+        <div class="question-hanzi">${item.question}</div>
+        <div id="optionsWrap" style="width:100%; display:flex; flex-direction:column; align-items:center;"></div>
+      </div>
+      <div class="controls">
+        <button class="nav" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
+        <button class="nav" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
+      </div>
+    `;
+    const optsWrap = document.getElementById('optionsWrap');
+    item.options.forEach((opt, i) => {
+      const b = document.createElement('button');
+      b.className = 'option-btn';
+      b.innerHTML = `<span class="opt-letter">${letters[i]}</span><span class="opt-text"><span class="opt-pinyin">${item.optionsP[i]}</span><span class="opt-hanzi">${opt}</span></span>`;
+      b.onclick = async () => {
+        selectedOpt = i; lastCorrect = (i === item.correct);
+        progress[key] = lastCorrect ? 'known' : 'learning';
+        await saveProgress(currentLesson, mode);
+        render();
+      };
+      optsWrap.appendChild(b);
+    });
+    document.getElementById('playBtn').onclick = () => speak(item.sentence, 'playBtn', 0.75);
+    if (autoPlayEnabled) speak(item.sentence, 'playBtn', 0.75);
+    const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn');
+    if (prevBtn) prevBtn.onclick = () => { if (idx > 0) { idx--; selectedOpt = null; render(); } };
+    if (nextBtn) nextBtn.onclick = () => { if (idx < total - 1) { idx++; selectedOpt = null; render(); } };
+  } else {
+    let optsHtml = '';
+    item.options.forEach((opt, i) => {
+      let cls = 'option-btn';
+      if (i === item.correct) cls += ' correct-opt'; else if (i === selectedOpt) cls += ' wrong-opt';
+      optsHtml += `<div class="${cls}"><span class="opt-letter">${letters[i]}</span><span class="opt-text"><span class="opt-pinyin">${item.optionsP[i]}</span><span class="opt-hanzi">${opt}</span></span></div>`;
+    });
+    cardArea.innerHTML = `
+      <div class="card" style="cursor:default; min-height:auto; padding:36px 24px;">
+        <div class="feedback-badge ${lastCorrect ? 'correct' : 'wrong'}">${lastCorrect ? 'Correct!' : 'Not quite'}</div>
+        <button class="speak-btn" id="replayBtn" aria-label="Replay sentence" style="margin-bottom:14px;">&#128266;</button>
+        <div class="question-text">${item.questionP}</div>
+        <div class="question-hanzi">${item.question}</div>
+        <div style="width:100%; display:flex; flex-direction:column; align-items:center;">${optsHtml}</div>
+        <div class="example" style="margin-top:14px;"><div class="ex-p">${item.sentenceP}</div><div class="ex-h">${item.sentence}</div></div>
+      </div>
+      <div class="controls">
+        <button class="nav" id="nextListenBtn">${idx < total - 1 ? 'next question \u2192' : 'lesson complete \u2192'}</button>
+      </div>
+    `;
+    document.getElementById('replayBtn').onclick = () => speak(item.sentence, 'replayBtn', 0.75);
+    document.getElementById('nextListenBtn').onclick = () => { selectedOpt = null; if (idx < total - 1) idx++; render(); };
+  }
+}
+
+function renderStats() {
+  let known = 0, learning = 0, total;
+  if (mode === 'listen') {
+    const items = currentListening();
+    if (!items) return;
+    total = items.length;
+    items.forEach((it, i) => {
+      const key = currentLesson + '-' + i;
+      if (progress[key] === 'known') known++; else if (progress[key] === 'learning') learning++;
+    });
+  } else {
+    const words = currentWords();
+    total = words.length;
+    words.forEach(w => { if (progress[w.h] === 'known') known++; else if (progress[w.h] === 'learning') learning++; });
+  }
+  const label = mode === 'listen' ? ['correct', 'missed', 'not attempted'] : ['known', 'still learning', 'not reviewed'];
+  document.getElementById('statsRow').innerHTML = `<span><b>${known}</b> ${label[0]}</span><span><b>${learning}</b> ${label[1]}</span><span><b>${total - known - learning}</b> ${label[2]}</span>`;
+}
+
+document.getElementById('resetBtn').onclick = async () => {
+  if (mode === 'numbers') { numScore = { correct: 0, total: 0 }; newNumber(); render(); return; }
+  progress = {};
+  await saveProgress(currentLesson, mode);
+  render();
+};
+
+(async () => {
+  await loadAutoplay();
+  buildAutoplayToggle();
+  buildTabs();
+  buildModeToggle();
+  await loadProgress(currentLesson, mode);
+  render();
+})();
+</script>
+</body>
+</html>

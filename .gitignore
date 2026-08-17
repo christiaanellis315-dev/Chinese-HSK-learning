@@ -1,0 +1,6 @@
+# Original bundled textbook archives — large, and not part of the PWA
+HSK1.zip
+HSK2.zip
+HSK1/
+HSK2/
+.accelerate/
