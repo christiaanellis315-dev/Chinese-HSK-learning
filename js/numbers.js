@@ -1,13 +1,18 @@
 // Numbers 1-99 screen: a standalone, recurring drill (moved out of Lesson 5, since it's a
 // tool people come back to regardless of which lesson they're on, not one-time lesson content).
-// Logic is unchanged from the original Lesson 5 "Numbers 1-99" mode: random number 1-99, pinyin
-// shown, audio plays the hanzi, the user types the digit answer, correct/missed is tracked.
+// Runs as a fixed 20-number round (20 unique numbers, no repeats) with a completion screen at
+// the end, matching the pattern used by the Lessons screen's Flip/Type/Listen modes. Also offers
+// the same practice-pronunciation mic (record / playback / compare) as Flip & Recall.
 const NumbersDrill = (() => {
+  const ROUND_LENGTH = 20;
   let root = null;
-  let currentNumber = null;
+  let goTo = null;
+  let roundNumbers = [];
+  let roundIndex = 0;
+  let correctCount = 0;
   let answered = false;
   let correct = null;
-  let score = { correct: 0, total: 0 };
+  let completed = false;
 
   const digitsHan = ['','一','二','三','四','五','六','七','八','九'];
   function numberToHanzi(n) {
@@ -28,13 +33,29 @@ const NumbersDrill = (() => {
     if (ones === 0) return s;
     return s + (ones === 2 ? "'" : '') + pin[ones];
   }
-  function newNumber() { currentNumber = 1 + Math.floor(Math.random() * 99); answered = false; correct = null; }
+
+  function newRound() {
+    const pool = [];
+    for (let i = 1; i <= 99; i++) pool.push(i);
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    roundNumbers = pool.slice(0, ROUND_LENGTH);
+    roundIndex = 0;
+    correctCount = 0;
+    answered = false;
+    correct = null;
+    completed = false;
+  }
+
+  function currentNumber() { return roundNumbers[roundIndex]; }
 
   function html() {
     return `
       <div class="lamp"></div>
       <h1>Numbers 1-99</h1>
-      <div class="sub">Listen and type the number you hear — a recurring drill, independent of any lesson</div>
+      <div class="sub">Listen and type the number you hear — a 20-number round, independent of any lesson</div>
       <div class="autoplay-row">
         <span>Auto-play audio</span>
         <div class="switch" id="autoplaySwitch"><div class="knob"></div></div>
@@ -44,10 +65,10 @@ const NumbersDrill = (() => {
         <span id="posLabel"></span>
         <span></span>
       </div>
-      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:100%"></div></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       <div id="cardArea"></div>
       <div class="stats" id="statsRow"></div>
-      <button class="reset" id="resetBtn">Reset score</button>
+      <button class="reset" id="resetBtn">Start a new round</button>
     `;
   }
 
@@ -59,16 +80,70 @@ const NumbersDrill = (() => {
     el.onclick = () => { Storage.setAutoplay('lessons', !Storage.getAutoplay('lessons')); buildAutoplayToggle(); };
   }
 
+  function completionTone(correctN, total) {
+    if (total === 0) return { emoji: '👍', message: 'Round complete.' };
+    const ratio = correctN / total;
+    if (ratio === 1) return { emoji: '🎉', message: 'Perfect round!' };
+    if (ratio >= 0.7) return { emoji: '✨', message: 'Well done!' };
+    if (ratio >= 0.4) return { emoji: '👍', message: 'Nice work — a few more rounds and you’ll have it.' };
+    return { emoji: '💪', message: 'Good effort! Numbers take practice — try another round.' };
+  }
+
+  function renderCompletionScreen() {
+    root.querySelector('#posLabel').textContent = 'Round complete!';
+    root.querySelector('#progressFill').style.width = '100%';
+    root.querySelector('#statsRow').innerHTML = '';
+    const tone = completionTone(correctCount, ROUND_LENGTH);
+
+    root.querySelector('#cardArea').innerHTML = `
+      <div class="card" style="cursor:default;">
+        <div class="review-summary" style="padding:10px 0;">
+          <div class="rs-emoji">${tone.emoji}</div>
+          <div class="rs-title">${correctCount} out of ${ROUND_LENGTH} correct</div>
+          <div class="rs-sub">${tone.message}</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="nav-btn" id="tryAgainBtn">Try again</button>
+        <button class="nav-btn" id="backBtn">Back to Dashboard</button>
+      </div>
+    `;
+    root.querySelector('#tryAgainBtn').onclick = () => { newRound(); render(); };
+    root.querySelector('#backBtn').onclick = () => { if (goTo) goTo('dashboard'); };
+  }
+
+  function advanceRound() {
+    Recorder.cleanup();
+    if (roundIndex < ROUND_LENGTH - 1) {
+      roundIndex++;
+      answered = false;
+      correct = null;
+      render();
+    } else {
+      completed = true;
+      render();
+    }
+  }
+
   function render() {
-    if (currentNumber === null) newNumber();
-    root.querySelector('#posLabel').textContent = score.total + ' answered';
+    if (completed) { renderCompletionScreen(); return; }
+
+    root.querySelector('#posLabel').textContent = (roundIndex + 1) + ' / ' + ROUND_LENGTH;
+    root.querySelector('#progressFill').style.width = (((roundIndex + 1) / ROUND_LENGTH) * 100) + '%';
+    const num = currentNumber();
     const cardArea = root.querySelector('#cardArea');
+    const isLast = roundIndex === ROUND_LENGTH - 1;
+
     if (!answered) {
+      Recorder.cleanup();
       cardArea.innerHTML = `
         <div class="card" style="cursor:default;">
-          <div class="num-big">${numberToPinyin(currentNumber)}</div>
+          <div class="num-big">${numberToPinyin(num)}</div>
           <div class="num-hint">listen and type the number</div>
-          <button class="speak-btn" id="speakNumBtn" aria-label="Play number">&#128266;</button>
+          <div class="audio-row">
+            <button class="speak-btn" id="speakNumBtn" aria-label="Play number">&#128266;</button>
+            <span id="micAreaNum"></span>
+          </div>
           <input type="text" class="type-input" id="numInput" placeholder="e.g. 23" autocomplete="off" inputmode="numeric">
           <div class="error-text" id="numError"></div>
           <button class="submit-btn" id="numSubmitBtn">Check</button>
@@ -76,14 +151,15 @@ const NumbersDrill = (() => {
         <div class="controls"><button class="nav-btn" id="numSkipBtn">skip &rarr;</button></div>
       `;
       const speakBtn = root.querySelector('#speakNumBtn');
-      speakBtn.onclick = () => Speech.speak(numberToHanzi(currentNumber), speakBtn);
-      if (Storage.getAutoplay('lessons')) Speech.speak(numberToHanzi(currentNumber), speakBtn);
+      speakBtn.onclick = () => Speech.speak(numberToHanzi(num), speakBtn);
+      if (Storage.getAutoplay('lessons')) Speech.speak(numberToHanzi(num), speakBtn);
+      Recorder.mountMicButton(root.querySelector('#micAreaNum'), numberToHanzi(num));
       const input = root.querySelector('#numInput');
       const doSubmit = () => {
         const val = input.value.trim();
         if (!val) { root.querySelector('#numError').textContent = 'Type a number first.'; input.classList.add('wrong-input'); return; }
-        correct = (parseInt(val, 10) === currentNumber);
-        score.total++; if (correct) score.correct++;
+        correct = (parseInt(val, 10) === num);
+        if (correct) correctCount++;
         Storage.recordActivity();
         answered = true; render();
       };
@@ -91,31 +167,40 @@ const NumbersDrill = (() => {
       input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSubmit(); });
       input.addEventListener('input', () => { input.classList.remove('wrong-input'); root.querySelector('#numError').textContent = ''; });
       input.focus();
-      root.querySelector('#numSkipBtn').onclick = () => { newNumber(); render(); };
+      root.querySelector('#numSkipBtn').onclick = () => advanceRound();
     } else {
+      Recorder.cleanup();
       cardArea.innerHTML = `
         <div class="card" style="cursor:default;">
           <div class="feedback-badge ${correct ? 'correct' : 'wrong'}">${correct ? 'Correct!' : 'Not quite'}</div>
-          <div class="num-big">${numberToPinyin(currentNumber)}</div>
-          <button class="speak-btn" id="speakNumBtn2" aria-label="Play number">&#128266;</button>
-          <div class="back-english">${currentNumber} &nbsp;&mdash;&nbsp; ${numberToHanzi(currentNumber)}</div>
+          <div class="num-big">${numberToPinyin(num)}</div>
+          <div class="audio-row">
+            <button class="speak-btn" id="speakNumBtn2" aria-label="Play number">&#128266;</button>
+            <span id="micAreaNum2"></span>
+          </div>
+          <div class="back-english">${num} &nbsp;&mdash;&nbsp; ${numberToHanzi(num)}</div>
         </div>
-        <div class="controls"><button class="nav-btn" id="numNextBtn">next number &rarr;</button></div>
+        <div class="controls"><button class="nav-btn" id="numNextBtn">${isLast ? 'see results →' : 'next number →'}</button></div>
       `;
       const speakBtn2 = root.querySelector('#speakNumBtn2');
-      speakBtn2.onclick = () => Speech.speak(numberToHanzi(currentNumber), speakBtn2);
-      root.querySelector('#numNextBtn').onclick = () => { newNumber(); render(); };
+      speakBtn2.onclick = () => Speech.speak(numberToHanzi(num), speakBtn2);
+      Recorder.mountMicButton(root.querySelector('#micAreaNum2'), numberToHanzi(num));
+      root.querySelector('#numNextBtn').onclick = () => advanceRound();
     }
-    root.querySelector('#statsRow').innerHTML = `<span><b>${score.correct}</b> correct</span><span><b>${score.total - score.correct}</b> missed</span><span><b>${score.total}</b> total</span>`;
+
+    const missed = (roundIndex + (answered ? 1 : 0)) - correctCount;
+    root.querySelector('#statsRow').innerHTML = `<span><b>${correctCount}</b> correct</span><span><b>${missed}</b> missed</span><span><b>${ROUND_LENGTH}</b> total</span>`;
   }
 
-  function mount(container) {
+  function mount(container, navigate) {
     root = container;
+    goTo = navigate || null;
     root.innerHTML = html();
     buildAutoplayToggle();
     Speech.buildSpeedControl(root.querySelector('#speedRow'));
+    newRound();
     render();
-    root.querySelector('#resetBtn').onclick = () => { score = { correct: 0, total: 0 }; newNumber(); render(); };
+    root.querySelector('#resetBtn').onclick = () => { newRound(); render(); };
   }
 
   return { mount };
