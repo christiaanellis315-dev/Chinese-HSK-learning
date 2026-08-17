@@ -2,7 +2,12 @@
 // files and generalized to loop over all of LESSON_ORDER (1-15). The Numbers 1-99 drill that
 // used to live here as a fourth mode is now its own top-level screen (see numbers.js) — it's a
 // recurring standalone drill, not lesson-specific content.
-// Also exposes renderFlashcard() so the Review screen can reuse the exact same flip-card UI.
+//
+// Grading now feeds Storage's shared spaced-repetition schedule (one Leitner box per word/
+// listening item, regardless of which mode touched it) instead of a separate known/learning
+// flag per mode — getting a word right in Type mode pushes out its next Flip-mode appearance
+// too. Also exposes renderFlashcard() and renderListenQuestion() so the Review screen (which
+// pulls whatever's due across every lesson) can reuse the exact same card UIs.
 const Lessons = (() => {
   let root = null;
   let goTo = null;
@@ -96,7 +101,7 @@ const Lessons = (() => {
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       <div id="cardArea"></div>
       <div class="stats" id="statsRow"></div>
-      <button class="reset" id="resetBtn">Reset progress for this lesson &amp; mode</button>
+      <button class="reset" id="resetBtn">Reset progress for this lesson</button>
     `;
   }
 
@@ -218,8 +223,8 @@ const Lessons = (() => {
         controlsHtml,
         onToggle: () => { flipped = false; render(); },
         wireControls: () => {
-          root.querySelector('#knowBtn').onclick = (e) => { e.stopPropagation(); Storage.setItemStatus(currentLesson, 'flip', w.h, 'known'); advanceFlip(total); };
-          root.querySelector('#learnBtn').onclick = (e) => { e.stopPropagation(); Storage.setItemStatus(currentLesson, 'flip', w.h, 'learning'); advanceFlip(total); };
+          root.querySelector('#knowBtn').onclick = (e) => { e.stopPropagation(); Storage.recordSrsResult(Storage.wordItemId(currentLesson, w.h), true); advanceFlip(total); };
+          root.querySelector('#learnBtn').onclick = (e) => { e.stopPropagation(); Storage.recordSrsResult(Storage.wordItemId(currentLesson, w.h), false); advanceFlip(total); };
         }
       });
     }
@@ -255,7 +260,7 @@ const Lessons = (() => {
         const val = input.value;
         if (!val.trim()) { root.querySelector('#errorText').textContent = 'Type an answer first.'; input.classList.add('wrong-input'); return; }
         lastCorrect = checkAnswer(val, w);
-        Storage.setItemStatus(currentLesson, 'type', w.h, lastCorrect ? 'known' : 'learning');
+        Storage.recordSrsResult(Storage.wordItemId(currentLesson, w.h), lastCorrect);
         typedAnswer = val; typed = true; render();
       };
       root.querySelector('#submitBtn').onclick = doSubmit;
@@ -289,11 +294,12 @@ const Lessons = (() => {
     }
   }
 
-  function renderListenMode(item, total) {
-    const cardArea = root.querySelector('#cardArea');
-    const key = currentLesson + '-' + idx;
+  // ===== shared listening-question component (also used by Review) =====
+  function renderListenQuestion(cardArea, item, selectedIdx, opts) {
+    opts = opts || {};
+    const controlsHtml = opts.controlsHtml || '';
     const letters = ['A', 'B', 'C'];
-    if (selectedOpt === null) {
+    if (selectedIdx === null) {
       cardArea.innerHTML = `
         <div class="card" style="cursor:default; min-height:auto; padding:36px 24px;">
           <button class="listen-play" id="playBtn" aria-label="Play sentence">&#9658;</button>
@@ -302,76 +308,105 @@ const Lessons = (() => {
           <div class="question-hanzi">${item.question}</div>
           <div id="optionsWrap" style="width:100%; display:flex; flex-direction:column; align-items:center;"></div>
         </div>
-        <div class="controls">
-          <button class="nav-btn" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
-          <button class="nav-btn" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
-        </div>
+        ${controlsHtml}
       `;
-      const optsWrap = root.querySelector('#optionsWrap');
+      const optsWrap = cardArea.querySelector('#optionsWrap');
       item.options.forEach((opt, i) => {
         const b = document.createElement('button');
         b.className = 'option-btn';
         b.innerHTML = `<span class="opt-letter">${letters[i]}</span><span class="opt-text"><span class="opt-pinyin">${item.optionsP[i]}</span><span class="opt-hanzi">${opt}</span></span>`;
-        b.onclick = () => {
-          selectedOpt = i; lastCorrect = (i === item.correct);
-          Storage.setItemStatus(currentLesson, 'listen', key, lastCorrect ? 'known' : 'learning');
-          render();
-        };
+        b.onclick = () => opts.onSelect && opts.onSelect(i);
         optsWrap.appendChild(b);
       });
-      const playBtn = root.querySelector('#playBtn');
+      const playBtn = cardArea.querySelector('#playBtn');
       playBtn.onclick = () => Speech.speak(item.sentence, playBtn);
-      if (Storage.getAutoplay('lessons')) Speech.speak(item.sentence, playBtn);
-      const prevBtn = root.querySelector('#prevBtn'), nextBtn = root.querySelector('#nextBtn');
-      if (prevBtn) prevBtn.onclick = () => { if (idx > 0) { idx--; selectedOpt = null; render(); } };
-      if (nextBtn) nextBtn.onclick = () => { if (idx < total - 1) { idx++; selectedOpt = null; render(); } };
+      if (opts.autoplay) Speech.speak(item.sentence, playBtn);
     } else {
+      const isCorrect = selectedIdx === item.correct;
       let optsHtml = '';
       item.options.forEach((opt, i) => {
         let cls = 'option-btn';
-        if (i === item.correct) cls += ' correct-opt'; else if (i === selectedOpt) cls += ' wrong-opt';
+        if (i === item.correct) cls += ' correct-opt'; else if (i === selectedIdx) cls += ' wrong-opt';
         optsHtml += `<div class="${cls}"><span class="opt-letter">${letters[i]}</span><span class="opt-text"><span class="opt-pinyin">${item.optionsP[i]}</span><span class="opt-hanzi">${opt}</span></span></div>`;
       });
       cardArea.innerHTML = `
         <div class="card" style="cursor:default; min-height:auto; padding:36px 24px;">
-          <div class="feedback-badge ${lastCorrect ? 'correct' : 'wrong'}">${lastCorrect ? 'Correct!' : 'Not quite'}</div>
+          <div class="feedback-badge ${isCorrect ? 'correct' : 'wrong'}">${isCorrect ? 'Correct!' : 'Not quite'}</div>
           <button class="speak-btn" id="replayBtn" aria-label="Replay sentence" style="margin-bottom:14px;">&#128266;</button>
           <div class="question-text">${item.questionP}</div>
           <div class="question-hanzi">${item.question}</div>
           <div style="width:100%; display:flex; flex-direction:column; align-items:center;">${optsHtml}</div>
           <div class="example" style="margin-top:14px;"><div class="ex-p">${item.sentenceP}</div><div class="ex-h">${item.sentence}</div></div>
         </div>
+        ${controlsHtml}
+      `;
+      const replayBtn = cardArea.querySelector('#replayBtn');
+      replayBtn.onclick = () => Speech.speak(item.sentence, replayBtn);
+    }
+    if (opts.wireControls) opts.wireControls();
+  }
+
+  function renderListenMode(item, total) {
+    const cardArea = root.querySelector('#cardArea');
+    const itemId = Storage.listenItemId(currentLesson, idx);
+    if (selectedOpt === null) {
+      const controlsHtml = `
+        <div class="controls">
+          <button class="nav-btn" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
+          <button class="nav-btn" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
+        </div>`;
+      renderListenQuestion(cardArea, item, null, {
+        controlsHtml,
+        autoplay: Storage.getAutoplay('lessons'),
+        onSelect: (i) => {
+          selectedOpt = i;
+          lastCorrect = (i === item.correct);
+          Storage.recordSrsResult(itemId, lastCorrect);
+          render();
+        },
+        wireControls: () => {
+          const prevBtn = root.querySelector('#prevBtn'), nextBtn = root.querySelector('#nextBtn');
+          if (prevBtn) prevBtn.onclick = () => { if (idx > 0) { idx--; selectedOpt = null; render(); } };
+          if (nextBtn) nextBtn.onclick = () => { if (idx < total - 1) { idx++; selectedOpt = null; render(); } };
+        }
+      });
+    } else {
+      const controlsHtml = `
         <div class="controls">
           <button class="nav-btn" id="nextListenBtn">${idx < total - 1 ? 'next question →' : 'lesson complete →'}</button>
-        </div>
-      `;
-      const replayBtn = root.querySelector('#replayBtn');
-      replayBtn.onclick = () => Speech.speak(item.sentence, replayBtn);
-      root.querySelector('#nextListenBtn').onclick = () => {
-        selectedOpt = null;
-        if (idx < total - 1) idx++; else completed = true;
-        render();
-      };
+        </div>`;
+      renderListenQuestion(cardArea, item, selectedOpt, {
+        controlsHtml,
+        wireControls: () => {
+          root.querySelector('#nextListenBtn').onclick = () => {
+            selectedOpt = null;
+            if (idx < total - 1) idx++; else completed = true;
+            render();
+          };
+        }
+      });
     }
   }
 
-  // Tally of known/learning items for the current lesson+mode — shared by the in-progress
-  // stats row and the end-of-lesson completion screen so both report the same numbers.
+  // Tally of known/learning items for the current lesson — shared by the in-progress stats row
+  // and the end-of-lesson completion screen so both report the same numbers. Reads the shared
+  // SRS schedule, so a word answered correctly in a different mode already counts as known here.
   function computeTally() {
     let known = 0, learning = 0, total;
     if (mode === 'listen') {
       const items = currentListening();
       total = items ? items.length : 0;
-      const progress = Storage.getModeProgress(currentLesson, 'listen');
       (items || []).forEach((it, i) => {
-        const key = currentLesson + '-' + i;
-        if (progress[key] === 'known') known++; else if (progress[key] === 'learning') learning++;
+        const status = Storage.itemStatus(Storage.listenItemId(currentLesson, i));
+        if (status === 'known') known++; else if (status === 'learning') learning++;
       });
     } else {
       const words = currentWords();
       total = words.length;
-      const progress = Storage.getModeProgress(currentLesson, mode);
-      words.forEach(w => { if (progress[w.h] === 'known') known++; else if (progress[w.h] === 'learning') learning++; });
+      words.forEach(w => {
+        const status = Storage.itemStatus(Storage.wordItemId(currentLesson, w.h));
+        if (status === 'known') known++; else if (status === 'learning') learning++;
+      });
     }
     return { known, learning, total };
   }
@@ -436,11 +471,11 @@ const Lessons = (() => {
     saveLastPosition();
     render();
     root.querySelector('#resetBtn').onclick = () => {
-      Storage.clearModeProgress(currentLesson, mode);
+      Storage.clearLessonSrs(currentLesson);
       completed = false;
       render();
     };
   }
 
-  return { mount, renderFlashcard };
+  return { mount, renderFlashcard, renderListenQuestion };
 })();

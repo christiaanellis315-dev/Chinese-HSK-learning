@@ -33,52 +33,107 @@ const Storage = (() => {
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
-  // ---- progress: { [lessonId]: { flip: {key: status}, type: {...}, listen: {...} } } ----
-  function getProgress() { return readRaw('hsk:progress', {}); }
-  function setProgress(p) { writeRaw('hsk:progress', p); }
+  // ===== spaced repetition (Leitner, 5 boxes) =====
+  // One shared schedule per item, regardless of which mode (Flip, Type, Listening, ...) touches
+  // it — this is the whole point: getting a word right in Type mode should push out its next
+  // Flip-mode appearance too, not just its Type-mode one.
+  //
+  // Box N's interval is BOX_INTERVAL_DAYS[N-1]. Correct answer -> promote a box (longer wait).
+  // Wrong answer -> straight back to box 1 (resurfaces tomorrow). A brand-new item has no record
+  // at all; it's implicitly "box 1" until its first answer creates one.
+  const BOX_INTERVAL_DAYS = [1, 2, 4, 9, 18];
+  const DAY_MS = 24 * 60 * 60 * 1000;
 
-  function getModeProgress(lessonId, mode) {
-    const p = getProgress();
-    return (p[lessonId] && p[lessonId][mode]) || {};
+  // Item ids are namespaced by book (only "hsk1" exists today) and item type, so this scales to
+  // HSK2+ later without collisions or a storage rework — a future book just calls these same
+  // builders with its own book prefix (or its own analogous wordItemId/listenItemId pair) and
+  // lands in the same 'hsk:srs' store alongside HSK1's items.
+  const BOOK = 'hsk1';
+  function wordItemId(lessonId, hanzi) { return BOOK + ':word:' + lessonId + ':' + hanzi; }
+  function listenItemId(lessonId, idx) { return BOOK + ':listen:' + lessonId + ':' + idx; }
+
+  function getSrs() { return readRaw('hsk:srs', {}); }
+  function setSrs(s) { writeRaw('hsk:srs', s); }
+
+  // Returns null for an item that's never been answered — distinct from a real box-1 record,
+  // so callers (e.g. the Review queue) can tell "never studied" apart from "due again."
+  function getSrsRecord(itemId) {
+    const srs = getSrs();
+    return srs[itemId] || null;
   }
-  function setItemStatus(lessonId, mode, key, status) {
-    const p = getProgress();
-    if (!p[lessonId]) p[lessonId] = {};
-    if (!p[lessonId][mode]) p[lessonId][mode] = {};
-    p[lessonId][mode][key] = status;
-    setProgress(p);
+
+  function recordSrsResult(itemId, correct) {
+    const srs = getSrs();
+    const curBox = (srs[itemId] && srs[itemId].box) || 1;
+    const newBox = correct ? Math.min(curBox + 1, 5) : 1;
+    const now = Date.now();
+    srs[itemId] = { box: newBox, due: now + BOX_INTERVAL_DAYS[newBox - 1] * DAY_MS, lastReviewed: now };
+    setSrs(srs);
     recordActivity();
   }
-  function clearModeProgress(lessonId, mode) {
-    const p = getProgress();
-    if (p[lessonId]) { p[lessonId][mode] = {}; setProgress(p); }
+
+  function isDue(itemId) {
+    const rec = getSrsRecord(itemId);
+    return !!rec && rec.due <= Date.now();
   }
-  // Clears a word's "learning"/"known" status from both flip and type modes for a lesson —
-  // used by the Review screen so a word stops resurfacing once you've got it.
-  function clearWordEverywhere(lessonId, hanzi) {
-    const p = getProgress();
-    if (p[lessonId]) {
-      if (p[lessonId].flip) delete p[lessonId].flip[hanzi];
-      if (p[lessonId].type) delete p[lessonId].type[hanzi];
-    }
-    setProgress(p);
+
+  // Derived display status, used anywhere the old known/learning/not-reviewed language still
+  // makes sense (mastery pills, in-lesson stats rows): box 1 reads as "still learning" (hasn't
+  // graduated its first box yet), box 2+ reads as "known".
+  function itemStatus(itemId) {
+    const rec = getSrsRecord(itemId);
+    if (!rec) return 'new';
+    return rec.box >= 2 ? 'known' : 'learning';
   }
-  function setWordKnownEverywhere(lessonId, hanzi) {
-    const p = getProgress();
-    if (!p[lessonId]) p[lessonId] = {};
-    if (!p[lessonId].flip) p[lessonId].flip = {};
-    if (!p[lessonId].type) p[lessonId].type = {};
-    p[lessonId].flip[hanzi] = 'known';
-    p[lessonId].type[hanzi] = 'known';
-    setProgress(p);
+
+  // Wipes every SRS record for a lesson (both its vocab words and its listening items) —
+  // backs the "Reset progress for this lesson" control. Since scheduling is shared across
+  // modes now, there's no more per-mode reset, only per-lesson.
+  function clearLessonSrs(lessonId) {
+    const srs = getSrs();
+    const wordPrefix = BOOK + ':word:' + lessonId + ':';
+    const listenPrefix = BOOK + ':listen:' + lessonId + ':';
+    Object.keys(srs).forEach((id) => {
+      if (id.indexOf(wordPrefix) === 0 || id.indexOf(listenPrefix) === 0) delete srs[id];
+    });
+    setSrs(srs);
   }
-  function setWordLearningFlip(lessonId, hanzi) {
-    const p = getProgress();
-    if (!p[lessonId]) p[lessonId] = {};
-    if (!p[lessonId].flip) p[lessonId].flip = {};
-    p[lessonId].flip[hanzi] = 'learning';
-    setProgress(p);
+
+  // ---- one-time migration from the old per-mode "known/learning" progress dict ----
+  // Old shape: { [lessonId]: { flip: {hanzi: status}, type: {hanzi: status}, listen: {key: status} } }
+  // Seeds an initial SRS record for anything already marked, so upgrading doesn't erase study
+  // history: 'known' seeds box 2 (due per that box's interval), 'learning' seeds box 1 (due now).
+  function migrateToSrsIfNeeded() {
+    if (readRaw('hsk:srsMigrated', false)) return;
+    const old = readRaw('hsk:progress', {});
+    const srs = getSrs();
+    const now = Date.now();
+    Object.keys(old).forEach((lessonId) => {
+      const lp = old[lessonId] || {};
+      const flip = lp.flip || {};
+      const type = lp.type || {};
+      const wordKeys = Object.keys(flip).concat(Object.keys(type)).filter((k, i, arr) => arr.indexOf(k) === i);
+      wordKeys.forEach((hanzi) => {
+        const id = wordItemId(lessonId, hanzi);
+        if (srs[id]) return;
+        const known = flip[hanzi] === 'known' || type[hanzi] === 'known';
+        const box = known ? 2 : 1;
+        srs[id] = { box, due: known ? now + BOX_INTERVAL_DAYS[box - 1] * DAY_MS : now, lastReviewed: now };
+      });
+      const listen = lp.listen || {};
+      Object.keys(listen).forEach((key) => {
+        const idx = key.slice(String(lessonId).length + 1);
+        const id = listenItemId(lessonId, idx);
+        if (srs[id]) return;
+        const known = listen[key] === 'known';
+        const box = known ? 2 : 1;
+        srs[id] = { box, due: known ? now + BOX_INTERVAL_DAYS[box - 1] * DAY_MS : now, lastReviewed: now };
+      });
+    });
+    setSrs(srs);
+    writeRaw('hsk:srsMigrated', true);
   }
+  migrateToSrsIfNeeded();
 
   // ---- daily goal + streak ----
   function getDailyGoal() {
@@ -118,8 +173,7 @@ const Storage = (() => {
   function setLastPosition(pos) { writeRaw('hsk:lastPosition', pos); }
 
   return {
-    getProgress, getModeProgress, setItemStatus, clearModeProgress,
-    clearWordEverywhere, setWordKnownEverywhere, setWordLearningFlip,
+    wordItemId, listenItemId, getSrsRecord, recordSrsResult, isDue, itemStatus, clearLessonSrs,
     getDailyGoal, getStreak, recordActivity,
     getAutoplay, setAutoplay,
     getVoicePref, setVoicePref,

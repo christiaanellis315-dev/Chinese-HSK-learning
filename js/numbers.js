@@ -7,6 +7,7 @@ const NumbersDrill = (() => {
   const ROUND_LENGTH = 20;
   let root = null;
   let goTo = null;
+  let started = false;
   let roundNumbers = [];
   let roundIndex = 0;
   let correctCount = 0;
@@ -89,6 +90,20 @@ const NumbersDrill = (() => {
     return { emoji: '💪', message: 'Good effort! Numbers take practice — try another round.' };
   }
 
+  function renderStart() {
+    root.querySelector('#posLabel').textContent = '';
+    root.querySelector('#progressFill').style.width = '0%';
+    root.querySelector('#statsRow').innerHTML = '';
+    root.querySelector('#cardArea').innerHTML = `
+      <div class="card" style="cursor:default;">
+        <div class="back-english" style="margin-bottom:14px;">Numbers 1-99</div>
+        <div class="mnemonic" style="margin-bottom:0;">You'll hear 20 random numbers between 1 and 99, one at a time — type each one as a digit (e.g. "23"). Get through all 20 to see your score.</div>
+        <button class="submit-btn" id="numGoBtn" style="margin-top:22px;">Go</button>
+      </div>
+    `;
+    root.querySelector('#numGoBtn').onclick = () => { started = true; newRound(); render(); };
+  }
+
   function renderCompletionScreen() {
     root.querySelector('#posLabel').textContent = 'Round complete!';
     root.querySelector('#progressFill').style.width = '100%';
@@ -126,6 +141,7 @@ const NumbersDrill = (() => {
   }
 
   function render() {
+    if (!started) { renderStart(); return; }
     if (completed) { renderCompletionScreen(); return; }
 
     root.querySelector('#posLabel').textContent = (roundIndex + 1) + ' / ' + ROUND_LENGTH;
@@ -195,10 +211,10 @@ const NumbersDrill = (() => {
   function mount(container, navigate) {
     root = container;
     goTo = navigate || null;
+    started = false;
     root.innerHTML = html();
     buildAutoplayToggle();
     Speech.buildSpeedControl(root.querySelector('#speedRow'));
-    newRound();
     render();
     root.querySelector('#resetBtn').onclick = () => { newRound(); render(); };
   }

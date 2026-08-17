@@ -1,29 +1,30 @@
 // Dashboard screen: streak, daily goal, per-lesson mastery, continue shortcut,
-// and the entry point into the unified weak-word Review queue.
+// and the entry point into the spaced-repetition Review queue.
 const Dashboard = (() => {
   let root = null;
   let goTo = null;
 
-  function wordKnownStatus(lessonId, hanzi) {
-    const flip = Storage.getModeProgress(lessonId, 'flip');
-    const type = Storage.getModeProgress(lessonId, 'type');
-    if (flip[hanzi] === 'known' || type[hanzi] === 'known') return 'known';
-    if (flip[hanzi] === 'learning' || type[hanzi] === 'learning') return 'learning';
-    return 'new';
-  }
-
   function lessonMastery(lessonId) {
     const words = LESSONS[lessonId].words;
     let known = 0;
-    words.forEach(w => { if (wordKnownStatus(lessonId, w.h) === 'known') known++; });
+    words.forEach(w => { if (Storage.itemStatus(Storage.wordItemId(lessonId, w.h)) === 'known') known++; });
     return { known, total: words.length };
   }
 
-  function countWeakWords() {
+  // How many words + listening items have an SRS due date that's already passed — this is
+  // exactly what the Review screen's queue will contain, shown here so the schedule feels
+  // visible rather than a black box deciding things behind the scenes.
+  function countDueItems() {
     let n = 0;
+    const now = Date.now();
     LESSON_ORDER.forEach(lessonId => {
       LESSONS[lessonId].words.forEach(w => {
-        if (wordKnownStatus(lessonId, w.h) === 'learning') n++;
+        const rec = Storage.getSrsRecord(Storage.wordItemId(lessonId, w.h));
+        if (rec && rec.due <= now) n++;
+      });
+      (LESSONS[lessonId].listening || []).forEach((it, idx) => {
+        const rec = Storage.getSrsRecord(Storage.listenItemId(lessonId, idx));
+        if (rec && rec.due <= now) n++;
       });
     });
     return n;
@@ -33,7 +34,7 @@ const Dashboard = (() => {
     const streak = Storage.getStreak();
     const goal = Storage.getDailyGoal();
     const goalPct = Math.min(100, Math.round((goal.completedToday / goal.target) * 100));
-    const weakCount = countWeakWords();
+    const dueCount = countDueItems();
     const last = Storage.getLastPosition();
 
     const modeLabel = { flip: 'Flip & recall', type: 'Type the answer', listen: 'Listening (A/B/C)' };
@@ -55,12 +56,12 @@ const Dashboard = (() => {
         </div>
       </div>
 
-      <div class="review-cta ${weakCount === 0 ? 'empty' : ''}" id="reviewCta">
+      <div class="review-cta ${dueCount === 0 ? 'empty' : ''}" id="reviewCta">
         <div>
-          <div class="rc-title">${weakCount > 0 ? 'Review weak words' : 'No weak words yet'}</div>
-          <div class="rc-sub">${weakCount > 0 ? weakCount + ' word' + (weakCount === 1 ? '' : 's') + ' marked "still learning," pulled from every lesson' : 'Words you mark "still learning" in Flip or Type mode will show up here'}</div>
+          <div class="rc-title">${dueCount > 0 ? dueCount + ' due for review' : 'Nothing due right now'}</div>
+          <div class="rc-sub">${dueCount > 0 ? 'Words and listening questions due today, pulled from every lesson' : 'Study a lesson to get words into the review schedule'}</div>
         </div>
-        <div class="rc-arrow">${weakCount > 0 ? '→' : ''}</div>
+        <div class="rc-arrow">${dueCount > 0 ? '→' : ''}</div>
       </div>
 
       <div class="continue-card" id="continueCard">
@@ -101,8 +102,8 @@ const Dashboard = (() => {
     root.innerHTML = html();
     buildMasteryGrid();
 
-    const weakCount = countWeakWords();
-    root.querySelector('#reviewCta').onclick = () => { if (weakCount > 0) goTo('review'); };
+    const dueCount = countDueItems();
+    root.querySelector('#reviewCta').onclick = () => { if (dueCount > 0) goTo('review'); };
 
     const last = Storage.getLastPosition();
     root.querySelector('#continueCard').onclick = () => {
