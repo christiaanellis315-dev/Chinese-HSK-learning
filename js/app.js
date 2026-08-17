@@ -16,7 +16,7 @@
     navEl.innerHTML = NAV_ITEMS.map(item => `
       <button class="nav-item ${currentScreen === item.id ? 'active' : ''}" data-id="${item.id}">
         <span class="nav-icon">${item.icon}</span>
-        <span>${item.label}</span>
+        <span class="nav-label">${item.label}</span>
       </button>
     `).join('');
     navEl.querySelectorAll('.nav-item').forEach(btn => {
@@ -25,6 +25,7 @@
   }
 
   function navigate(screen, opts) {
+    Recorder.cleanup(); // never carry a mic recording/stream across screens
     currentScreen = screen;
     buildNav();
     window.scrollTo(0, 0);

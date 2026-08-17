@@ -31,13 +31,17 @@ const Lessons = (() => {
   function renderFlashcard(cardArea, word, isFlipped, opts) {
     opts = opts || {};
     const controlsHtml = opts.controlsHtml || '';
+    Recorder.cleanup(); // previous card's mic session (if any) is done
     if (!isFlipped) {
       cardArea.innerHTML = `
         <div class="card" id="flipCard">
           <div class="hanzi">${word.h}</div>
           <div class="pinyin">${word.p}</div>
           <div class="pos-tag">${word.pos || ''}</div>
-          <button class="speak-btn" id="speakBtnFront" aria-label="Play pronunciation">&#128266;</button>
+          <div class="audio-row">
+            <button class="speak-btn" id="speakBtnFront" aria-label="Play pronunciation">&#128266;</button>
+            <span id="micAreaFront"></span>
+          </div>
           <div class="tap-hint">tap card to reveal meaning</div>
         </div>
         ${controlsHtml}
@@ -47,12 +51,16 @@ const Lessons = (() => {
       const speakBtn = document.getElementById('speakBtnFront');
       speakBtn.onclick = (e) => { e.stopPropagation(); Speech.speak(word.h, speakBtn); };
       if (opts.autoplay) Speech.speak(word.h, speakBtn);
+      Recorder.mountMicButton(document.getElementById('micAreaFront'), word.h);
     } else {
       const exampleHtml = word.ex ? `<div class="example"><div class="ex-h">${word.ex}</div><div class="ex-p">${word.exp}</div><div>${word.exe}</div></div>` : '';
       cardArea.innerHTML = `
         <div class="card" id="flipCard">
           <div class="hanzi" style="font-size:34px;">${word.h} <span class="pinyin" style="font-size:16px;">${word.p}</span></div>
-          <button class="speak-btn" id="speakBtnBack" aria-label="Play pronunciation">&#128266;</button>
+          <div class="audio-row">
+            <button class="speak-btn" id="speakBtnBack" aria-label="Play pronunciation">&#128266;</button>
+            <span id="micAreaBack"></span>
+          </div>
           <div class="back-english">${word.e}</div>
           <div class="mnemonic">${word.m}</div>
           ${exampleHtml}
@@ -63,6 +71,7 @@ const Lessons = (() => {
       cardEl.onclick = () => opts.onToggle && opts.onToggle(false);
       const speakBtn = document.getElementById('speakBtnBack');
       speakBtn.onclick = (e) => { e.stopPropagation(); Speech.speak(word.h, speakBtn); };
+      Recorder.mountMicButton(document.getElementById('micAreaBack'), word.h);
     }
     if (opts.wireControls) opts.wireControls();
   }
