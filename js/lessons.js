@@ -5,6 +5,7 @@
 // Also exposes renderFlashcard() so the Review screen can reuse the exact same flip-card UI.
 const Lessons = (() => {
   let root = null;
+  let goTo = null;
   let currentLesson = LESSON_ORDER[0];
   let mode = 'flip';
   let idx = 0;
@@ -13,6 +14,7 @@ const Lessons = (() => {
   let typedAnswer = '';
   let lastCorrect = null;
   let selectedOpt = null;
+  let completed = false;
 
   function normalize(s) { return s.toLowerCase().trim().replace(/[.!?]/g, ''); }
   function checkAnswer(input, w) {
@@ -122,13 +124,13 @@ const Lessons = (() => {
   }
 
   function switchMode(m) {
-    mode = m; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
+    mode = m; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false;
     buildModeToggle();
     saveLastPosition();
     render();
   }
   function switchLesson(key) {
-    currentLesson = key; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
+    currentLesson = key; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false;
     saveLastPosition();
     buildTabs();
     render();
@@ -143,6 +145,8 @@ const Lessons = (() => {
   function render() {
     const titleParts = lessonTitleParts(currentLesson);
     root.querySelector('#lessonLabel').textContent = `${titleParts.hanzi} ${titleParts.pinyin} ${titleParts.english}`;
+
+    if (completed) { renderCompletionScreen(); return; }
 
     if (mode === 'flip') {
       const words = currentWords();
@@ -213,7 +217,7 @@ const Lessons = (() => {
   }
   function advanceFlip(total) {
     flipped = false;
-    if (idx < total - 1) idx++;
+    if (idx < total - 1) idx++; else completed = true;
     render();
   }
 
@@ -268,7 +272,11 @@ const Lessons = (() => {
       `;
       const speakBtn = root.querySelector('#speakBtnBack');
       speakBtn.onclick = (e) => { e.stopPropagation(); Speech.speak(w.h, speakBtn); };
-      root.querySelector('#nextTypeBtn').onclick = () => { typed = false; if (idx < total - 1) idx++; render(); };
+      root.querySelector('#nextTypeBtn').onclick = () => {
+        typed = false;
+        if (idx < total - 1) idx++; else completed = true;
+        render();
+      };
     }
   }
 
@@ -330,18 +338,23 @@ const Lessons = (() => {
       `;
       const replayBtn = root.querySelector('#replayBtn');
       replayBtn.onclick = () => Speech.speak(item.sentence, replayBtn);
-      root.querySelector('#nextListenBtn').onclick = () => { selectedOpt = null; if (idx < total - 1) idx++; render(); };
+      root.querySelector('#nextListenBtn').onclick = () => {
+        selectedOpt = null;
+        if (idx < total - 1) idx++; else completed = true;
+        render();
+      };
     }
   }
 
-  function renderStats() {
+  // Tally of known/learning items for the current lesson+mode — shared by the in-progress
+  // stats row and the end-of-lesson completion screen so both report the same numbers.
+  function computeTally() {
     let known = 0, learning = 0, total;
     if (mode === 'listen') {
       const items = currentListening();
-      if (!items) return;
-      total = items.length;
+      total = items ? items.length : 0;
       const progress = Storage.getModeProgress(currentLesson, 'listen');
-      items.forEach((it, i) => {
+      (items || []).forEach((it, i) => {
         const key = currentLesson + '-' + i;
         if (progress[key] === 'known') known++; else if (progress[key] === 'learning') learning++;
       });
@@ -351,15 +364,61 @@ const Lessons = (() => {
       const progress = Storage.getModeProgress(currentLesson, mode);
       words.forEach(w => { if (progress[w.h] === 'known') known++; else if (progress[w.h] === 'learning') learning++; });
     }
+    return { known, learning, total };
+  }
+
+  function renderStats() {
+    const { known, learning, total } = computeTally();
     const label = mode === 'listen' ? ['correct', 'missed', 'not attempted'] : ['known', 'still learning', 'not reviewed'];
     root.querySelector('#statsRow').innerHTML = `<span><b>${known}</b> ${label[0]}</span><span><b>${learning}</b> ${label[1]}</span><span><b>${total - known - learning}</b> ${label[2]}</span>`;
   }
 
-  function mount(container, initial) {
+  function completionTone(known, total) {
+    if (total === 0) return { emoji: '👍', message: 'Lesson complete.' };
+    const ratio = known / total;
+    if (ratio === 1) return { emoji: '🎉', message: 'Perfect! You’ve got this lesson down.' };
+    if (ratio >= 0.7) return { emoji: '✨', message: 'Well done!' };
+    if (ratio >= 0.4) return { emoji: '👍', message: 'Nice work — a few more reviews and you’ll have it.' };
+    return { emoji: '💪', message: 'Good effort! This one might need another pass.' };
+  }
+
+  function renderCompletionScreen() {
+    const { known, learning, total } = computeTally();
+    root.querySelector('#posLabel').textContent = 'Complete!';
+    root.querySelector('#progressFill').style.width = '100%';
+    root.querySelector('#statsRow').innerHTML = '';
+
+    const scoreText = mode === 'flip'
+      ? `${known} known · ${learning} still learning`
+      : `${known} out of ${total} correct`;
+    const tone = completionTone(known, total);
+
+    root.querySelector('#cardArea').innerHTML = `
+      <div class="card" style="cursor:default;">
+        <div class="review-summary" style="padding:10px 0;">
+          <div class="rs-emoji">${tone.emoji}</div>
+          <div class="rs-title">${scoreText}</div>
+          <div class="rs-sub">${tone.message}</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="nav-btn" id="tryAgainBtn">Try again</button>
+        <button class="nav-btn" id="backToListBtn">Back to lesson list</button>
+      </div>
+    `;
+    root.querySelector('#tryAgainBtn').onclick = () => {
+      completed = false; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
+      render();
+    };
+    root.querySelector('#backToListBtn').onclick = () => { if (goTo) goTo('dashboard'); };
+  }
+
+  function mount(container, initial, navigate) {
     root = container;
+    goTo = navigate || null;
     if (initial && initial.lesson) currentLesson = initial.lesson;
     if (initial && initial.mode) mode = initial.mode;
-    idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
+    idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false;
     root.innerHTML = html();
     buildAutoplayToggle();
     Speech.buildSpeedControl(root.querySelector('#speedRow'));
@@ -369,6 +428,7 @@ const Lessons = (() => {
     render();
     root.querySelector('#resetBtn').onclick = () => {
       Storage.clearModeProgress(currentLesson, mode);
+      completed = false;
       render();
     };
   }

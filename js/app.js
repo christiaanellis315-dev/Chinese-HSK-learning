@@ -29,7 +29,7 @@
     buildNav();
     window.scrollTo(0, 0);
     if (screen === 'dashboard') Dashboard.mount(screenEl, navigate);
-    else if (screen === 'lessons') Lessons.mount(screenEl, opts);
+    else if (screen === 'lessons') Lessons.mount(screenEl, opts, navigate);
     else if (screen === 'review') Review.mount(screenEl);
     else if (screen === 'numbers') NumbersDrill.mount(screenEl);
     else if (screen === 'pinyin') Pinyin.mount(screenEl);
