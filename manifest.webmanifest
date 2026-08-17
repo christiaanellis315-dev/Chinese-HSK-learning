@@ -1,7 +1,7 @@
 {
-  "name": "HSK1 Night Shift",
-  "short_name": "HSK1",
-  "description": "Offline HSK1 study app — flashcards, typing drills, listening comprehension and a pinyin reference, in a dark amber night-shift theme.",
+  "name": "Chinese Study",
+  "short_name": "Chinese Study",
+  "description": "Offline Chinese Study app — HSK1 flashcards, typing drills, listening comprehension and a pinyin reference, in a dark amber night-shift theme.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

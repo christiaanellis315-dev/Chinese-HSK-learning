@@ -40,7 +40,7 @@ const Dashboard = (() => {
 
     return `
       <div class="lamp"></div>
-      <h1>Night shift study app</h1>
+      <h1>Chinese Study</h1>
       <div class="sub">Your HSK1 progress at a glance</div>
 
       <div class="dash-grid">
@@ -82,10 +82,11 @@ const Dashboard = (() => {
     LESSON_ORDER.forEach(lessonId => {
       const { known, total } = lessonMastery(lessonId);
       const pct = Math.round((known / total) * 100);
+      const titleParts = lessonTitleParts(lessonId);
       const pill = document.createElement('div');
       pill.className = 'mastery-pill';
       pill.innerHTML = `
-        <div class="mp-title">L${lessonId} · ${LESSONS[lessonId].title.split(' (')[0]}</div>
+        <div class="mp-title">L${lessonId} · ${titleParts.hanzi} <span class="mp-pinyin">${titleParts.pinyin}</span></div>
         <div class="mp-bar-wrap"><div class="mp-bar-fill" style="width:${pct}%"></div></div>
         <div class="mp-frac">${known}/${total} known</div>
       `;

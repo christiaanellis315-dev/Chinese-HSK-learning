@@ -140,7 +140,8 @@ const Lessons = (() => {
   function currentListening() { return LESSONS[currentLesson].listening || null; }
 
   function render() {
-    root.querySelector('#lessonLabel').textContent = LESSONS[currentLesson].title;
+    const titleParts = lessonTitleParts(currentLesson);
+    root.querySelector('#lessonLabel').textContent = `${titleParts.hanzi} ${titleParts.pinyin} ${titleParts.english}`;
 
     if (mode === 'flip') {
       const words = currentWords();
