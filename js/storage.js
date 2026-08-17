@@ -107,8 +107,10 @@ const Storage = (() => {
   function getAutoplay(section) { return readRaw('hsk:autoplay:' + section, section === 'lessons'); }
   function setAutoplay(section, val) { writeRaw('hsk:autoplay:' + section, val); }
 
-  // ---- shared voice preference (used by lessons, review, and pinyin reference) ----
-  function getVoicePref() { return readRaw('hsk:voice', { index: 0, rate: 0.85 }); }
+  // ---- shared voice preference (used by lessons, review, numbers, and pinyin reference) ----
+  // Default rate is "Slow" (0.6) — beginners consistently found Listening mode's old fixed
+  // 0.75 rate too fast; better to start slow and let the person speed up than the reverse.
+  function getVoicePref() { return readRaw('hsk:voice', { index: 0, rate: 0.6 }); }
   function setVoicePref(pref) { writeRaw('hsk:voice', pref); }
 
   // ---- "continue where you left off" ----

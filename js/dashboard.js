@@ -36,7 +36,7 @@ const Dashboard = (() => {
     const weakCount = countWeakWords();
     const last = Storage.getLastPosition();
 
-    const modeLabel = { flip: 'Flip & recall', type: 'Type the answer', listen: 'Listening (A/B/C)', numbers: 'Numbers 1-99' };
+    const modeLabel = { flip: 'Flip & recall', type: 'Type the answer', listen: 'Listening (A/B/C)' };
 
     return `
       <div class="lamp"></div>

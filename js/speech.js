@@ -37,6 +37,23 @@ const Speech = (() => {
     return '';
   }
 
+  // Global speed control (Slow/Normal/Natural), shared by every screen that plays audio.
+  // The choice is stored once in Storage's voice pref and applies everywhere — this just
+  // renders the same three-button row into whichever container a screen gives it.
+  const SPEEDS = [{ label: 'Slow', val: 0.6 }, { label: 'Normal', val: 0.75 }, { label: 'Natural', val: 0.95 }];
+  function buildSpeedControl(container) {
+    const pref = Storage.getVoicePref();
+    container.innerHTML = SPEEDS.map(s => `<div class="speed-btn ${pref.rate === s.val ? 'active' : ''}" data-val="${s.val}">${s.label}</div>`).join('');
+    container.querySelectorAll('.speed-btn').forEach((btn) => {
+      btn.onclick = () => {
+        const p = Storage.getVoicePref();
+        p.rate = parseFloat(btn.dataset.val);
+        Storage.setVoicePref(p);
+        buildSpeedControl(container);
+      };
+    });
+  }
+
   function speak(hanzi, el, rateOverride) {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
@@ -53,5 +70,5 @@ const Speech = (() => {
     window.speechSynthesis.speak(utter);
   }
 
-  return { onReady, getVoices, guessGender, speak };
+  return { onReady, getVoices, guessGender, speak, buildSpeedControl };
 })();

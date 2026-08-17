@@ -29,21 +29,6 @@ const Pinyin = (() => {
     el.onclick = () => { Storage.setAutoplay('pinyin', !Storage.getAutoplay('pinyin')); buildAutoplayToggle(); };
   }
 
-  function buildSpeedRow() {
-    const el = root.querySelector('#speedRow');
-    const pref = Storage.getVoicePref();
-    const speeds = [{label:'Slow', val:0.6}, {label:'Normal', val:0.75}, {label:'Natural', val:0.95}];
-    el.innerHTML = speeds.map(s => `<div class="speed-btn ${pref.rate === s.val ? 'active' : ''}" data-val="${s.val}">${s.label}</div>`).join('');
-    el.querySelectorAll('.speed-btn').forEach(btn => {
-      btn.onclick = () => {
-        const p = Storage.getVoicePref();
-        p.rate = parseFloat(btn.dataset.val);
-        Storage.setVoicePref(p);
-        buildSpeedRow();
-      };
-    });
-  }
-
   function buildVoiceRow() {
     const row = root.querySelector('#voiceRow');
     const note = root.querySelector('#voiceNote');
@@ -168,7 +153,7 @@ const Pinyin = (() => {
     root = container;
     root.innerHTML = html();
     buildAutoplayToggle();
-    buildSpeedRow();
+    Speech.buildSpeedControl(root.querySelector('#speedRow'));
     buildVoiceRow();
     buildTabs();
     render();

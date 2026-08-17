@@ -1,5 +1,7 @@
-// Lessons screen: flip / type / listen / numbers engine, adapted from the original
-// hsk1_lessons_*.html files and generalized to loop over all of LESSON_ORDER (1-15).
+// Lessons screen: flip / type / listen engine, adapted from the original hsk1_lessons_*.html
+// files and generalized to loop over all of LESSON_ORDER (1-15). The Numbers 1-99 drill that
+// used to live here as a fourth mode is now its own top-level screen (see numbers.js) — it's a
+// recurring standalone drill, not lesson-specific content.
 // Also exposes renderFlashcard() so the Review screen can reuse the exact same flip-card UI.
 const Lessons = (() => {
   let root = null;
@@ -73,6 +75,7 @@ const Lessons = (() => {
         <span>Auto-play audio</span>
         <div class="switch" id="autoplaySwitch"><div class="knob"></div></div>
       </div>
+      <div class="top-row" id="speedRow"></div>
       <div class="tabs" id="tabs"></div>
       <div class="mode-toggle" id="modeToggle"></div>
       <div class="progress-row">
@@ -112,12 +115,10 @@ const Lessons = (() => {
       <div class="mode-btn ${mode === 'flip' ? 'active' : ''}" id="flipModeBtn">Flip &amp; recall</div>
       <div class="mode-btn ${mode === 'type' ? 'active' : ''}" id="typeModeBtn">Type the answer</div>
       <div class="mode-btn ${mode === 'listen' ? 'active' : ''}" id="listenModeBtn">Listening (A/B/C)</div>
-      <div class="mode-btn ${mode === 'numbers' ? 'active' : ''}" id="numbersModeBtn">Numbers 1-99</div>
     `;
     root.querySelector('#flipModeBtn').onclick = () => switchMode('flip');
     root.querySelector('#typeModeBtn').onclick = () => switchMode('type');
     root.querySelector('#listenModeBtn').onclick = () => switchMode('listen');
-    root.querySelector('#numbersModeBtn').onclick = () => switchMode('numbers');
   }
 
   function switchMode(m) {
@@ -133,7 +134,7 @@ const Lessons = (() => {
     render();
   }
   function saveLastPosition() {
-    if (mode !== 'numbers') Storage.setLastPosition({ lesson: currentLesson, mode });
+    Storage.setLastPosition({ lesson: currentLesson, mode });
   }
 
   function currentWords() { return LESSONS[currentLesson].words; }
@@ -168,7 +169,7 @@ const Lessons = (() => {
       setProgressBar(idx, items.length);
       renderListenMode(items[idx], items.length);
       renderStats();
-    } else if (mode === 'numbers') { renderNumbersMode(); }
+    }
   }
 
   function setProgressBar(i, total) {
@@ -302,8 +303,8 @@ const Lessons = (() => {
         optsWrap.appendChild(b);
       });
       const playBtn = root.querySelector('#playBtn');
-      playBtn.onclick = () => Speech.speak(item.sentence, playBtn, 0.75);
-      if (Storage.getAutoplay('lessons')) Speech.speak(item.sentence, playBtn, 0.75);
+      playBtn.onclick = () => Speech.speak(item.sentence, playBtn);
+      if (Storage.getAutoplay('lessons')) Speech.speak(item.sentence, playBtn);
       const prevBtn = root.querySelector('#prevBtn'), nextBtn = root.querySelector('#nextBtn');
       if (prevBtn) prevBtn.onclick = () => { if (idx > 0) { idx--; selectedOpt = null; render(); } };
       if (nextBtn) nextBtn.onclick = () => { if (idx < total - 1) { idx++; selectedOpt = null; render(); } };
@@ -328,82 +329,9 @@ const Lessons = (() => {
         </div>
       `;
       const replayBtn = root.querySelector('#replayBtn');
-      replayBtn.onclick = () => Speech.speak(item.sentence, replayBtn, 0.75);
+      replayBtn.onclick = () => Speech.speak(item.sentence, replayBtn);
       root.querySelector('#nextListenBtn').onclick = () => { selectedOpt = null; if (idx < total - 1) idx++; render(); };
     }
-  }
-
-  const digitsHan = ['','一','二','三','四','五','六','七','八','九'];
-  function numberToHanzi(n) {
-    if (n < 10) return digitsHan[n];
-    if (n === 10) return '十';
-    if (n < 20) return '十' + digitsHan[n - 10];
-    const tens = Math.floor(n / 10), ones = n % 10;
-    if (ones === 0) return digitsHan[tens] + '十';
-    return digitsHan[tens] + '十' + digitsHan[ones];
-  }
-  function numberToPinyin(n) {
-    const pin = { 1:'yī',2:'èr',3:'sān',4:'sì',5:'wǔ',6:'liù',7:'qī',8:'bā',9:'jiǔ' };
-    if (n < 10) return pin[n];
-    if (n === 10) return 'shí';
-    if (n < 20) { const ones = n - 10; return 'shí' + (ones === 2 ? "'" : '') + pin[ones]; }
-    const tens = Math.floor(n / 10), ones = n % 10;
-    let s = pin[tens] + 'shí';
-    if (ones === 0) return s;
-    return s + (ones === 2 ? "'" : '') + pin[ones];
-  }
-  let currentNumber = null, numAnswered = false, numCorrect = null, numScore = { correct: 0, total: 0 };
-  function newNumber() { currentNumber = 1 + Math.floor(Math.random() * 99); numAnswered = false; numCorrect = null; }
-  function renderNumbersMode() {
-    if (currentNumber === null) newNumber();
-    root.querySelector('#progressFill').style.width = '100%';
-    root.querySelector('#posLabel').textContent = numScore.total + ' answered';
-    root.querySelector('#lessonLabel').textContent = 'Numbers below 100';
-    const cardArea = root.querySelector('#cardArea');
-    if (!numAnswered) {
-      cardArea.innerHTML = `
-        <div class="card" style="cursor:default;">
-          <div class="num-big">${numberToPinyin(currentNumber)}</div>
-          <div class="num-hint">listen and type the number</div>
-          <button class="speak-btn" id="speakNumBtn" aria-label="Play number">&#128266;</button>
-          <input type="text" class="type-input" id="numInput" placeholder="e.g. 23" autocomplete="off" inputmode="numeric">
-          <div class="error-text" id="numError"></div>
-          <button class="submit-btn" id="numSubmitBtn">Check</button>
-        </div>
-        <div class="controls"><button class="nav-btn" id="numSkipBtn">skip &rarr;</button></div>
-      `;
-      const speakBtn = root.querySelector('#speakNumBtn');
-      speakBtn.onclick = () => Speech.speak(numberToHanzi(currentNumber), speakBtn, 0.8);
-      if (Storage.getAutoplay('lessons')) Speech.speak(numberToHanzi(currentNumber), speakBtn, 0.8);
-      const input = root.querySelector('#numInput');
-      const doSubmit = () => {
-        const val = input.value.trim();
-        if (!val) { root.querySelector('#numError').textContent = 'Type a number first.'; input.classList.add('wrong-input'); return; }
-        numCorrect = (parseInt(val, 10) === currentNumber);
-        numScore.total++; if (numCorrect) numScore.correct++;
-        Storage.recordActivity();
-        numAnswered = true; renderNumbersMode();
-      };
-      root.querySelector('#numSubmitBtn').onclick = doSubmit;
-      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSubmit(); });
-      input.addEventListener('input', () => { input.classList.remove('wrong-input'); root.querySelector('#numError').textContent = ''; });
-      input.focus();
-      root.querySelector('#numSkipBtn').onclick = () => { newNumber(); renderNumbersMode(); };
-    } else {
-      cardArea.innerHTML = `
-        <div class="card" style="cursor:default;">
-          <div class="feedback-badge ${numCorrect ? 'correct' : 'wrong'}">${numCorrect ? 'Correct!' : 'Not quite'}</div>
-          <div class="num-big">${numberToPinyin(currentNumber)}</div>
-          <button class="speak-btn" id="speakNumBtn2" aria-label="Play number">&#128266;</button>
-          <div class="back-english">${currentNumber} &nbsp;&mdash;&nbsp; ${numberToHanzi(currentNumber)}</div>
-        </div>
-        <div class="controls"><button class="nav-btn" id="numNextBtn">next number &rarr;</button></div>
-      `;
-      const speakBtn2 = root.querySelector('#speakNumBtn2');
-      speakBtn2.onclick = () => Speech.speak(numberToHanzi(currentNumber), speakBtn2, 0.8);
-      root.querySelector('#numNextBtn').onclick = () => { newNumber(); renderNumbersMode(); };
-    }
-    root.querySelector('#statsRow').innerHTML = `<span><b>${numScore.correct}</b> correct</span><span><b>${numScore.total - numScore.correct}</b> missed</span><span><b>${numScore.total}</b> total</span>`;
   }
 
   function renderStats() {
@@ -434,12 +362,12 @@ const Lessons = (() => {
     idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
     root.innerHTML = html();
     buildAutoplayToggle();
+    Speech.buildSpeedControl(root.querySelector('#speedRow'));
     buildTabs();
     buildModeToggle();
     saveLastPosition();
     render();
     root.querySelector('#resetBtn').onclick = () => {
-      if (mode === 'numbers') { numScore = { correct: 0, total: 0 }; newNumber(); render(); return; }
       Storage.clearModeProgress(currentLesson, mode);
       render();
     };
