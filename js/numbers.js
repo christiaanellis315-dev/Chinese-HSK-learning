@@ -90,21 +90,57 @@ const NumbersDrill = (() => {
     return { emoji: '💪', message: 'Good effort! Numbers take practice — try another round.' };
   }
 
+  const SESSION_KEY = 'numbers';
+  function validSession(session) {
+    return !!session
+      && Array.isArray(session.roundNumbers) && session.roundNumbers.length === ROUND_LENGTH
+      && Number.isInteger(session.roundIndex) && session.roundIndex >= 0 && session.roundIndex < ROUND_LENGTH
+      && Number.isInteger(session.correctCount);
+  }
+
   function renderStart() {
     root.querySelector('#posLabel').textContent = '';
     root.querySelector('#progressFill').style.width = '0%';
     root.querySelector('#statsRow').innerHTML = '';
+
+    const session = Storage.getSession(SESSION_KEY);
+    const hasSession = validSession(session);
+
+    const buttonsHtml = hasSession
+      ? `
+        <button class="submit-btn" id="numResumeBtn" style="margin-top:22px;">Resume (number ${session.roundIndex + 1} of ${ROUND_LENGTH}, ${session.correctCount} correct so far)</button>
+        <button class="reset" id="numStartOverBtn" style="margin-top:14px;">Start over</button>
+      `
+      : `<button class="submit-btn" id="numGoBtn" style="margin-top:22px;">Go</button>`;
+
     root.querySelector('#cardArea').innerHTML = `
       <div class="card" style="cursor:default;">
         <div class="back-english" style="margin-bottom:14px;">Numbers 1-99</div>
         <div class="mnemonic" style="margin-bottom:0;">You'll hear 20 random numbers between 1 and 99, one at a time — type each one as a digit (e.g. "23"). Get through all 20 to see your score.</div>
-        <button class="submit-btn" id="numGoBtn" style="margin-top:22px;">Go</button>
+        ${buttonsHtml}
       </div>
     `;
-    root.querySelector('#numGoBtn').onclick = () => { started = true; newRound(); render(); };
+
+    if (hasSession) {
+      root.querySelector('#numResumeBtn').onclick = () => {
+        roundNumbers = session.roundNumbers;
+        roundIndex = session.roundIndex;
+        correctCount = session.correctCount;
+        answered = false; correct = null; completed = false;
+        started = true;
+        render();
+      };
+      root.querySelector('#numStartOverBtn').onclick = () => {
+        Storage.clearSession(SESSION_KEY);
+        started = true; newRound(); render();
+      };
+    } else {
+      root.querySelector('#numGoBtn').onclick = () => { started = true; newRound(); render(); };
+    }
   }
 
   function renderCompletionScreen() {
+    Storage.clearSession(SESSION_KEY);
     root.querySelector('#posLabel').textContent = 'Round complete!';
     root.querySelector('#progressFill').style.width = '100%';
     root.querySelector('#statsRow').innerHTML = '';
@@ -143,6 +179,7 @@ const NumbersDrill = (() => {
   function render() {
     if (!started) { renderStart(); return; }
     if (completed) { renderCompletionScreen(); return; }
+    Storage.setSession(SESSION_KEY, { roundNumbers, roundIndex, correctCount });
 
     root.querySelector('#posLabel').textContent = (roundIndex + 1) + ' / ' + ROUND_LENGTH;
     root.querySelector('#progressFill').style.width = (((roundIndex + 1) / ROUND_LENGTH) * 100) + '%';

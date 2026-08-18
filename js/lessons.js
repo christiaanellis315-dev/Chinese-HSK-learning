@@ -20,6 +20,7 @@ const Lessons = (() => {
   let lastCorrect = null;
   let selectedOpt = null;
   let completed = false;
+  let started = false;
 
   function normalize(s) { return s.toLowerCase().trim().replace(/[.!?]/g, ''); }
   function checkAnswer(input, w) {
@@ -138,13 +139,13 @@ const Lessons = (() => {
   }
 
   function switchMode(m) {
-    mode = m; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false;
+    mode = m; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
     buildModeToggle();
     saveLastPosition();
     render();
   }
   function switchLesson(key) {
-    currentLesson = key; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false;
+    currentLesson = key; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
     saveLastPosition();
     buildTabs();
     render();
@@ -153,14 +154,76 @@ const Lessons = (() => {
     Storage.setLastPosition({ lesson: currentLesson, mode });
   }
 
+  // ---- in-progress session (backs the Go screen's Resume option) ----
+  // One slot per lesson+mode combination, so leaving Flip mid-Lesson-4 and Type mid-Lesson-7
+  // don't clobber each other.
+  function sessionKey() { return 'lessons:' + currentLesson + ':' + mode; }
+  function saveSession() { Storage.setSession(sessionKey(), { idx }); }
+  function clearSession() { Storage.clearSession(sessionKey()); }
+  function clearAllModeSessions(lessonId) {
+    ['flip', 'type', 'listen'].forEach((m) => Storage.clearSession('lessons:' + lessonId + ':' + m));
+  }
+
   function currentWords() { return LESSONS[currentLesson].words; }
   function currentListening() { return LESSONS[currentLesson].listening || null; }
+
+  const MODE_TITLE = { flip: 'Flip & Recall', type: 'Type the Answer', listen: 'Listening' };
+  const MODE_BLURB = {
+    flip: 'Flip through this lesson’s words — tap each card to reveal the meaning, then mark yourself “I know this” or “still learning.”',
+    type: 'Type the English meaning for each word in this lesson, then check your answer.',
+    listen: 'Listen to a sentence, then pick the correct answer from three options.',
+  };
+
+  function modeTotal() {
+    if (mode === 'listen') { const items = currentListening(); return items ? items.length : 0; }
+    return currentWords().length;
+  }
+
+  function beginSession(startIdx) {
+    idx = startIdx; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false;
+    started = true;
+    render();
+  }
+
+  function renderGoScreen() {
+    root.querySelector('#posLabel').textContent = '';
+    root.querySelector('#progressFill').style.width = '0%';
+    root.querySelector('#statsRow').innerHTML = '';
+
+    const total = modeTotal();
+    const session = Storage.getSession(sessionKey());
+    const validSession = session && Number.isInteger(session.idx) && session.idx >= 0 && session.idx < total;
+
+    const buttonsHtml = validSession
+      ? `
+        <button class="submit-btn" id="resumeBtn" style="margin-top:22px;">Resume (card ${session.idx + 1} of ${total})</button>
+        <button class="reset" id="startOverBtn" style="margin-top:14px;">Start over</button>
+      `
+      : `<button class="submit-btn" id="goBtn" style="margin-top:22px;">Go</button>`;
+
+    root.querySelector('#cardArea').innerHTML = `
+      <div class="card" style="cursor:default;">
+        <div class="back-english" style="margin-bottom:14px;">${MODE_TITLE[mode]}</div>
+        <div class="mnemonic" style="margin-bottom:0;">${MODE_BLURB[mode]}</div>
+        ${buttonsHtml}
+      </div>
+    `;
+
+    if (validSession) {
+      root.querySelector('#resumeBtn').onclick = () => beginSession(session.idx);
+      root.querySelector('#startOverBtn').onclick = () => { clearSession(); beginSession(0); };
+    } else {
+      root.querySelector('#goBtn').onclick = () => beginSession(0);
+    }
+  }
 
   function render() {
     const titleParts = lessonTitleParts(currentLesson);
     root.querySelector('#lessonLabel').textContent = `${titleParts.hanzi} ${titleParts.pinyin} ${titleParts.english}`;
 
+    if (!started) { renderGoScreen(); return; }
     if (completed) { renderCompletionScreen(); return; }
+    saveSession();
 
     if (mode === 'flip') {
       const words = currentWords();
@@ -427,6 +490,7 @@ const Lessons = (() => {
   }
 
   function renderCompletionScreen() {
+    clearSession();
     const { known, learning, total } = computeTally();
     root.querySelector('#posLabel').textContent = 'Complete!';
     root.querySelector('#progressFill').style.width = '100%';
@@ -462,7 +526,7 @@ const Lessons = (() => {
     goTo = navigate || null;
     if (initial && initial.lesson) currentLesson = initial.lesson;
     if (initial && initial.mode) mode = initial.mode;
-    idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false;
+    idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
     root.innerHTML = html();
     buildAutoplayToggle();
     Speech.buildSpeedControl(root.querySelector('#speedRow'));
@@ -472,7 +536,9 @@ const Lessons = (() => {
     render();
     root.querySelector('#resetBtn').onclick = () => {
       Storage.clearLessonSrs(currentLesson);
+      clearAllModeSessions(currentLesson);
       completed = false;
+      started = false;
       render();
     };
   }

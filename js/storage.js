@@ -172,11 +172,23 @@ const Storage = (() => {
   function getLastPosition() { return readRaw('hsk:lastPosition', null); }
   function setLastPosition(pos) { writeRaw('hsk:lastPosition', pos); }
 
+  // ---- in-progress session state (the "Go" screen's resume data) ----
+  // One flat store, keyed by a caller-chosen string — lessons.js uses "lessons:<lesson>:<mode>"
+  // (one slot per lesson+mode combination), numbers.js uses the single key "numbers" (its round
+  // isn't lesson-scoped). Shape is whatever the caller needs (card index, round state, etc.) —
+  // this is just the save slot, not opinionated about what's in it.
+  function getSessions() { return readRaw('hsk:sessions', {}); }
+  function setSessions(s) { writeRaw('hsk:sessions', s); }
+  function getSession(key) { return getSessions()[key] || null; }
+  function setSession(key, data) { const s = getSessions(); s[key] = data; setSessions(s); }
+  function clearSession(key) { const s = getSessions(); delete s[key]; setSessions(s); }
+
   return {
     wordItemId, listenItemId, getSrsRecord, recordSrsResult, isDue, itemStatus, clearLessonSrs,
     getDailyGoal, getStreak, recordActivity,
     getAutoplay, setAutoplay,
     getVoicePref, setVoicePref,
     getLastPosition, setLastPosition,
+    getSession, setSession, clearSession,
   };
 })();
