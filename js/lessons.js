@@ -498,7 +498,12 @@ const Lessons = (() => {
       playBtn.onclick = () => Speech.speak(item.prompt, playBtn);
       if (opts.autoplay) Speech.speak(item.prompt, playBtn);
       cardArea.querySelectorAll('#tileBank .tile-btn').forEach(btn => {
-        btn.onclick = () => opts.onTapTile && opts.onTapTile(btn.getAttribute('data-id'));
+        const tileId = btn.getAttribute('data-id');
+        btn.onclick = () => {
+          const tile = bankTiles.find(t => t.id === tileId);
+          if (tile) Speech.speak(tile.h, btn);
+          opts.onTapTile && opts.onTapTile(tileId);
+        };
       });
       cardArea.querySelectorAll('#builtRow .built-tile').forEach(btn => {
         btn.onclick = () => opts.onRemoveBuilt && opts.onRemoveBuilt(parseInt(btn.getAttribute('data-pos'), 10));
