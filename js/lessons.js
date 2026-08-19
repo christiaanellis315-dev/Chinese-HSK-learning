@@ -59,7 +59,7 @@ const Lessons = (() => {
       if (opts.autoplay) Speech.speak(word.h, speakBtn);
       Recorder.mountMicButton(document.getElementById('micAreaFront'), word.h);
     } else {
-      const exampleHtml = word.ex ? `<div class="example"><div class="ex-h">${word.ex}</div><div class="ex-p">${word.exp}</div><div>${word.exe}</div></div>` : '';
+      const exampleHtml = word.ex ? `<div class="example"><div class="ex-row"><div class="ex-h">${word.ex}</div><button class="speak-btn" id="exSpeakBtn" aria-label="Play example sentence">&#128266;</button></div><div class="ex-p">${word.exp}</div><div>${word.exe}</div></div>` : '';
       cardArea.innerHTML = `
         <div class="card" id="flipCard">
           <div class="hanzi" style="font-size:34px;">${word.h} <span class="pinyin" style="font-size:16px;">${word.p}</span></div>
@@ -78,6 +78,8 @@ const Lessons = (() => {
       const speakBtn = document.getElementById('speakBtnBack');
       speakBtn.onclick = (e) => { e.stopPropagation(); Speech.speak(word.h, speakBtn); };
       Recorder.mountMicButton(document.getElementById('micAreaBack'), word.h);
+      const exSpeakBtn = document.getElementById('exSpeakBtn');
+      if (exSpeakBtn) exSpeakBtn.onclick = (e) => { e.stopPropagation(); Speech.speak(word.ex, exSpeakBtn); };
     }
     if (opts.wireControls) opts.wireControls();
   }
