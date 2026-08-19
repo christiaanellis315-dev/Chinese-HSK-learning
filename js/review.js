@@ -12,6 +12,7 @@ const Review = (() => {
   let builtIds = []; // build items: tile ids tapped so far, in order
   let buildSubmitted = false;
   let buildCorrect = null;
+  let buildAutoplayed = false; // has the prompt already auto-played for this item?
   let sessionReviewed = 0;
   let sessionKnown = 0;
 
@@ -32,7 +33,7 @@ const Review = (() => {
   // Resets the tile-builder state for whatever is now at the front of the queue — called
   // whenever the current item changes (initial mount, or after advance() shifts the queue).
   function prepBuildState() {
-    builtIds = []; buildSubmitted = false; buildCorrect = null;
+    builtIds = []; buildSubmitted = false; buildCorrect = null; buildAutoplayed = false;
     const current = queue[0];
     buildBank = (current && current.type === 'build') ? newBuildBank(current.item) : [];
   }
@@ -144,8 +145,10 @@ const Review = (() => {
   function renderBuildItem(cardArea, current) {
     const { item, itemId } = current;
     if (!buildSubmitted) {
+      const shouldAutoplay = Storage.getAutoplay('lessons') && !buildAutoplayed;
+      if (shouldAutoplay) buildAutoplayed = true;
       Lessons.renderBuildQuestion(cardArea, item, { bankTiles: buildBank, builtIds, submitted: false }, {
-        autoplay: Storage.getAutoplay('lessons'),
+        autoplay: shouldAutoplay,
         onTapTile: (id) => { builtIds.push(id); renderCurrent(); },
         onRemoveBuilt: (pos) => { builtIds.splice(pos, 1); renderCurrent(); },
         onSubmit: () => {

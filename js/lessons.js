@@ -30,6 +30,7 @@ const Lessons = (() => {
   let buildSeq = []; // tile ids tapped so far, in order
   let buildSubmitted = false;
   let buildCorrect = null;
+  let buildAutoplayed = false; // has the prompt already auto-played for this exercise?
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -50,6 +51,7 @@ const Lessons = (() => {
     buildSeq = [];
     buildSubmitted = false;
     buildCorrect = null;
+    buildAutoplayed = false;
   }
 
   function normalize(s) { return s.toLowerCase().trim().replace(/[.!?]/g, ''); }
@@ -534,9 +536,14 @@ const Lessons = (() => {
           <button class="nav-btn" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
           <button class="nav-btn" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
         </div>`;
+      // Autoplay should fire once when this exercise is first shown, not on every re-render
+      // triggered by tapping/un-tapping a tile — otherwise the prompt would replay itself
+      // after every single tap.
+      const shouldAutoplay = Storage.getAutoplay('lessons') && !buildAutoplayed;
+      if (shouldAutoplay) buildAutoplayed = true;
       renderBuildQuestion(cardArea, item, { bankTiles: buildBank, builtIds: buildSeq, submitted: false }, {
         controlsHtml,
-        autoplay: Storage.getAutoplay('lessons'),
+        autoplay: shouldAutoplay,
         onTapTile: (id) => { buildSeq.push(id); render(); },
         onRemoveBuilt: (pos) => { buildSeq.splice(pos, 1); render(); },
         onSubmit: () => {
