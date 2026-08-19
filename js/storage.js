@@ -51,6 +51,7 @@ const Storage = (() => {
   const BOOK = 'hsk1';
   function wordItemId(lessonId, hanzi) { return BOOK + ':word:' + lessonId + ':' + hanzi; }
   function listenItemId(lessonId, idx) { return BOOK + ':listen:' + lessonId + ':' + idx; }
+  function buildItemId(lessonId, idx) { return BOOK + ':build:' + lessonId + ':' + idx; }
 
   function getSrs() { return readRaw('hsk:srs', {}); }
   function setSrs(s) { writeRaw('hsk:srs', s); }
@@ -93,8 +94,9 @@ const Storage = (() => {
     const srs = getSrs();
     const wordPrefix = BOOK + ':word:' + lessonId + ':';
     const listenPrefix = BOOK + ':listen:' + lessonId + ':';
+    const buildPrefix = BOOK + ':build:' + lessonId + ':';
     Object.keys(srs).forEach((id) => {
-      if (id.indexOf(wordPrefix) === 0 || id.indexOf(listenPrefix) === 0) delete srs[id];
+      if (id.indexOf(wordPrefix) === 0 || id.indexOf(listenPrefix) === 0 || id.indexOf(buildPrefix) === 0) delete srs[id];
     });
     setSrs(srs);
   }
@@ -184,7 +186,7 @@ const Storage = (() => {
   function clearSession(key) { const s = getSessions(); delete s[key]; setSessions(s); }
 
   return {
-    wordItemId, listenItemId, getSrsRecord, recordSrsResult, isDue, itemStatus, clearLessonSrs,
+    wordItemId, listenItemId, buildItemId, getSrsRecord, recordSrsResult, isDue, itemStatus, clearLessonSrs,
     getDailyGoal, getStreak, recordActivity,
     getAutoplay, setAutoplay,
     getVoicePref, setVoicePref,

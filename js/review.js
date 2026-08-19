@@ -8,6 +8,10 @@ const Review = (() => {
   let queue = [];
   let flipped = false; // word items: card face
   let selectedOpt = null; // listen items: chosen option, or null if unanswered
+  let buildBank = []; // build items: shuffled tile pool for the current item
+  let builtIds = []; // build items: tile ids tapped so far, in order
+  let buildSubmitted = false;
+  let buildCorrect = null;
   let sessionReviewed = 0;
   let sessionKnown = 0;
 
@@ -17,6 +21,20 @@ const Review = (() => {
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
+  }
+
+  function newBuildBank(item) {
+    const bank = item.tiles.map((t, i) => ({ id: 'a' + i, h: t.h, p: t.p }))
+      .concat(item.decoys.map((t, i) => ({ id: 'd' + i, h: t.h, p: t.p })));
+    return shuffle(bank);
+  }
+
+  // Resets the tile-builder state for whatever is now at the front of the queue — called
+  // whenever the current item changes (initial mount, or after advance() shifts the queue).
+  function prepBuildState() {
+    builtIds = []; buildSubmitted = false; buildCorrect = null;
+    const current = queue[0];
+    buildBank = (current && current.type === 'build') ? newBuildBank(current.item) : [];
   }
 
   function buildQueue() {
@@ -32,6 +50,11 @@ const Review = (() => {
         const itemId = Storage.listenItemId(lessonId, idx);
         const rec = Storage.getSrsRecord(itemId);
         if (rec && rec.due <= now) items.push({ type: 'listen', lessonId, item: it, itemId });
+      });
+      (LESSONS[lessonId].sentenceBuilder || []).forEach((it, idx) => {
+        const itemId = Storage.buildItemId(lessonId, idx);
+        const rec = Storage.getSrsRecord(itemId);
+        if (rec && rec.due <= now) items.push({ type: 'build', lessonId, item: it, itemId });
       });
     });
     return shuffle(items);
@@ -55,6 +78,7 @@ const Review = (() => {
     queue.shift();
     flipped = false;
     selectedOpt = null;
+    prepBuildState();
     renderCurrent();
   }
 
@@ -117,6 +141,36 @@ const Review = (() => {
     }
   }
 
+  function renderBuildItem(cardArea, current) {
+    const { item, itemId } = current;
+    if (!buildSubmitted) {
+      Lessons.renderBuildQuestion(cardArea, item, { bankTiles: buildBank, builtIds, submitted: false }, {
+        autoplay: Storage.getAutoplay('lessons'),
+        onTapTile: (id) => { builtIds.push(id); renderCurrent(); },
+        onRemoveBuilt: (pos) => { builtIds.splice(pos, 1); renderCurrent(); },
+        onSubmit: () => {
+          const builtHanzi = builtIds.map((id) => buildBank.find((t) => t.id === id).h);
+          const answerHanzi = item.tiles.map((t) => t.h);
+          const correct = builtHanzi.length === answerHanzi.length && builtHanzi.every((h, i) => h === answerHanzi[i]);
+          Storage.recordSrsResult(itemId, correct);
+          buildCorrect = correct;
+          buildSubmitted = true;
+          sessionReviewed++; if (correct) sessionKnown++;
+          renderCurrent();
+        },
+        wireControls: () => {}
+      });
+    } else {
+      const controlsHtml = `<div class="controls"><button class="nav-btn" id="nextReviewBtn">next &rarr;</button></div>`;
+      Lessons.renderBuildQuestion(cardArea, item, { bankTiles: buildBank, builtIds, submitted: true, correct: buildCorrect }, {
+        controlsHtml,
+        wireControls: () => {
+          root.querySelector('#nextReviewBtn').onclick = () => advance();
+        }
+      });
+    }
+  }
+
   function renderCurrent() {
     const totalStart = queue.length + sessionReviewed;
     if (queue.length === 0) {
@@ -135,13 +189,15 @@ const Review = (() => {
       return;
     }
     const current = queue[0];
+    const typeLabel = { listen: 'Listening · Lesson ', build: 'Sentence Builder · Lesson ' };
     root.querySelector('#posLabel').textContent = (sessionReviewed + 1) + ' of ' + totalStart;
-    root.querySelector('#lessonLabel').textContent = (current.type === 'listen' ? 'Listening · Lesson ' : 'Vocabulary · Lesson ') + current.lessonId;
+    root.querySelector('#lessonLabel').textContent = (typeLabel[current.type] || 'Vocabulary · Lesson ') + current.lessonId;
     root.querySelector('#progressFill').style.width = ((sessionReviewed / totalStart) * 100) + '%';
 
     const cardArea = root.querySelector('#cardArea');
     if (current.type === 'word') renderWordItem(cardArea, current);
-    else renderListenItem(cardArea, current);
+    else if (current.type === 'listen') renderListenItem(cardArea, current);
+    else renderBuildItem(cardArea, current);
   }
 
   function mount(container) {
@@ -151,6 +207,7 @@ const Review = (() => {
     selectedOpt = null;
     sessionReviewed = 0;
     sessionKnown = 0;
+    prepBuildState();
     root.innerHTML = html();
     renderCurrent();
   }

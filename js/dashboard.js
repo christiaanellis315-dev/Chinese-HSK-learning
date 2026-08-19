@@ -26,6 +26,10 @@ const Dashboard = (() => {
         const rec = Storage.getSrsRecord(Storage.listenItemId(lessonId, idx));
         if (rec && rec.due <= now) n++;
       });
+      (LESSONS[lessonId].sentenceBuilder || []).forEach((it, idx) => {
+        const rec = Storage.getSrsRecord(Storage.buildItemId(lessonId, idx));
+        if (rec && rec.due <= now) n++;
+      });
     });
     return n;
   }
@@ -37,7 +41,7 @@ const Dashboard = (() => {
     const dueCount = countDueItems();
     const last = Storage.getLastPosition();
 
-    const modeLabel = { flip: 'Flip & recall', type: 'Type the answer', listen: 'Listening (A/B/C)' };
+    const modeLabel = { flip: 'Flip & recall', type: 'Type the answer', listen: 'Listening (A/B/C)', build: 'Sentence Builder' };
 
     return `
       <div class="lamp"></div>

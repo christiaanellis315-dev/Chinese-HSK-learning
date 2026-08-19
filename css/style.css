@@ -118,6 +118,19 @@ h1 { text-align: center; font-size: 20px; font-weight: 600; letter-spacing: 0.3p
 .option-btn.correct-opt { border-color: var(--green); background: rgba(127,176,105,0.1); }
 .option-btn.wrong-opt { border-color: var(--red); background: rgba(201,106,90,0.1); }
 
+/* ===== Sentence Builder ===== */
+.sb-prompt-hanzi { font-size: 22px; color: var(--text); margin-bottom: 4px; line-height: 1.4; max-width: 380px; }
+.sb-prompt-pinyin { font-size: 14px; color: var(--amber-dim); margin-bottom: 18px; }
+.built-row { width: 100%; max-width: 380px; min-height: 52px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; border: 1px dashed var(--border); border-radius: 10px; padding: 10px; margin-bottom: 14px; }
+.built-placeholder { font-size: 12px; color: var(--text-dim); }
+.tile-bank { width: 100%; max-width: 380px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 6px; }
+.tile-btn, .built-tile { display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; cursor: pointer; min-height: 44px; justify-content: center; }
+.tile-btn:active, .built-tile:active { transform: scale(0.95); }
+.built-tile { background: var(--amber); border-color: var(--amber); color: var(--bg); }
+.tile-btn .tile-h, .built-tile .tile-h { font-size: 16px; }
+.tile-btn .tile-p, .built-tile .tile-p { font-size: 11px; color: var(--amber-dim); }
+.built-tile .tile-p { color: var(--bg); opacity: 0.75; }
+
 .controls { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
 button.nav-btn { flex: 1; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 14px; border-radius: 10px; font-size: 14px; cursor: pointer; min-height: 48px; }
 button.know { border-color: var(--green); color: var(--green); }

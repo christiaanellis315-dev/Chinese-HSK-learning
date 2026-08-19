@@ -22,6 +22,36 @@ const Lessons = (() => {
   let completed = false;
   let started = false;
 
+  // ---- Sentence Builder mode state ----
+  // buildBank is the shuffled tile pool (answer tiles + decoys) for the *current* exercise;
+  // regenerated only when moving to a new exercise (never on a plain re-render), so tapping a
+  // tile doesn't reshuffle the bank out from under the person mid-build.
+  let buildBank = [];
+  let buildSeq = []; // tile ids tapped so far, in order
+  let buildSubmitted = false;
+  let buildCorrect = null;
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function buildTileBank(item) {
+    const bank = item.tiles.map((t, i) => ({ id: 'a' + i, h: t.h, p: t.p }))
+      .concat(item.decoys.map((t, i) => ({ id: 'd' + i, h: t.h, p: t.p })));
+    return shuffle(bank);
+  }
+  function resetBuildExercise() {
+    const items = currentBuilder();
+    buildBank = (items && items[idx]) ? buildTileBank(items[idx]) : [];
+    buildSeq = [];
+    buildSubmitted = false;
+    buildCorrect = null;
+  }
+
   function normalize(s) { return s.toLowerCase().trim().replace(/[.!?]/g, ''); }
   function checkAnswer(input, w) {
     const userN = normalize(input);
@@ -134,20 +164,24 @@ const Lessons = (() => {
       <div class="mode-btn ${mode === 'flip' ? 'active' : ''}" id="flipModeBtn">Flip &amp; recall</div>
       <div class="mode-btn ${mode === 'type' ? 'active' : ''}" id="typeModeBtn">Type the answer</div>
       <div class="mode-btn ${mode === 'listen' ? 'active' : ''}" id="listenModeBtn">Listening (A/B/C)</div>
+      <div class="mode-btn ${mode === 'build' ? 'active' : ''}" id="buildModeBtn">Sentence Builder</div>
     `;
     root.querySelector('#flipModeBtn').onclick = () => switchMode('flip');
     root.querySelector('#typeModeBtn').onclick = () => switchMode('type');
     root.querySelector('#listenModeBtn').onclick = () => switchMode('listen');
+    root.querySelector('#buildModeBtn').onclick = () => switchMode('build');
   }
 
   function switchMode(m) {
     mode = m; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
+    resetBuildExercise();
     buildModeToggle();
     saveLastPosition();
     render();
   }
   function switchLesson(key) {
     currentLesson = key; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
+    resetBuildExercise();
     saveLastPosition();
     buildTabs();
     render();
@@ -163,26 +197,30 @@ const Lessons = (() => {
   function saveSession() { Storage.setSession(sessionKey(), { idx }); }
   function clearSession() { Storage.clearSession(sessionKey()); }
   function clearAllModeSessions(lessonId) {
-    ['flip', 'type', 'listen'].forEach((m) => Storage.clearSession('lessons:' + lessonId + ':' + m));
+    ['flip', 'type', 'listen', 'build'].forEach((m) => Storage.clearSession('lessons:' + lessonId + ':' + m));
   }
 
   function currentWords() { return LESSONS[currentLesson].words; }
   function currentListening() { return LESSONS[currentLesson].listening || null; }
+  function currentBuilder() { return LESSONS[currentLesson].sentenceBuilder || null; }
 
-  const MODE_TITLE = { flip: 'Flip & Recall', type: 'Type the Answer', listen: 'Listening' };
+  const MODE_TITLE = { flip: 'Flip & Recall', type: 'Type the Answer', listen: 'Listening', build: 'Sentence Builder' };
   const MODE_BLURB = {
     flip: 'Flip through this lesson’s words — tap each card to reveal the meaning, then mark yourself “I know this” or “still learning.”',
     type: 'Type the English meaning for each word in this lesson, then check your answer.',
     listen: 'Listen to a sentence, then pick the correct answer from three options.',
+    build: 'Tap the tiles in order to build the answer to each question — a couple of decoy words are mixed in, so read carefully.',
   };
 
   function modeTotal() {
     if (mode === 'listen') { const items = currentListening(); return items ? items.length : 0; }
+    if (mode === 'build') { const items = currentBuilder(); return items ? items.length : 0; }
     return currentWords().length;
   }
 
   function beginSession(startIdx) {
     idx = startIdx; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false;
+    resetBuildExercise();
     started = true;
     render();
   }
@@ -251,6 +289,19 @@ const Lessons = (() => {
       if (idx >= items.length) idx = items.length - 1;
       setProgressBar(idx, items.length);
       renderListenMode(items[idx], items.length);
+      renderStats();
+    } else if (mode === 'build') {
+      const items = currentBuilder();
+      if (!items) {
+        root.querySelector('#progressFill').style.width = '0%';
+        root.querySelector('#posLabel').textContent = '';
+        root.querySelector('#cardArea').innerHTML = '<div class="soon-box">Sentence Builder starts at Lesson 3 — lessons 1 and 2 are fixed greetings with no sentence structure to build.<br>Try Flip &amp; recall or Type the answer instead.</div>';
+        root.querySelector('#statsRow').innerHTML = '';
+        return;
+      }
+      if (idx >= items.length) idx = items.length - 1;
+      setProgressBar(idx, items.length);
+      renderBuildMode(items[idx], items.length);
       renderStats();
     }
   }
@@ -411,6 +462,114 @@ const Lessons = (() => {
     if (opts.wireControls) opts.wireControls();
   }
 
+  // ===== shared sentence-builder component (also used by Review) =====
+  // `state.bankTiles` is the shuffled tile pool (answer tiles + decoys) for this exercise;
+  // `state.builtIds` is the subset of those tile ids tapped so far, in order. The caller owns
+  // both — this function just renders them and reports taps back via opts callbacks, same
+  // division of responsibility as renderListenQuestion's selectedIdx.
+  function renderBuildQuestion(cardArea, item, state, opts) {
+    opts = opts || {};
+    const controlsHtml = opts.controlsHtml || '';
+    const bankTiles = state.bankTiles;
+    const builtIds = state.builtIds;
+    if (!state.submitted) {
+      const availableTiles = bankTiles.filter(t => builtIds.indexOf(t.id) === -1);
+      const builtTiles = builtIds.map(id => bankTiles.find(t => t.id === id));
+      const builtHtml = builtTiles.length
+        ? builtTiles.map((t, pos) => `<button class="built-tile" data-pos="${pos}"><span class="tile-h">${t.h}</span><span class="tile-p">${t.p}</span></button>`).join('')
+        : `<span class="built-placeholder">tap tiles below to build your answer</span>`;
+      const bankHtml = availableTiles.map(t => `<button class="tile-btn" data-id="${t.id}"><span class="tile-h">${t.h}</span><span class="tile-p">${t.p}</span></button>`).join('');
+      cardArea.innerHTML = `
+        <div class="card" style="cursor:default; min-height:auto; padding:36px 24px;">
+          <button class="listen-play" id="sbPlayBtn" aria-label="Play question" style="width:56px; height:56px; font-size:22px;">&#9658;</button>
+          <div class="listen-hint">tap to hear the question</div>
+          <div class="sb-prompt-hanzi">${item.prompt}</div>
+          <div class="sb-prompt-pinyin">${item.promptP}</div>
+          <div class="built-row" id="builtRow">${builtHtml}</div>
+          <div class="tile-bank" id="tileBank">${bankHtml}</div>
+          <div class="error-text" id="sbError"></div>
+          <button class="submit-btn" id="sbSubmitBtn">Check</button>
+        </div>
+        ${controlsHtml}
+      `;
+      const playBtn = cardArea.querySelector('#sbPlayBtn');
+      playBtn.onclick = () => Speech.speak(item.prompt, playBtn);
+      if (opts.autoplay) Speech.speak(item.prompt, playBtn);
+      cardArea.querySelectorAll('#tileBank .tile-btn').forEach(btn => {
+        btn.onclick = () => opts.onTapTile && opts.onTapTile(btn.getAttribute('data-id'));
+      });
+      cardArea.querySelectorAll('#builtRow .built-tile').forEach(btn => {
+        btn.onclick = () => opts.onRemoveBuilt && opts.onRemoveBuilt(parseInt(btn.getAttribute('data-pos'), 10));
+      });
+      cardArea.querySelector('#sbSubmitBtn').onclick = () => {
+        if (builtIds.length === 0) { cardArea.querySelector('#sbError').textContent = 'Build an answer first.'; return; }
+        opts.onSubmit && opts.onSubmit();
+      };
+    } else {
+      cardArea.innerHTML = `
+        <div class="card" style="cursor:default; min-height:auto; padding:36px 24px;">
+          <div class="feedback-badge ${state.correct ? 'correct' : 'wrong'}">${state.correct ? 'Correct!' : 'Not quite'}</div>
+          <div class="sb-prompt-hanzi">${item.prompt}</div>
+          <div class="sb-prompt-pinyin">${item.promptP}</div>
+          <div class="example" style="margin-top:14px;">
+            <div class="ex-row"><div class="ex-h">${item.answer}</div><button class="speak-btn" id="sbAnswerSpeakBtn" aria-label="Play answer sentence">&#128266;</button></div>
+            <div class="ex-p">${item.answerP}</div>
+            <div>${item.answerE}</div>
+          </div>
+        </div>
+        ${controlsHtml}
+      `;
+      const speakBtn = cardArea.querySelector('#sbAnswerSpeakBtn');
+      speakBtn.onclick = () => Speech.speak(item.answer, speakBtn);
+    }
+    if (opts.wireControls) opts.wireControls();
+  }
+
+  function renderBuildMode(item, total) {
+    const cardArea = root.querySelector('#cardArea');
+    const itemId = Storage.buildItemId(currentLesson, idx);
+    if (!buildSubmitted) {
+      const controlsHtml = `
+        <div class="controls">
+          <button class="nav-btn" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
+          <button class="nav-btn" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
+        </div>`;
+      renderBuildQuestion(cardArea, item, { bankTiles: buildBank, builtIds: buildSeq, submitted: false }, {
+        controlsHtml,
+        autoplay: Storage.getAutoplay('lessons'),
+        onTapTile: (id) => { buildSeq.push(id); render(); },
+        onRemoveBuilt: (pos) => { buildSeq.splice(pos, 1); render(); },
+        onSubmit: () => {
+          const builtHanzi = buildSeq.map(id => buildBank.find(t => t.id === id).h);
+          const answerHanzi = item.tiles.map(t => t.h);
+          buildCorrect = builtHanzi.length === answerHanzi.length && builtHanzi.every((h, i) => h === answerHanzi[i]);
+          Storage.recordSrsResult(itemId, buildCorrect);
+          buildSubmitted = true;
+          render();
+        },
+        wireControls: () => {
+          const prevBtn = root.querySelector('#prevBtn'), nextBtn = root.querySelector('#nextBtn');
+          if (prevBtn) prevBtn.onclick = () => { if (idx > 0) { idx--; resetBuildExercise(); render(); } };
+          if (nextBtn) nextBtn.onclick = () => { if (idx < total - 1) { idx++; resetBuildExercise(); render(); } };
+        }
+      });
+    } else {
+      const controlsHtml = `
+        <div class="controls">
+          <button class="nav-btn" id="nextBuildBtn">${idx < total - 1 ? 'next question →' : 'lesson complete →'}</button>
+        </div>`;
+      renderBuildQuestion(cardArea, item, { bankTiles: buildBank, builtIds: buildSeq, submitted: true, correct: buildCorrect }, {
+        controlsHtml,
+        wireControls: () => {
+          root.querySelector('#nextBuildBtn').onclick = () => {
+            if (idx < total - 1) { idx++; resetBuildExercise(); } else { completed = true; }
+            render();
+          };
+        }
+      });
+    }
+  }
+
   function renderListenMode(item, total) {
     const cardArea = root.querySelector('#cardArea');
     const itemId = Storage.listenItemId(currentLesson, idx);
@@ -465,6 +624,13 @@ const Lessons = (() => {
         const status = Storage.itemStatus(Storage.listenItemId(currentLesson, i));
         if (status === 'known') known++; else if (status === 'learning') learning++;
       });
+    } else if (mode === 'build') {
+      const items = currentBuilder();
+      total = items ? items.length : 0;
+      (items || []).forEach((it, i) => {
+        const status = Storage.itemStatus(Storage.buildItemId(currentLesson, i));
+        if (status === 'known') known++; else if (status === 'learning') learning++;
+      });
     } else {
       const words = currentWords();
       total = words.length;
@@ -478,7 +644,7 @@ const Lessons = (() => {
 
   function renderStats() {
     const { known, learning, total } = computeTally();
-    const label = mode === 'listen' ? ['correct', 'missed', 'not attempted'] : ['known', 'still learning', 'not reviewed'];
+    const label = (mode === 'listen' || mode === 'build') ? ['correct', 'missed', 'not attempted'] : ['known', 'still learning', 'not reviewed'];
     root.querySelector('#statsRow').innerHTML = `<span><b>${known}</b> ${label[0]}</span><span><b>${learning}</b> ${label[1]}</span><span><b>${total - known - learning}</b> ${label[2]}</span>`;
   }
 
@@ -518,6 +684,7 @@ const Lessons = (() => {
     `;
     root.querySelector('#tryAgainBtn').onclick = () => {
       completed = false; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
+      resetBuildExercise();
       render();
     };
     root.querySelector('#backToListBtn').onclick = () => { if (goTo) goTo('dashboard'); };
@@ -529,6 +696,7 @@ const Lessons = (() => {
     if (initial && initial.lesson) currentLesson = initial.lesson;
     if (initial && initial.mode) mode = initial.mode;
     idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
+    resetBuildExercise();
     root.innerHTML = html();
     buildAutoplayToggle();
     Speech.buildSpeedControl(root.querySelector('#speedRow'));
@@ -545,5 +713,5 @@ const Lessons = (() => {
     };
   }
 
-  return { mount, renderFlashcard, renderListenQuestion };
+  return { mount, renderFlashcard, renderListenQuestion, renderBuildQuestion };
 })();
