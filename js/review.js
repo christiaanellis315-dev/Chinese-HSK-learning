@@ -154,7 +154,7 @@ const Review = (() => {
         onSubmit: () => {
           const builtHanzi = builtIds.map((id) => buildBank.find((t) => t.id === id).h);
           const answerHanzi = item.tiles.map((t) => t.h);
-          const correct = builtHanzi.length === answerHanzi.length && builtHanzi.every((h, i) => h === answerHanzi[i]);
+          const correct = Lessons.checkBuildAnswer(builtHanzi, answerHanzi);
           Storage.recordSrsResult(itemId, correct);
           buildCorrect = correct;
           buildSubmitted = true;

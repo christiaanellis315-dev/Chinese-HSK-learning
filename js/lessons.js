@@ -65,6 +65,14 @@ const Lessons = (() => {
     });
   }
 
+  // Sentence Builder's correctness check: the tapped tile hanzi, in order, must match the
+  // answer tiles' hanzi exactly (decoys can never satisfy this since they're not in answerHanzi).
+  // Pulled out as its own pure function so Review's copy of this same check can't drift from
+  // Lessons' copy, and so it's directly unit-testable without going through the DOM.
+  function checkBuildAnswer(builtHanzi, answerHanzi) {
+    return builtHanzi.length === answerHanzi.length && builtHanzi.every((h, i) => h === answerHanzi[i]);
+  }
+
   // ===== shared flashcard component (also used by Review) =====
   function renderFlashcard(cardArea, word, isFlipped, opts) {
     opts = opts || {};
@@ -555,7 +563,7 @@ const Lessons = (() => {
         onSubmit: () => {
           const builtHanzi = buildSeq.map(id => buildBank.find(t => t.id === id).h);
           const answerHanzi = item.tiles.map(t => t.h);
-          buildCorrect = builtHanzi.length === answerHanzi.length && builtHanzi.every((h, i) => h === answerHanzi[i]);
+          buildCorrect = checkBuildAnswer(builtHanzi, answerHanzi);
           Storage.recordSrsResult(itemId, buildCorrect);
           buildSubmitted = true;
           render();
@@ -726,5 +734,5 @@ const Lessons = (() => {
     };
   }
 
-  return { mount, renderFlashcard, renderListenQuestion, renderBuildQuestion };
+  return { mount, renderFlashcard, renderListenQuestion, renderBuildQuestion, checkAnswer, checkBuildAnswer };
 })();

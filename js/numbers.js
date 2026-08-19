@@ -256,5 +256,5 @@ const NumbersDrill = (() => {
     root.querySelector('#resetBtn').onclick = () => { newRound(); render(); };
   }
 
-  return { mount };
+  return { mount, numberToHanzi, numberToPinyin };
 })();
