@@ -513,6 +513,7 @@ const Lessons = (() => {
           <div class="feedback-badge ${state.correct ? 'correct' : 'wrong'}">${state.correct ? 'Correct!' : 'Not quite'}</div>
           <div class="sb-prompt-hanzi">${item.prompt}</div>
           <div class="sb-prompt-pinyin">${item.promptP}</div>
+          <div class="sb-prompt-english">${item.promptE}</div>
           <div class="example" style="margin-top:14px;">
             <div class="ex-row"><div class="ex-h">${item.answer}</div><button class="speak-btn" id="sbAnswerSpeakBtn" aria-label="Play answer sentence">&#128266;</button></div>
             <div class="ex-p">${item.answerP}</div>

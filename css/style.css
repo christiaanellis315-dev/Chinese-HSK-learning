@@ -121,6 +121,7 @@ h1 { text-align: center; font-size: 20px; font-weight: 600; letter-spacing: 0.3p
 /* ===== Sentence Builder ===== */
 .sb-prompt-hanzi { font-size: 22px; color: var(--text); margin-bottom: 4px; line-height: 1.4; max-width: 380px; }
 .sb-prompt-pinyin { font-size: 14px; color: var(--amber-dim); margin-bottom: 18px; }
+.sb-prompt-english { font-size: 14px; color: var(--text-dim); margin-top: -12px; margin-bottom: 14px; }
 .built-row { width: 100%; max-width: 380px; min-height: 52px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; border: 1px dashed var(--border); border-radius: 10px; padding: 10px; margin-bottom: 14px; }
 .built-placeholder { font-size: 12px; color: var(--text-dim); }
 .tile-bank { width: 100%; max-width: 380px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 6px; }
