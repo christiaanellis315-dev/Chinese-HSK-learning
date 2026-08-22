@@ -62,6 +62,56 @@
       assert(c.querySelector('#buildModeBtn'), 'Sentence Builder mode button missing from mode toggle');
     });
 
+    // ---- Round-order shuffling (Flip/Type/Listen): a fresh round each shuffles which order
+    // items appear in, but Resume must continue in the exact order+position the round started
+    // with, never a new shuffle mid-round. Sentence Builder is deliberately untouched — its own
+    // exercise order (tested separately below) always stays fixed. ----
+    test('Flip round order is shuffled fresh each time, not the fixed textbook order every round', () => {
+      const c = freshContainer();
+      const firstWords = [];
+      for (let i = 0; i < 10; i++) {
+        Storage.clearSession('lessons:hsk1:14:flip'); // L14 has 17 words, room for real variation
+        Lessons.mount(c, { book: 'hsk1', lesson: '14', mode: 'flip' }, noopNavigate);
+        c.querySelector('#goBtn').click();
+        firstWords.push(c.querySelector('.hanzi').textContent);
+      }
+      assert(new Set(firstWords).size > 1, `expected more than one distinct first word across 10 fresh rounds, got: ${firstWords.join(',')}`);
+    });
+
+    test('Resuming a round continues in the exact same shuffled order and position', () => {
+      const c = freshContainer();
+      Storage.clearSession('lessons:hsk1:14:flip');
+      Lessons.mount(c, { book: 'hsk1', lesson: '14', mode: 'flip' }, noopNavigate);
+      c.querySelector('#goBtn').click();
+      for (let i = 0; i < 3; i++) {
+        c.querySelector('#flipCard').click();
+        c.querySelector('#knowBtn').click();
+      }
+      const wordBeforeLeaving = c.querySelector('.hanzi').textContent;
+
+      Lessons.mount(c, { book: 'hsk1', lesson: '14', mode: 'flip' }, noopNavigate); // simulates navigating away and back
+      const resumeBtn = c.querySelector('#resumeBtn');
+      assert(resumeBtn, 'expected a Resume option after leaving mid-round');
+      resumeBtn.click();
+      assertEqual(c.querySelector('.hanzi').textContent, wordBeforeLeaving, 'resume should show the same word at the same position, not a new shuffle');
+      Storage.clearSession('lessons:hsk1:14:flip');
+    });
+
+    test('Sentence Builder exercise order stays fixed across rounds (unaffected by the new shuffle)', () => {
+      const c = freshContainer();
+      const sequences = [];
+      for (let i = 0; i < 4; i++) {
+        Storage.clearSession('lessons:hsk1:6:build');
+        Lessons.mount(c, { book: 'hsk1', lesson: '6', mode: 'build' }, noopNavigate);
+        c.querySelector('#goBtn').click();
+        const prompt1 = c.querySelector('.sb-prompt-hanzi').textContent;
+        c.querySelector('#nextBtn').click();
+        const prompt2 = c.querySelector('.sb-prompt-hanzi').textContent;
+        sequences.push(prompt1 + '|' + prompt2);
+      }
+      assertEqual(new Set(sequences).size, 1, `expected the exact same exercise order every round, got: ${sequences.join(' / ')}`);
+    });
+
     test('Lessons — Sentence Builder renders real tiles for a lesson that has data (HSK1 L3)', () => {
       const c = freshContainer();
       Lessons.mount(c, { book: 'hsk1', lesson: '3', mode: 'build' }, noopNavigate);

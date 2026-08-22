@@ -23,6 +23,26 @@ const Lessons = (() => {
   let completed = false;
   let started = false;
 
+  // ---- round presentation order (Flip / Type / Listen only) ----
+  // `idx` is the position within the current round (0..N-1, used for the progress bar and
+  // prev/next); `roundOrder[idx]` is the *original* index into currentWords()/currentListening()
+  // for whatever's actually shown at that position. Generated fresh only when a round actually
+  // starts (Go / Start over / Try again) and persisted with the session so Resume continues in
+  // the exact order the round began with, never a new shuffle mid-round. Sentence Builder doesn't
+  // use this at all — its exercise order stays fixed; only the tile shuffle within one exercise
+  // (a separate, already-working feature) applies there.
+  let roundOrder = [];
+
+  function identityOrder(n) {
+    const a = [];
+    for (let i = 0; i < n; i++) a.push(i);
+    return a;
+  }
+  function freshOrder() {
+    if (mode === 'build') return null;
+    return shuffle(identityOrder(modeTotal()));
+  }
+
   // ---- Sentence Builder mode state ----
   // buildBank is the shuffled tile pool (answer tiles + decoys) for the *current* exercise;
   // regenerated only when moving to a new exercise (never on a plain re-render), so tapping a
@@ -184,14 +204,14 @@ const Lessons = (() => {
   }
 
   function switchMode(m) {
-    mode = m; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
+    mode = m; idx = 0; roundOrder = []; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
     resetBuildExercise();
     buildModeToggle();
     saveLastPosition();
     render();
   }
   function switchLesson(key) {
-    currentLesson = key; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
+    currentLesson = key; idx = 0; roundOrder = []; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
     resetBuildExercise();
     saveLastPosition();
     buildTabs();
@@ -205,7 +225,11 @@ const Lessons = (() => {
   // One slot per book+lesson+mode combination, so leaving Flip mid-Lesson-4 and Type mid-
   // Lesson-7 (or the same lesson number in a different book) don't clobber each other.
   function sessionKey() { return 'lessons:' + currentBook + ':' + currentLesson + ':' + mode; }
-  function saveSession() { Storage.setSession(sessionKey(), { idx }); }
+  function saveSession() {
+    const session = { idx };
+    if (mode !== 'build') session.order = roundOrder;
+    Storage.setSession(sessionKey(), session);
+  }
   function clearSession() { Storage.clearSession(sessionKey()); }
   function clearAllModeSessions(bookId, lessonId) {
     ['flip', 'type', 'listen', 'build'].forEach((m) => Storage.clearSession('lessons:' + bookId + ':' + lessonId + ':' + m));
@@ -229,8 +253,10 @@ const Lessons = (() => {
     return currentWords().length;
   }
 
-  function beginSession(startIdx) {
-    idx = startIdx; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false;
+  function beginSession(startIdx, order) {
+    idx = startIdx;
+    roundOrder = order || identityOrder(modeTotal());
+    flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false;
     resetBuildExercise();
     started = true;
     render();
@@ -243,7 +269,12 @@ const Lessons = (() => {
 
     const total = modeTotal();
     const session = Storage.getSession(sessionKey());
-    const validSession = session && Number.isInteger(session.idx) && session.idx >= 0 && session.idx < total;
+    // A session saved before round-order shuffling shipped (or a build-mode session, which never
+    // carries one) has no `order` field at all — that's fine, still resumable, beginSession()
+    // falls back to the textbook's original order for the rest of that round. Only reject a
+    // session whose order array exists but doesn't match the round's actual length.
+    const orderOk = !session || !session.order || (Array.isArray(session.order) && session.order.length === total);
+    const validSession = session && Number.isInteger(session.idx) && session.idx >= 0 && session.idx < total && orderOk;
 
     const buttonsHtml = validSession
       ? `
@@ -261,10 +292,10 @@ const Lessons = (() => {
     `;
 
     if (validSession) {
-      root.querySelector('#resumeBtn').onclick = () => beginSession(session.idx);
-      root.querySelector('#startOverBtn').onclick = () => { clearSession(); beginSession(0); };
+      root.querySelector('#resumeBtn').onclick = () => beginSession(session.idx, session.order);
+      root.querySelector('#startOverBtn').onclick = () => { clearSession(); beginSession(0, freshOrder()); };
     } else {
-      root.querySelector('#goBtn').onclick = () => beginSession(0);
+      root.querySelector('#goBtn').onclick = () => beginSession(0, freshOrder());
     }
   }
 
@@ -280,13 +311,13 @@ const Lessons = (() => {
       const words = currentWords();
       if (idx >= words.length) idx = words.length - 1;
       setProgressBar(idx, words.length);
-      renderFlipMode(words[idx], words.length);
+      renderFlipMode(words[roundOrder[idx]], words.length);
       renderStats();
     } else if (mode === 'type') {
       const words = currentWords();
       if (idx >= words.length) idx = words.length - 1;
       setProgressBar(idx, words.length);
-      renderTypeMode(words[idx], words.length);
+      renderTypeMode(words[roundOrder[idx]], words.length);
       renderStats();
     } else if (mode === 'listen') {
       const items = currentListening();
@@ -299,7 +330,7 @@ const Lessons = (() => {
       }
       if (idx >= items.length) idx = items.length - 1;
       setProgressBar(idx, items.length);
-      renderListenMode(items[idx], items.length);
+      renderListenMode(items[roundOrder[idx]], items.length, roundOrder[idx]);
       renderStats();
     } else if (mode === 'build') {
       const items = currentBuilder();
@@ -592,9 +623,11 @@ const Lessons = (() => {
     }
   }
 
-  function renderListenMode(item, total) {
+  function renderListenMode(item, total, origIdx) {
     const cardArea = root.querySelector('#cardArea');
-    const itemId = Storage.listenItemId(currentBook, currentLesson, idx);
+    // origIdx (the item's stable position in currentListening(), not its shuffled round
+    // position) keeps this item's SRS identity fixed across rounds regardless of shuffle order.
+    const itemId = Storage.listenItemId(currentBook, currentLesson, origIdx);
     if (selectedOpt === null) {
       const controlsHtml = `
         <div class="controls">
@@ -704,11 +737,7 @@ const Lessons = (() => {
         <button class="nav-btn" id="backToListBtn">Back to lesson list</button>
       </div>
     `;
-    root.querySelector('#tryAgainBtn').onclick = () => {
-      completed = false; idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null;
-      resetBuildExercise();
-      render();
-    };
+    root.querySelector('#tryAgainBtn').onclick = () => beginSession(0, freshOrder());
     root.querySelector('#backToListBtn').onclick = () => { if (goTo) goTo('dashboard'); };
   }
 
@@ -739,7 +768,7 @@ const Lessons = (() => {
 
     currentLesson = (initial && initial.lesson) || Books.getLessonOrder(currentBook)[0];
     if (initial && initial.mode) mode = initial.mode;
-    idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
+    idx = 0; roundOrder = []; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
     resetBuildExercise();
     root.innerHTML = html();
     buildAutoplayToggle();
