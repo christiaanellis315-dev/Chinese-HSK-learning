@@ -5,6 +5,7 @@
 // resurfaces here again tomorrow.
 const Review = (() => {
   let root = null;
+  let currentBook = 'hsk1';
   let queue = [];
   let flipped = false; // word items: card face
   let selectedOpt = null; // listen items: chosen option, or null if unanswered
@@ -38,22 +39,26 @@ const Review = (() => {
     buildBank = (current && current.type === 'build') ? newBuildBank(current.item) : [];
   }
 
+  // Empty for a book with no lessons yet (HSK2/HSK3 today) — Books.getLessonOrder just returns
+  // [], so this naturally yields an empty queue and the existing "Nothing due right now" state
+  // handles it with no extra code.
   function buildQueue() {
     const items = [];
     const now = Date.now();
-    LESSON_ORDER.forEach((lessonId) => {
-      LESSONS[lessonId].words.forEach((w) => {
-        const itemId = Storage.wordItemId(lessonId, w.h);
+    Books.getLessonOrder(currentBook).forEach((lessonId) => {
+      const lesson = Books.getLesson(currentBook, lessonId);
+      lesson.words.forEach((w) => {
+        const itemId = Storage.wordItemId(currentBook, lessonId, w.h);
         const rec = Storage.getSrsRecord(itemId);
         if (rec && rec.due <= now) items.push({ type: 'word', lessonId, word: w, itemId });
       });
-      (LESSONS[lessonId].listening || []).forEach((it, idx) => {
-        const itemId = Storage.listenItemId(lessonId, idx);
+      (lesson.listening || []).forEach((it, idx) => {
+        const itemId = Storage.listenItemId(currentBook, lessonId, idx);
         const rec = Storage.getSrsRecord(itemId);
         if (rec && rec.due <= now) items.push({ type: 'listen', lessonId, item: it, itemId });
       });
-      (LESSONS[lessonId].sentenceBuilder || []).forEach((it, idx) => {
-        const itemId = Storage.buildItemId(lessonId, idx);
+      (lesson.sentenceBuilder || []).forEach((it, idx) => {
+        const itemId = Storage.buildItemId(currentBook, lessonId, idx);
         const rec = Storage.getSrsRecord(itemId);
         if (rec && rec.due <= now) items.push({ type: 'build', lessonId, item: it, itemId });
       });
@@ -65,7 +70,7 @@ const Review = (() => {
     return `
       <div class="lamp"></div>
       <h1>Review</h1>
-      <div class="sub">Everything due for review right now, pulled from every lesson</div>
+      <div class="sub">Everything due for review right now, pulled from every ${Books.bookLabel(currentBook)} lesson</div>
       <div class="progress-row">
         <span id="posLabel"></span>
         <span id="lessonLabel"></span>
@@ -205,6 +210,7 @@ const Review = (() => {
 
   function mount(container) {
     root = container;
+    currentBook = Storage.getCurrentBook();
     queue = buildQueue();
     flipped = false;
     selectedOpt = null;

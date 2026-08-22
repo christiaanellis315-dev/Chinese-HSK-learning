@@ -1,7 +1,12 @@
-# Original bundled textbook archives — large, and not part of the PWA
-HSK1.zip
-HSK2.zip
-HSK1/
-HSK2/
+# Original bundled textbook archives — large, and not part of the PWA. Anchored to the repo
+# root (leading slash) so they don't also match data/hsk1/, data/hsk2/, etc. — those are real
+# app data and must stay tracked; without the anchor, git's case-insensitive matching on Windows
+# silently ignored them too.
+/HSK1.zip
+/HSK2.zip
+/HSK3.zip
+/HSK1/
+/HSK2/
+/HSK3/
 .accelerate/
 .claude/

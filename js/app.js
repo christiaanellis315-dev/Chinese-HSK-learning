@@ -1,4 +1,5 @@
-// App shell: router between the six screens + persistent bottom nav.
+// App shell: router between the six screens, plus the persistent bottom nav. The book selector
+// (HSK1/HSK2/HSK3) lives inside Dashboard itself, not here — see dashboard.js.
 (function () {
   const NAV_ITEMS = [
     { id: 'dashboard', icon: '🏠', label: 'Dashboard' },

@@ -5,7 +5,8 @@
 // with pinyin + a speaker button added to every hanzi example sentence per the app's pinyin rule.
 const Grammar = (() => {
   let root = null;
-  let currentLesson = GRAMMAR_LESSON_ORDER[0];
+  let currentBook = 'hsk1';
+  let currentLesson = null;
   const openCards = {};
 
   function html() {
@@ -22,7 +23,7 @@ const Grammar = (() => {
   function buildTabs() {
     const el = root.querySelector('#tabs');
     el.innerHTML = '';
-    GRAMMAR_LESSON_ORDER.forEach((key) => {
+    Books.getGrammarOrder(currentBook).forEach((key) => {
       const b = document.createElement('div');
       b.className = 'tab' + (key === currentLesson ? ' active' : '');
       b.textContent = 'L' + key;
@@ -64,8 +65,8 @@ const Grammar = (() => {
 
   function render() {
     const content = root.querySelector('#content');
-    const points = GRAMMAR[currentLesson] || [];
-    const titleParts = lessonTitleParts(currentLesson);
+    const points = Books.getGrammar(currentBook, currentLesson);
+    const titleParts = lessonTitleParts(currentBook, currentLesson);
 
     content.innerHTML = `
       <div class="mastery-list-title" style="margin-top:6px;">Lesson ${currentLesson} · ${titleParts.hanzi} ${titleParts.pinyin}</div>
@@ -110,8 +111,26 @@ const Grammar = (() => {
     });
   }
 
+  function renderEmptyBook() {
+    root.innerHTML = `
+      <div class="lamp"></div>
+      <h1>Grammar Notes</h1>
+      <div class="sub">${Books.bookLabel(currentBook)} — no grammar notes yet</div>
+      <div class="soon-box">${Books.bookLabel(currentBook)} grammar notes haven't been added yet.<br>Switch books above to keep studying in the meantime.</div>
+    `;
+  }
+
   function mount(container) {
     root = container;
+    currentBook = Storage.getCurrentBook();
+
+    if (!Books.hasGrammar(currentBook)) {
+      currentLesson = null;
+      renderEmptyBook();
+      return;
+    }
+
+    currentLesson = Books.getGrammarOrder(currentBook)[0];
     root.innerHTML = html();
     Speech.buildSpeedControl(root.querySelector('#speedRow'));
     buildTabs();

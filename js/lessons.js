@@ -1,7 +1,7 @@
-// Lessons screen: flip / type / listen engine, adapted from the original hsk1_lessons_*.html
-// files and generalized to loop over all of LESSON_ORDER (1-15). The Numbers 1-99 drill that
-// used to live here as a fourth mode is now its own top-level screen (see numbers.js) — it's a
-// recurring standalone drill, not lesson-specific content.
+// Lessons screen: flip / type / listen / build engine, generalized to loop over whichever
+// lessons the current book (Books.getLessonOrder(currentBook)) actually has. The Numbers 1-99
+// drill that used to live here as a mode is now its own top-level screen (see numbers.js) — it's
+// a recurring standalone drill, not lesson-specific content, and book-independent besides.
 //
 // Grading now feeds Storage's shared spaced-repetition schedule (one Leitner box per word/
 // listening item, regardless of which mode touched it) instead of a separate known/learning
@@ -11,7 +11,8 @@
 const Lessons = (() => {
   let root = null;
   let goTo = null;
-  let currentLesson = LESSON_ORDER[0];
+  let currentBook = 'hsk1';
+  let currentLesson = null;
   let mode = 'flip';
   let idx = 0;
   let flipped = false;
@@ -129,7 +130,7 @@ const Lessons = (() => {
     return `
       <div class="lamp"></div>
       <h1>Lessons</h1>
-      <div class="sub">HSK1 Standard Course — Lessons 1 through 15</div>
+      <div class="sub">${Books.bookLabel(currentBook)} Standard Course</div>
       <div class="autoplay-row">
         <span>Auto-play audio</span>
         <div class="switch" id="autoplaySwitch"><div class="knob"></div></div>
@@ -159,7 +160,7 @@ const Lessons = (() => {
   function buildTabs() {
     const el = root.querySelector('#tabs');
     el.innerHTML = '';
-    LESSON_ORDER.forEach(key => {
+    Books.getLessonOrder(currentBook).forEach(key => {
       const b = document.createElement('div');
       b.className = 'tab' + (key === currentLesson ? ' active' : '');
       b.textContent = 'L' + key;
@@ -197,22 +198,22 @@ const Lessons = (() => {
     render();
   }
   function saveLastPosition() {
-    Storage.setLastPosition({ lesson: currentLesson, mode });
+    Storage.setLastPosition({ book: currentBook, lesson: currentLesson, mode });
   }
 
   // ---- in-progress session (backs the Go screen's Resume option) ----
-  // One slot per lesson+mode combination, so leaving Flip mid-Lesson-4 and Type mid-Lesson-7
-  // don't clobber each other.
-  function sessionKey() { return 'lessons:' + currentLesson + ':' + mode; }
+  // One slot per book+lesson+mode combination, so leaving Flip mid-Lesson-4 and Type mid-
+  // Lesson-7 (or the same lesson number in a different book) don't clobber each other.
+  function sessionKey() { return 'lessons:' + currentBook + ':' + currentLesson + ':' + mode; }
   function saveSession() { Storage.setSession(sessionKey(), { idx }); }
   function clearSession() { Storage.clearSession(sessionKey()); }
-  function clearAllModeSessions(lessonId) {
-    ['flip', 'type', 'listen', 'build'].forEach((m) => Storage.clearSession('lessons:' + lessonId + ':' + m));
+  function clearAllModeSessions(bookId, lessonId) {
+    ['flip', 'type', 'listen', 'build'].forEach((m) => Storage.clearSession('lessons:' + bookId + ':' + lessonId + ':' + m));
   }
 
-  function currentWords() { return LESSONS[currentLesson].words; }
-  function currentListening() { return LESSONS[currentLesson].listening || null; }
-  function currentBuilder() { return LESSONS[currentLesson].sentenceBuilder || null; }
+  function currentWords() { return Books.getLesson(currentBook, currentLesson).words; }
+  function currentListening() { return Books.getLesson(currentBook, currentLesson).listening || null; }
+  function currentBuilder() { return Books.getLesson(currentBook, currentLesson).sentenceBuilder || null; }
 
   const MODE_TITLE = { flip: 'Flip & Recall', type: 'Type the Answer', listen: 'Listening', build: 'Sentence Builder' };
   const MODE_BLURB = {
@@ -268,7 +269,7 @@ const Lessons = (() => {
   }
 
   function render() {
-    const titleParts = lessonTitleParts(currentLesson);
+    const titleParts = lessonTitleParts(currentBook, currentLesson);
     root.querySelector('#lessonLabel').textContent = `${titleParts.hanzi} ${titleParts.pinyin} ${titleParts.english}`;
 
     if (!started) { renderGoScreen(); return; }
@@ -349,8 +350,8 @@ const Lessons = (() => {
         controlsHtml,
         onToggle: () => { flipped = false; render(); },
         wireControls: () => {
-          root.querySelector('#knowBtn').onclick = (e) => { e.stopPropagation(); Storage.recordSrsResult(Storage.wordItemId(currentLesson, w.h), true); advanceFlip(total); };
-          root.querySelector('#learnBtn').onclick = (e) => { e.stopPropagation(); Storage.recordSrsResult(Storage.wordItemId(currentLesson, w.h), false); advanceFlip(total); };
+          root.querySelector('#knowBtn').onclick = (e) => { e.stopPropagation(); Storage.recordSrsResult(Storage.wordItemId(currentBook, currentLesson, w.h), true); advanceFlip(total); };
+          root.querySelector('#learnBtn').onclick = (e) => { e.stopPropagation(); Storage.recordSrsResult(Storage.wordItemId(currentBook, currentLesson, w.h), false); advanceFlip(total); };
         }
       });
     }
@@ -386,7 +387,7 @@ const Lessons = (() => {
         const val = input.value;
         if (!val.trim()) { root.querySelector('#errorText').textContent = 'Type an answer first.'; input.classList.add('wrong-input'); return; }
         lastCorrect = checkAnswer(val, w);
-        Storage.recordSrsResult(Storage.wordItemId(currentLesson, w.h), lastCorrect);
+        Storage.recordSrsResult(Storage.wordItemId(currentBook, currentLesson, w.h), lastCorrect);
         typedAnswer = val; typed = true; render();
       };
       root.querySelector('#submitBtn').onclick = doSubmit;
@@ -543,7 +544,7 @@ const Lessons = (() => {
 
   function renderBuildMode(item, total) {
     const cardArea = root.querySelector('#cardArea');
-    const itemId = Storage.buildItemId(currentLesson, idx);
+    const itemId = Storage.buildItemId(currentBook, currentLesson, idx);
     if (!buildSubmitted) {
       const controlsHtml = `
         <div class="controls">
@@ -593,7 +594,7 @@ const Lessons = (() => {
 
   function renderListenMode(item, total) {
     const cardArea = root.querySelector('#cardArea');
-    const itemId = Storage.listenItemId(currentLesson, idx);
+    const itemId = Storage.listenItemId(currentBook, currentLesson, idx);
     if (selectedOpt === null) {
       const controlsHtml = `
         <div class="controls">
@@ -642,21 +643,21 @@ const Lessons = (() => {
       const items = currentListening();
       total = items ? items.length : 0;
       (items || []).forEach((it, i) => {
-        const status = Storage.itemStatus(Storage.listenItemId(currentLesson, i));
+        const status = Storage.itemStatus(Storage.listenItemId(currentBook, currentLesson, i));
         if (status === 'known') known++; else if (status === 'learning') learning++;
       });
     } else if (mode === 'build') {
       const items = currentBuilder();
       total = items ? items.length : 0;
       (items || []).forEach((it, i) => {
-        const status = Storage.itemStatus(Storage.buildItemId(currentLesson, i));
+        const status = Storage.itemStatus(Storage.buildItemId(currentBook, currentLesson, i));
         if (status === 'known') known++; else if (status === 'learning') learning++;
       });
     } else {
       const words = currentWords();
       total = words.length;
       words.forEach(w => {
-        const status = Storage.itemStatus(Storage.wordItemId(currentLesson, w.h));
+        const status = Storage.itemStatus(Storage.wordItemId(currentBook, currentLesson, w.h));
         if (status === 'known') known++; else if (status === 'learning') learning++;
       });
     }
@@ -711,10 +712,32 @@ const Lessons = (() => {
     root.querySelector('#backToListBtn').onclick = () => { if (goTo) goTo('dashboard'); };
   }
 
+  // Shown instead of the normal lesson UI when the current book has no lesson content yet
+  // (HSK2/HSK3 today) — tabs/mode-toggle/Go-screen all assume at least one lesson exists
+  // (e.g. Books.getLessonOrder(currentBook)[0] as the default lesson), so this has to be an
+  // early exit, not something those pieces individually guard against.
+  function renderEmptyBook() {
+    root.innerHTML = `
+      <div class="lamp"></div>
+      <h1>Lessons</h1>
+      <div class="sub">${Books.bookLabel(currentBook)} — no lesson content yet</div>
+      <div class="soon-box">${Books.bookLabel(currentBook)} lessons haven't been added yet.<br>Switch books above to keep studying in the meantime.</div>
+    `;
+  }
+
   function mount(container, initial, navigate) {
     root = container;
     goTo = navigate || null;
-    if (initial && initial.lesson) currentLesson = initial.lesson;
+    currentBook = (initial && initial.book) || Storage.getCurrentBook();
+    Storage.setCurrentBook(currentBook); // keep the book selector in sync if we arrived via "Continue"
+
+    if (!Books.hasContent(currentBook)) {
+      currentLesson = null;
+      renderEmptyBook();
+      return;
+    }
+
+    currentLesson = (initial && initial.lesson) || Books.getLessonOrder(currentBook)[0];
     if (initial && initial.mode) mode = initial.mode;
     idx = 0; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
     resetBuildExercise();
@@ -726,8 +749,8 @@ const Lessons = (() => {
     saveLastPosition();
     render();
     root.querySelector('#resetBtn').onclick = () => {
-      Storage.clearLessonSrs(currentLesson);
-      clearAllModeSessions(currentLesson);
+      Storage.clearLessonSrs(currentBook, currentLesson);
+      clearAllModeSessions(currentBook, currentLesson);
       completed = false;
       started = false;
       render();

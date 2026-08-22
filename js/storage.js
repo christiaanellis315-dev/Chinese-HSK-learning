@@ -44,32 +44,38 @@ const Storage = (() => {
   const BOX_INTERVAL_DAYS = [1, 2, 4, 9, 18];
   const DAY_MS = 24 * 60 * 60 * 1000;
 
-  // Item ids are namespaced by book (only "hsk1" exists today) and item type, so this scales to
-  // HSK2+ later without collisions or a storage rework — a future book just calls these same
-  // builders with its own book prefix (or its own analogous wordItemId/listenItemId pair) and
-  // lands in the same 'hsk:srs' store alongside HSK1's items.
-  const BOOK = 'hsk1';
-  function wordItemId(lessonId, hanzi) { return BOOK + ':word:' + lessonId + ':' + hanzi; }
-  function listenItemId(lessonId, idx) { return BOOK + ':listen:' + lessonId + ':' + idx; }
-  function buildItemId(lessonId, idx) { return BOOK + ':build:' + lessonId + ':' + idx; }
+  // Item ids are namespaced by book and item type: "<bookId>:word:<lessonId>:<hanzi>", etc.
+  // The physical storage is one localStorage key PER BOOK ("hsk:srs:hsk1", "hsk:srs:hsk2", ...)
+  // rather than one flat blob for everything — a book's schedule can be read, cleared, or (one
+  // day) exported on its own, and a new book never touches an existing one's storage. Callers
+  // outside this file never see any of that: they still just pass around one opaque itemId
+  // string, exactly as before — only wordItemId/listenItemId/buildItemId gained a bookId param.
+  function wordItemId(bookId, lessonId, hanzi) { return bookId + ':word:' + lessonId + ':' + hanzi; }
+  function listenItemId(bookId, lessonId, idx) { return bookId + ':listen:' + lessonId + ':' + idx; }
+  function buildItemId(bookId, lessonId, idx) { return bookId + ':build:' + lessonId + ':' + idx; }
 
-  function getSrs() { return readRaw('hsk:srs', {}); }
-  function setSrs(s) { writeRaw('hsk:srs', s); }
+  // itemId's book prefix picks which per-book key to read/write; the id stored *inside* that
+  // key drops the prefix, since the key itself already carries the book.
+  function srsStorageKey(itemId) { return 'hsk:srs:' + itemId.slice(0, itemId.indexOf(':')); }
+  function srsShortId(itemId) { return itemId.slice(itemId.indexOf(':') + 1); }
+  function getSrsBlob(itemId) { return readRaw(srsStorageKey(itemId), {}); }
+  function setSrsBlob(itemId, blob) { writeRaw(srsStorageKey(itemId), blob); }
 
   // Returns null for an item that's never been answered — distinct from a real box-1 record,
   // so callers (e.g. the Review queue) can tell "never studied" apart from "due again."
   function getSrsRecord(itemId) {
-    const srs = getSrs();
-    return srs[itemId] || null;
+    const blob = getSrsBlob(itemId);
+    return blob[srsShortId(itemId)] || null;
   }
 
   function recordSrsResult(itemId, correct) {
-    const srs = getSrs();
-    const curBox = (srs[itemId] && srs[itemId].box) || 1;
+    const blob = getSrsBlob(itemId);
+    const shortId = srsShortId(itemId);
+    const curBox = (blob[shortId] && blob[shortId].box) || 1;
     const newBox = correct ? Math.min(curBox + 1, 5) : 1;
     const now = Date.now();
-    srs[itemId] = { box: newBox, due: now + BOX_INTERVAL_DAYS[newBox - 1] * DAY_MS, lastReviewed: now };
-    setSrs(srs);
+    blob[shortId] = { box: newBox, due: now + BOX_INTERVAL_DAYS[newBox - 1] * DAY_MS, lastReviewed: now };
+    setSrsBlob(itemId, blob);
     recordActivity();
   }
 
@@ -87,28 +93,33 @@ const Storage = (() => {
     return rec.box >= 2 ? 'known' : 'learning';
   }
 
-  // Wipes every SRS record for a lesson (both its vocab words and its listening items) —
-  // backs the "Reset progress for this lesson" control. Since scheduling is shared across
-  // modes now, there's no more per-mode reset, only per-lesson.
-  function clearLessonSrs(lessonId) {
-    const srs = getSrs();
-    const wordPrefix = BOOK + ':word:' + lessonId + ':';
-    const listenPrefix = BOOK + ':listen:' + lessonId + ':';
-    const buildPrefix = BOOK + ':build:' + lessonId + ':';
-    Object.keys(srs).forEach((id) => {
-      if (id.indexOf(wordPrefix) === 0 || id.indexOf(listenPrefix) === 0 || id.indexOf(buildPrefix) === 0) delete srs[id];
+  // Wipes every SRS record for one lesson within one book (both its vocab words and its
+  // listening items) — backs the "Reset progress for this lesson" control. Operates on that
+  // book's own key only, so it can't touch another book's schedule even by accident.
+  function clearLessonSrs(bookId, lessonId) {
+    const key = 'hsk:srs:' + bookId;
+    const blob = readRaw(key, {});
+    const wordPrefix = 'word:' + lessonId + ':';
+    const listenPrefix = 'listen:' + lessonId + ':';
+    const buildPrefix = 'build:' + lessonId + ':';
+    Object.keys(blob).forEach((id) => {
+      if (id.indexOf(wordPrefix) === 0 || id.indexOf(listenPrefix) === 0 || id.indexOf(buildPrefix) === 0) delete blob[id];
     });
-    setSrs(srs);
+    writeRaw(key, blob);
   }
 
   // ---- one-time migration from the old per-mode "known/learning" progress dict ----
   // Old shape: { [lessonId]: { flip: {hanzi: status}, type: {hanzi: status}, listen: {key: status} } }
   // Seeds an initial SRS record for anything already marked, so upgrading doesn't erase study
   // history: 'known' seeds box 2 (due per that box's interval), 'learning' seeds box 1 (due now).
+  // This predates books entirely — hsk:progress only ever held HSK1 data — so it reconstructs
+  // the flat "hsk1:word:..." keys directly rather than through wordItemId/listenItemId, which
+  // now build a different (per-book) address. migrateToBookAwareSrsIfNeeded(), below, is what
+  // carries whatever this produces forward into the new per-book storage.
   function migrateToSrsIfNeeded() {
     if (readRaw('hsk:srsMigrated', false)) return;
     const old = readRaw('hsk:progress', {});
-    const srs = getSrs();
+    const srs = readRaw('hsk:srs', {});
     const now = Date.now();
     Object.keys(old).forEach((lessonId) => {
       const lp = old[lessonId] || {};
@@ -116,7 +127,7 @@ const Storage = (() => {
       const type = lp.type || {};
       const wordKeys = Object.keys(flip).concat(Object.keys(type)).filter((k, i, arr) => arr.indexOf(k) === i);
       wordKeys.forEach((hanzi) => {
-        const id = wordItemId(lessonId, hanzi);
+        const id = 'hsk1:word:' + lessonId + ':' + hanzi;
         if (srs[id]) return;
         const known = flip[hanzi] === 'known' || type[hanzi] === 'known';
         const box = known ? 2 : 1;
@@ -125,17 +136,39 @@ const Storage = (() => {
       const listen = lp.listen || {};
       Object.keys(listen).forEach((key) => {
         const idx = key.slice(String(lessonId).length + 1);
-        const id = listenItemId(lessonId, idx);
+        const id = 'hsk1:listen:' + lessonId + ':' + idx;
         if (srs[id]) return;
         const known = listen[key] === 'known';
         const box = known ? 2 : 1;
         srs[id] = { box, due: known ? now + BOX_INTERVAL_DAYS[box - 1] * DAY_MS : now, lastReviewed: now };
       });
     });
-    setSrs(srs);
+    writeRaw('hsk:srs', srs);
     writeRaw('hsk:srsMigrated', true);
   }
   migrateToSrsIfNeeded();
+
+  // ---- one-time migration from the old flat "hsk:srs" blob to per-book "hsk:srs:<bookId>" ----
+  // Every existing item id already carries its book as a prefix ("hsk1:word:5:你"), so this
+  // just groups by that prefix and drops it (the per-book key now carries that context instead).
+  // The old flat key is left in place, untouched, as a backup — exactly how hsk:progress itself
+  // was never deleted after the migration above. Gated the same way, so it only ever runs once.
+  function migrateToBookAwareSrsIfNeeded() {
+    if (readRaw('hsk:bookSrsMigrated', false)) return;
+    const old = readRaw('hsk:srs', {});
+    const byBook = {};
+    Object.keys(old).forEach((flatId) => {
+      const sep = flatId.indexOf(':');
+      if (sep === -1) return; // malformed/unexpected id shape — nothing sensible to migrate
+      const bookId = flatId.slice(0, sep);
+      const shortId = flatId.slice(sep + 1);
+      if (!byBook[bookId]) byBook[bookId] = readRaw('hsk:srs:' + bookId, {});
+      byBook[bookId][shortId] = old[flatId];
+    });
+    Object.keys(byBook).forEach((bookId) => writeRaw('hsk:srs:' + bookId, byBook[bookId]));
+    writeRaw('hsk:bookSrsMigrated', true);
+  }
+  migrateToBookAwareSrsIfNeeded();
 
   // ---- daily goal + streak ----
   function getDailyGoal() {
@@ -171,8 +204,18 @@ const Storage = (() => {
   function setVoicePref(pref) { writeRaw('hsk:voice', pref); }
 
   // ---- "continue where you left off" ----
-  function getLastPosition() { return readRaw('hsk:lastPosition', null); }
+  // Positions saved before the book restructuring have no `book` field — everything was HSK1
+  // then, so that's the sane default rather than treating them as unusable.
+  function getLastPosition() {
+    const pos = readRaw('hsk:lastPosition', null);
+    if (pos && !pos.book) pos.book = 'hsk1';
+    return pos;
+  }
   function setLastPosition(pos) { writeRaw('hsk:lastPosition', pos); }
+
+  // ---- which book is currently selected ----
+  function getCurrentBook() { return readRaw('hsk:currentBook', 'hsk1'); }
+  function setCurrentBook(bookId) { writeRaw('hsk:currentBook', bookId); }
 
   // ---- in-progress session state (the "Go" screen's resume data) ----
   // One flat store, keyed by a caller-chosen string — lessons.js uses "lessons:<lesson>:<mode>"
@@ -191,6 +234,7 @@ const Storage = (() => {
     getAutoplay, setAutoplay,
     getVoicePref, setVoicePref,
     getLastPosition, setLastPosition,
+    getCurrentBook, setCurrentBook,
     getSession, setSession, clearSession,
   };
 })();

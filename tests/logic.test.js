@@ -6,14 +6,15 @@
 
   // ---- Storage: spaced repetition ----
   // Storage is backed by real localStorage, which this test page shares with the live app if
-  // served from the same origin. Every id here lives under the fake lesson id "__TEST__", which
-  // never collides with a real lesson ("1".."15") — cleared at the start and end of this group
-  // so the suite never leaves residue in real app data.
+  // served from the same origin. Every id here lives under the fake book id "__TEST__", which
+  // lands in its own dedicated "hsk:srs:__TEST__" key — never mixed into hsk1/hsk2/hsk3's real
+  // data — and that whole key is wiped at the start and end of this group.
   group('Storage — spaced repetition', () => {
-    const FAKE_LESSON = '__TEST__';
-    Storage.clearLessonSrs(FAKE_LESSON); // clean slate, in case a previous run was interrupted
+    const FAKE_BOOK = '__TEST__';
+    function wipeFakeBook() { try { localStorage.removeItem('hsk:srs:' + FAKE_BOOK); } catch (e) { /* no-op */ } }
+    wipeFakeBook(); // clean slate, in case a previous run was interrupted
     let counter = 0;
-    function tempItemId() { return Storage.wordItemId(FAKE_LESSON, 'w' + (counter++)); }
+    function tempItemId() { return Storage.wordItemId(FAKE_BOOK, '1', 'w' + (counter++)); }
 
     test('a fresh item has no SRS record and status "new"', () => {
       const id = tempItemId();
@@ -54,19 +55,29 @@
     });
 
     test('wordItemId / listenItemId / buildItemId are namespaced and never collide', () => {
-      const w = Storage.wordItemId('5', '你好');
-      const l = Storage.listenItemId('5', 0);
-      const b = Storage.buildItemId('5', 0);
+      const w = Storage.wordItemId('hsk1', '5', '你好');
+      const l = Storage.listenItemId('hsk1', '5', 0);
+      const b = Storage.buildItemId('hsk1', '5', 0);
       assert(w !== l && l !== b && w !== b, 'item ids for different types should never collide');
       assert(w.indexOf(':word:') !== -1, 'wordItemId missing :word: segment');
       assert(l.indexOf(':listen:') !== -1, 'listenItemId missing :listen: segment');
       assert(b.indexOf(':build:') !== -1, 'buildItemId missing :build: segment');
     });
 
+    test('the same lesson number in two different books never collides', () => {
+      // Two fake books, not hsk1/hsk2, so this never touches real storage even transiently.
+      const bookAWord = Storage.wordItemId('__TEST_A__', '5', '你好');
+      const bookBWord = Storage.wordItemId('__TEST_B__', '5', '你好');
+      assert(bookAWord !== bookBWord, 'identical lesson+hanzi in different books should still produce different item ids');
+      Storage.recordSrsResult(bookAWord, true);
+      assert(Storage.getSrsRecord(bookBWord) === null, 'recording a result in one book must not create a record in another');
+      try { localStorage.removeItem('hsk:srs:__TEST_A__'); localStorage.removeItem('hsk:srs:__TEST_B__'); } catch (e) { /* no-op */ }
+    });
+
     test('cleanup — no test data left behind in real storage', () => {
-      Storage.clearLessonSrs(FAKE_LESSON);
-      const id = Storage.wordItemId(FAKE_LESSON, 'w0');
-      assert(Storage.getSrsRecord(id) === null, 'fake-lesson records should be gone after cleanup');
+      wipeFakeBook();
+      const id = Storage.wordItemId(FAKE_BOOK, '1', 'w0');
+      assert(Storage.getSrsRecord(id) === null, 'fake-book records should be gone after cleanup');
     });
   });
 
