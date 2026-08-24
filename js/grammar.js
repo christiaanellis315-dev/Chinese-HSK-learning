@@ -1,8 +1,11 @@
 // Grammar Notes screen: the textbook's own 注释 sections, organized by lesson (3-15; lessons
 // 1-2 have none). Structured like the Pinyin Reference and Numbers screens — its own top-level
 // area with lesson tabs — rather than nested inside a lesson mode. Each grammar point is an
-// expandable card; content comes straight from data/grammar-data.js and is rendered as-is,
-// with pinyin + a speaker button added to every hanzi example sentence per the app's pinyin rule.
+// expandable card; content comes straight from data/<book>/grammar/lesson-*.js and is rendered
+// as-is, with pinyin + a speaker button added to every hanzi example sentence per the app's
+// pinyin rule. An example's English translation (when present) sits gated behind the same
+// expand action as everything else in the card — there's no separate front/back state here
+// the way Flip & Recall has, so expanding *is* the reveal.
 const Grammar = (() => {
   let root = null;
   let currentBook = 'hsk1';
@@ -47,6 +50,7 @@ const Grammar = (() => {
         <div class="gc-example-text">
           <div class="gc-example-raw">${ex.raw}</div>
           ${ex.pinyin ? `<div class="gc-example-pinyin">${ex.pinyin}</div>` : ''}
+          ${ex.en ? `<div class="gc-example-en">${ex.en}</div>` : ''}
         </div>
       </div>
     `).join('');

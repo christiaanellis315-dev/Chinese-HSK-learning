@@ -1,8 +1,11 @@
 # HSK1 Standard Course — Grammar Notes (注释)
 
 Source: extracted directly from the "注释 / Notes" section of each lesson in the
-HSK1 Standard Course textbook. Chinese text, English translations, and example
-sentences are transcribed as printed — nothing added, reworded, or invented.
+HSK1 Standard Course textbook. Chinese text, English translations of the rule
+itself, and example sentences are transcribed as printed — nothing added,
+reworded, or invented there. The English line under each numbered example
+sentence is mine, added so the audio/read-aloud feature has something to
+display alongside it — these were not in the original textbook.
 
 Lessons 1 and 2 have no Notes section in the textbook (confirmed against the
 table of contents) — they cover only vocabulary and pronunciation basics.
@@ -23,9 +26,9 @@ app's pinyin rule.
 the object by itself or together with a nominal element following it.
 
 **Examples:**
-1. 你叫什么名字？(Nǐ jiào shénme míngzi?)
-2. 这(zhè, this)是什么(shénme)?
-3. 那(nà, this)是什么(shū, book)?
+1. 你叫什么名字？(Nǐ jiào shénme míngzi?) — What's your name?
+2. 这是什么? (Zhè shì shénme?) — What is this?
+3. 那是什么书? (Nà shì shénme shū?) — What book is that?
 
 ### 2. "是"字句 — The "是" Sentence
 
@@ -80,9 +83,9 @@ declarative sentence; the declarative sentence turns into a question.
 "哪 + measure word/noun + noun".
 
 **Examples:**
-1. 哪本 (běn, a measure word for books) 书 (shū, book)？
-2. 哪个 (gè, a general measure word) 人？
-3. 你是哪国人？
+1. 哪本书？(Nǎ běn shū?) — Which book?
+2. 哪个人？(Nǎge rén?) — Which person?
+3. 你是哪国人？(Nǐ shì nǎ guó rén?) — Which country are you from?
 
 ### 2. 结构助词"的" — The Structural Particle "的"
 
@@ -92,9 +95,9 @@ declarative sentence; the declarative sentence turns into a question.
 following "的" is a term of kinship or indicates a person, "的" can be omitted.
 
 **Examples:**
-1. 李月是我的老师。
-2. 这 (zhè, this) 是我的书 (shū, book)。
-3. 她不是我同学，她是我朋友。
+1. 李月是我的老师。(Lǐ Yuè shì wǒ de lǎoshī.) — Li Yue is my teacher.
+2. 这是我的书。(Zhè shì wǒ de shū.) — This is my book.
+3. 她不是我同学，她是我朋友。(Tā bú shì wǒ tóngxué, tā shì wǒ péngyou.) — She isn't my classmate, she's my friend.
 
 ### 3. 疑问助词"呢" (1) — The Interrogative Particle "呢" (1)
 
@@ -105,9 +108,9 @@ about the situation mentioned previously. The commonly used sentence pattern is
 "A……。B呢？" (A…. What about B?).
 
 **Examples:**
-1. 我不是老师，我是学生。你呢？
-2. 她叫李月。他呢？
-3. 我是美国人。你呢？
+1. 我不是老师，我是学生。你呢？(Wǒ bú shì lǎoshī, wǒ shì xuésheng. Nǐ ne?) — I'm not a teacher, I'm a student. What about you?
+2. 她叫李月。他呢？(Tā jiào Lǐ Yuè. Tā ne?) — Her name is Li Yue. What about him?
+3. 我是美国人。你呢？(Wǒ shì Měiguórén. Nǐ ne?) — I'm American. What about you?
 
 ---
 
@@ -120,9 +123,9 @@ about the situation mentioned previously. The commonly used sentence pattern is
 **English:** The interrogative pronoun "几" is used to ask about a number, usually less than 10.
 
 **Examples:**
-1. 你有几个汉语老师？
-2. 李老师家有几口人？
-3. 你女儿几岁了？
+1. 你有几个汉语老师？(Nǐ yǒu jǐ ge Hànyǔ lǎoshī?) — How many Chinese teachers do you have?
+2. 李老师家有几口人？(Lǐ lǎoshī jiā yǒu jǐ kǒu rén?) — How many people are there in Teacher Li's family?
+3. 你女儿几岁了？(Nǐ nǚ'ér jǐ suì le?) — How old is your daughter?
 
 ### 2. 百以内的数字 — Numbers below 100
 
@@ -153,9 +156,9 @@ drill — tens digit + 十 + ones digit, e.g. 五十六 = wǔshíliù.)*
 new situation.
 
 **Examples:**
-1. 李老师今年50岁了。
-2. 我朋友的女儿今年四岁了。
-3. 你女儿几岁了？
+1. 李老师今年50岁了。(Lǐ lǎoshī jīnnián wǔshí suì le.) — Teacher Li is 50 years old this year.
+2. 我朋友的女儿今年四岁了。(Wǒ péngyou de nǚ'ér jīnnián sì suì le.) — My friend's daughter is four years old this year.
+3. 你女儿几岁了？(Nǐ nǚ'ér jǐ suì le?) — How old is your daughter now?
 
 ### 4. "多+大"表示疑问 — The Interrogative Phrase "多+大"
 
@@ -164,9 +167,9 @@ new situation.
 **English:** "多" is used before an adjective to ask about degree. "多大" is used to ask about age.
 
 **Examples:**
-1. 你女儿多大了？
-2. 你妈妈今年多大了？
-3. 李老师多大了？
+1. 你女儿多大了？(Nǐ nǚ'ér duō dà le?) — How old is your daughter?
+2. 你妈妈今年多大了？(Nǐ māma jīnnián duō dà le?) — How old is your mother this year?
+3. 李老师多大了？(Lǐ lǎoshī duō dà le?) — How old is Teacher Li?
 
 ---
 
@@ -211,9 +214,9 @@ degree "很". The negative form is "subject + 不 + adjective".
 an action.
 
 **Examples:**
-1. 这个汉字怎么读？
-2. 你的汉语名字怎么写？
-3. 这个字怎么写？
+1. 这个汉字怎么读？(Zhège Hànzì zěnme dú?) — How do you read this character?
+2. 你的汉语名字怎么写？(Nǐ de Hànyǔ míngzi zěnme xiě?) — How do you write your Chinese name?
+3. 这个字怎么写？(Zhège zì zěnme xiě?) — How do you write this character?
 
 ---
 
@@ -228,9 +231,9 @@ before the smaller one". The month is said first, then the date and finally the 
 week. In spoken Chinese, "号" is often used instead of "日" to express the date.
 
 **Examples:**
-1. 9月1号，星期三。
-2. 9月2号，星期四。
-3. 8月31号，星期二。
+1. 9月1号，星期三。(Jiǔ yuè yī hào, xīngqī sān.) — September 1st, Wednesday.
+2. 9月2号，星期四。(Jiǔ yuè èr hào, xīngqī sì.) — September 2nd, Thursday.
+3. 8月31号，星期二。(Bā yuè sānshíyī hào, xīngqī èr.) — August 31st, Tuesday.
 
 ### 2. 名词谓语句 — Sentences with a Nominal Predicate
 
@@ -274,9 +277,9 @@ i.e. the place, can sometimes be omitted.
 **English:** The modal verb "想" is usually used before a verb to express a hope or plan.
 
 **Examples:**
-1. 我想学汉语。
-2. 明天我想去学校看书。
-3. 我想买一个杯子。
+1. 我想学汉语。(Wǒ xiǎng xué Hànyǔ.) — I want to learn Chinese.
+2. 明天我想去学校看书。(Míngtiān wǒ xiǎng qù xuéxiào kàn shū.) — Tomorrow I want to go to school to read.
+3. 我想买一个杯子。(Wǒ xiǎng mǎi yí ge bēizi.) — I want to buy a cup.
 
 ### 2. 疑问代词"多少" — The Interrogative Pronoun "多少"
 
@@ -287,9 +290,9 @@ measure word following it can be omitted. "多少" can also be used to inquire a
 usually in the sentence pattern "……多少钱?".
 
 **Examples:**
-1. 你们学校有多少（个）学生？
-2. 你有多少（个）汉语老师？
-3. 这个杯子多少钱？
+1. 你们学校有多少学生？(Nǐmen xuéxiào yǒu duōshao xuésheng?) — How many students does your school have?
+2. 你有多少汉语老师？(Nǐ yǒu duōshao Hànyǔ lǎoshī?) — How many Chinese teachers do you have?
+3. 这个杯子多少钱？(Zhège bēizi duōshao qián?) — How much is this cup?
 
 ### 3. 量词"个"、"口" — The Measure Words "个" and "口"
 
@@ -299,18 +302,18 @@ usually in the sentence pattern "……多少钱?".
 without a specific measure word of its own.
 
 **Examples (个):**
-1. 三个老师
-2. 五个学生
-3. 一个杯子
+1. 三个老师 (sān ge lǎoshī) — three teachers
+2. 五个学生 (wǔ ge xuésheng) — five students
+3. 一个杯子 (yí ge bēizi) — one cup
 
 **Chinese:** "口"也是一个量词，一般用于描述家庭成员的人数（见第5课）。
 
 **English:** "口" is a measure word, too, usually used for members of a family (see Lesson 5).
 
 **Examples (口):**
-1. 李老师家有六口人。
-2. 你家有几口人？
-3. 我家有三口人。
+1. 李老师家有六口人。(Lǐ lǎoshī jiā yǒu liù kǒu rén.) — There are six people in Teacher Li's family.
+2. 你家有几口人？(Nǐ jiā yǒu jǐ kǒu rén?) — How many people are there in your family?
+3. 我家有三口人。(Wǒ jiā yǒu sān kǒu rén.) — There are three people in my family.
 
 ### 4. 钱数的表达 — Expression of the Amount of Money
 
@@ -320,11 +323,11 @@ without a specific measure word of its own.
 spoken Chinese.
 
 **Examples:**
-1. 一元（块）— one yuan/kuai
-2. 五元（块）— five yuan/kuai
-3. 十元（块）— ten yuan/kuai
-4. 五十元（块）— fifty yuan/kuai
-5. 一百元（块）— one hundred yuan/kuai
+1. 一元（块）(yì yuán/kuài) — one yuan/kuai
+2. 五元（块）(wǔ yuán/kuài) — five yuan/kuai
+3. 十元（块）(shí yuán/kuài) — ten yuan/kuai
+4. 五十元（块）(wǔshí yuán/kuài) — fifty yuan/kuai
+5. 一百元（块）(yìbǎi yuán/kuài) — one hundred yuan/kuai
 
 ---
 
@@ -353,9 +356,9 @@ of a sentence, it indicates the location of somebody or something.
 or something.
 
 **Examples:**
-1. 我的杯子在哪儿？
-2. 你的中国朋友在哪儿？
-3. 小猫在哪儿？
+1. 我的杯子在哪儿？(Wǒ de bēizi zài nǎr?) — Where is my cup?
+2. 你的中国朋友在哪儿？(Nǐ de Zhōngguó péngyou zài nǎr?) — Where is your Chinese friend?
+3. 小猫在哪儿？(Xiǎo māo zài nǎr?) — Where is the kitty?
 
 ### 3. 介词"在" — The Preposition "在"
 
@@ -380,9 +383,9 @@ place where an action or behavior takes place.
 location of somebody or something.
 
 **Examples:**
-1. 我的小猫呢？
-2. 我的杯子呢？
-3. 他在哪儿呢？
+1. 我的小猫呢？(Wǒ de xiǎo māo ne?) — Where's my kitty?
+2. 我的杯子呢？(Wǒ de bēizi ne?) — Where's my cup?
+3. 他在哪儿呢？(Tā zài nǎr ne?) — Where is he?
 
 ---
 
@@ -409,9 +412,9 @@ thing exists somewhere.
 classifier before the object.
 
 **Examples:**
-1. 椅子下面没有小狗。
-2. 学校里没有商店。
-3. 桌子上没有电脑和书。
+1. 椅子下面没有小狗。(Yǐzi xiàmiàn méiyǒu xiǎo gǒu.) — There's no dog under the chair.
+2. 学校里没有商店。(Xuéxiào li méiyǒu shāngdiàn.) — There's no shop in the school.
+3. 桌子上没有电脑和书。(Zhuōzi shang méiyǒu diànnǎo hé shū.) — There's no computer or book on the desk.
 
 ### 2. 连词"和" — The Conjunction "和"
 
@@ -421,9 +424,9 @@ classifier before the object.
 parallel relationship.
 
 **Examples:**
-1. 我有一个中国朋友和一个美国朋友。
-2. 我家有三口人，爸爸、妈妈和我。
-3. 桌子上有一个电脑和一本书。
+1. 我有一个中国朋友和一个美国朋友。(Wǒ yǒu yí ge Zhōngguó péngyou hé yí ge Měiguó péngyou.) — I have a Chinese friend and an American friend.
+2. 我家有三口人，爸爸、妈妈和我。(Wǒ jiā yǒu sān kǒu rén, bàba, māma hé wǒ.) — There are three people in my family: dad, mom and me.
+3. 桌子上有一个电脑和一本书。(Zhuōzi shang yǒu yí ge diànnǎo hé yì běn shū.) — There's a computer and a book on the desk.
 
 ### 3. 能愿动词"能" — The Modal Verb "能"
 
@@ -434,9 +437,9 @@ indicating an ability or a possibility. The interrogative sentence structure "�
 often used to indicate a request or hope for permission.
 
 **Examples:**
-1. 明天下午我能去商店。
-2. 你能在这儿写你的名字吗？
-3. 我能坐这儿吗？
+1. 明天下午我能去商店。(Míngtiān xiàwǔ wǒ néng qù shāngdiàn.) — I can go to the store tomorrow afternoon.
+2. 你能在这儿写你的名字吗？(Nǐ néng zài zhèr xiě nǐ de míngzi ma?) — Can you write your name here?
+3. 我能坐这儿吗？(Wǒ néng zuò zhèr ma?) — Can I sit here?
 
 ### 4. 用"请"的祈使句 — Imperative Sentences with "请"
 
@@ -446,9 +449,9 @@ often used to indicate a request or hope for permission.
 formed, indicating a polite suggestion or hope.
 
 **Examples:**
-1. 请写您的名字。
-2. 请喝茶。
-3. 请坐。
+1. 请写您的名字。(Qǐng xiě nín de míngzi.) — Please write your name.
+2. 请喝茶。(Qǐng hē chá.) — Please have some tea.
+3. 请坐。(Qǐng zuò.) — Please sit.
 
 ---
 
@@ -462,9 +465,9 @@ formed, indicating a polite suggestion or hope.
 "the bigger unit preceding the smaller one". "点" means "o'clock", indicating a whole hour.
 
 **Examples (whole hour):**
-1. 9:00 → 九点
-2. 11:00 → 十一点
-3. 2:00 → 两点 (liǎng diǎn)
+1. 9:00 → 九点 (jiǔ diǎn) — nine o'clock
+2. 11:00 → 十一点 (shíyī diǎn) — eleven o'clock
+3. 2:00 → 两点 (liǎng diǎn) — two o'clock
 
 **Note:** The counterpart of 2 o'clock in Chinese is "两点 (liǎng diǎn)" instead of "二点
 (èr diǎn)".
@@ -474,9 +477,9 @@ formed, indicating a polite suggestion or hope.
 **English:** If it is not a "whole-hour" time, "分" is used. The pattern is "……点……分".
 
 **Examples (with minutes):**
-1. 5:30 → 五点三十分
-2. 11:10 → 十一点十分
-3. 2:05 → 两点零 (líng, zero) 五分
+1. 5:30 → 五点三十分 (wǔ diǎn sānshí fēn) — five thirty
+2. 11:10 → 十一点十分 (shíyī diǎn shí fēn) — eleven ten
+3. 2:05 → 两点零五分 (liǎng diǎn líng wǔ fēn) — two oh five
 
 **Chinese:** 如果区分上午或者下午，一般格式是"上午……点（……分），下午……点（……分）"。
 
@@ -484,9 +487,9 @@ formed, indicating a polite suggestion or hope.
 (morning)……点（……分）" or "下午（afternoon）……点（……分）" is used.
 
 **Examples (am/pm):**
-1. 8:00 am → 上午八点
-2. 3:10 pm → 下午三点十分
-3. 5:25 pm → 下午五点二十五分
+1. 8:00 am → 上午八点 (shàngwǔ bā diǎn) — eight in the morning
+2. 3:10 pm → 下午三点十分 (xiàwǔ sān diǎn shí fēn) — three ten in the afternoon
+3. 5:25 pm → 下午五点二十五分 (xiàwǔ wǔ diǎn èrshíwǔ fēn) — five twenty-five in the afternoon
 
 ### 2. 名词"前" — The Noun "前"
 
@@ -496,10 +499,10 @@ formed, indicating a polite suggestion or hope.
 mentioned.
 
 **Examples:**
-1. 三天前，一个星期前，星期五前
-2. 你什么时候来学校？我八点前来。
-3. 你能几点来？我八点前来。
-4. 你（在）几点前能来？我八点。
+1. 三天前，一个星期前，星期五前 (sān tiān qián, yí ge xīngqī qián, xīngqīwǔ qián) — three days ago, a week ago, before Friday
+2. 你什么时候来学校？我八点前来。(Nǐ shénme shíhou lái xuéxiào? Wǒ bā diǎn qián lái.) — When are you coming to school? I'll come before eight.
+3. 你能几点来？我八点前来。(Nǐ néng jǐ diǎn lái? Wǒ bā diǎn qián lái.) — What time can you come? I'll come before eight.
+4. 你在几点前能来？我八点。(Nǐ zài jǐ diǎn qián néng lái? Wǒ bā diǎn.) — By what time can you come? Eight.
 
 ### 3. 时间词做状语 — Time Word Used as an Adverbial
 
@@ -527,9 +530,9 @@ the subject. Sometimes it can be used before the subject.
 **English:** "怎么样" is used to ask about the condition of something or someone.
 
 **Examples:**
-1. 你的汉语怎么样？
-2. 你妈妈身体怎么样？
-3. 明天天气怎么样？
+1. 你的汉语怎么样？(Nǐ de Hànyǔ zěnmeyàng?) — How's your Chinese?
+2. 你妈妈身体怎么样？(Nǐ māma shēntǐ zěnmeyàng?) — How's your mother's health?
+3. 明天天气怎么样？(Míngtiān tiānqì zěnmeyàng?) — What will the weather be like tomorrow?
 
 ### 2. 主谓谓语句 — Sentences with a Subject-Predicate Phrase as the Predicate
 
@@ -558,9 +561,9 @@ sentence or related to it.
 sentences with "太", but not in negative sentences.
 
 **Examples:**
-1. 太热了。
-2. 天气太冷了。
-3. 我身体不太好。
+1. 太热了。(Tài rè le.) — It's too hot.
+2. 天气太冷了。(Tiānqì tài lěng le.) — The weather is too cold.
+3. 我身体不太好。(Wǒ shēntǐ bú tài hǎo.) — I'm not feeling too well.
 
 ### 4. 能愿动词"会" (2) — The Modal Verb "会" (2)
 
@@ -569,9 +572,9 @@ sentences with "太", but not in negative sentences.
 **English:** "会" indicates the possibility of the situation mentioned.
 
 **Examples:**
-1. A: 爸爸八点前会回家吗？ B: 会。
-2. A: 明天她会来吗？ B: 她会来。
-3. A: 今天会下雨吗？ B: 今天不会下雨。
+1. A: 爸爸八点前会回家吗？ B: 会。(Bàba bā diǎn qián huì huí jiā ma? Huì.) — Will dad be home before eight? Yes.
+2. A: 明天她会来吗？ B: 她会来。(Míngtiān tā huì lái ma? Tā huì lái.) — Will she come tomorrow? She will come.
+3. A: 今天会下雨吗？ B: 今天不会下雨。(Jīntiān huì xià yǔ ma? Jīntiān bú huì xià yǔ.) — Will it rain today? It won't rain today.
 
 ---
 
@@ -584,9 +587,9 @@ sentences with "太", but not in negative sentences.
 **English:** The word is often used when calling someone or answering a phone call.
 
 **Examples:**
-1. A: 喂，李老师在家吗？ B: 她不在家，去学校了。
-2. A: 喂，你是张小姐吗？ B: 对，您是？
-3. A: 喂，你在做什么呢？ B: 我在看书呢。
+1. A: 喂，李老师在家吗？ B: 她不在家，去学校了。(Wéi, Lǐ lǎoshī zài jiā ma? Tā bú zài jiā, qù xuéxiào le.) — Hello, is Teacher Li home? She's not home, she's gone to school.
+2. A: 喂，你是张小姐吗？ B: 对，您是？(Wéi, nǐ shì Zhāng xiǎojiě ma? Duì, nín shì?) — Hello, is that Miss Zhang? Yes, and you are?
+3. A: 喂，你在做什么呢？ B: 我在看书呢。(Wéi, nǐ zài zuò shénme ne? Wǒ zài kàn shū ne.) — Hello, what are you doing? I'm reading.
 
 ### 2. "在……呢"表示动作正在进行 — "在……呢" Used to Indicate an Action in Progress
 
@@ -624,9 +627,9 @@ the sentence.
 read digit by digit. The number "1" in a telephone number is read "yāo".
 
 **Examples:**
-1. 8069478 → bā líng liù jiǔ sì qī bā
-2. 13851897623 → yāo sān bā wǔ yāo bā jiǔ qī liù èr sān
-3. 82304156 → bā èr sān líng sì yāo wǔ liù
+1. 8069478 → bā líng liù jiǔ sì qī bā — read digit by digit
+2. 13851897623 → yāo sān bā wǔ yāo bā jiǔ qī liù èr sān — read digit by digit
+3. 82304156 → bā èr sān líng sì yāo wǔ liù — read digit by digit
 
 ### 4. 语气助词"吧" — The Modal Particle "吧"
 
@@ -636,9 +639,9 @@ read digit by digit. The number "1" in a telephone number is read "yāo".
 indicates a suggestion or command with a softened mood.
 
 **Examples:**
-1. A: 这儿没有人，请坐吧。 B: 谢谢。
-2. A: 今天我们在家吃饭吧。 B: 好。
-3. A: 我现在给她打电话。 B: 她在工作呢，你下午打吧。
+1. A: 这儿没有人，请坐吧。 B: 谢谢。(Zhèr méiyǒu rén, qǐng zuò ba. Xièxie.) — No one's here, please sit. Thanks.
+2. A: 今天我们在家吃饭吧。 B: 好。(Jīntiān wǒmen zài jiā chī fàn ba. Hǎo.) — Let's eat at home today. OK.
+3. A: 我现在给她打电话。 B: 她在工作呢，你下午打吧。(Wǒ xiànzài gěi tā dǎ diànhuà. Tā zài gōngzuò ne, nǐ xiàwǔ dǎ ba.) — I'll call her now. She's working, call her in the afternoon.
 
 ---
 
@@ -693,10 +696,10 @@ negative form, "了" should be omitted.
 mentioned.
 
 **Examples:**
-1. 五点后，40分钟后，星期三后
-2. A: 你几点去工作？ B: 八点后。
-3. A: 你什么时候回家？ B: 五点后。
-4. A: 他什么时候能回来？ B: 40分钟后回来。
+1. 五点后，40分钟后，星期三后 (wǔ diǎn hòu, sìshí fēnzhōng hòu, xīngqīsān hòu) — after five, after 40 minutes, after Wednesday
+2. A: 你几点去工作？ B: 八点后。(Nǐ jǐ diǎn qù gōngzuò? Bā diǎn hòu.) — What time do you go to work? After eight.
+3. A: 你什么时候回家？ B: 五点后。(Nǐ shénme shíhou huí jiā? Wǔ diǎn hòu.) — When are you going home? After five.
+4. A: 他什么时候能回来？ B: 40分钟后回来。(Tā shénme shíhou néng huílai? Sìshí fēnzhōng hòu huílai.) — When can he come back? He'll be back after 40 minutes.
 
 ### 3. 语气助词"啊" — The Modal Particle "啊"
 
@@ -718,9 +721,9 @@ written Chinese, the variants are represented by different characters sometimes.
 | -i (zhi, chi, shi, ri) | a → ra |
 
 **Examples:**
-1. A: 你是王小姐吗？ B: 是啊。
-2. A: 你想去吃中国菜吗？ B: 好啊。
-3. A: 王方的衣服太漂亮了！ B: 是啊，她买了不少衣服。
+1. A: 你是王小姐吗？ B: 是啊。(Nǐ shì Wáng xiǎojiě ma? Shì a.) — Are you Miss Wang? Yes, I am.
+2. A: 你想去吃中国菜吗？ B: 好啊。(Nǐ xiǎng qù chī Zhōngguó cài ma? Hǎo a.) — Do you want to go eat Chinese food? Sure!
+3. A: 王方的衣服太漂亮了！ B: 是啊，她买了不少衣服。(Wáng Fāng de yīfu tài piàoliang le! Shì a, tā mǎile bùshǎo yīfu.) — Wang Fang's clothes are so pretty! Yes, she's bought quite a few clothes.
 
 ### 4. 副词"都" — The Adverb "都"
 
@@ -729,9 +732,9 @@ written Chinese, the variants are represented by different characters sometimes.
 **English:** "都" means "both/all". The people or objects included are put before "都".
 
 **Examples:**
-1. 我们都是中国人。
-2. 他们都喜欢喝茶。
-3. 这些都是王方的东西。
+1. 我们都是中国人。(Wǒmen dōu shì Zhōngguórén.) — We're all Chinese.
+2. 他们都喜欢喝茶。(Tāmen dōu xǐhuan hē chá.) — They all like drinking tea.
+3. 这些都是王方的东西。(Zhèxiē dōu shì Wáng Fāng de dōngxi.) — These are all Wang Fang's things.
 
 ---
 

@@ -9,9 +9,9 @@ Books.registerGrammar('hsk1', '7', [
           chinese: '汉语的日期表达方式遵循由大到小的原则，先说"月"，然后说"日/号"，最后说"星期"。口语一般常用"号"。',
           english: 'The way to say a date in Chinese observes the principle of "the bigger unit coming before the smaller one". The month is said first, then the date and finally the day of the week. In spoken Chinese, "号" is often used instead of "日" to express the date.',
           examples: [
-            { raw: '9月1号，星期三。', speak: '9月1号，星期三。', pinyin: 'Jiǔ yuè yī hào, xīngqīsān.' },
-            { raw: '9月2号，星期四。', speak: '9月2号，星期四。', pinyin: 'Jiǔ yuè èr hào, xīngqīsì.' },
-            { raw: '8月31号，星期二。', speak: '8月31号，星期二。', pinyin: 'Bā yuè sānshíyī hào, xīngqī\'èr.' },
+            { raw: '9月1号，星期三。', speak: '9月1号，星期三。', pinyin: 'Jiǔ yuè yī hào, xīngqīsān.', en: 'September 1st, Wednesday.' },
+            { raw: '9月2号，星期四。', speak: '9月2号，星期四。', pinyin: 'Jiǔ yuè èr hào, xīngqīsì.', en: 'September 2nd, Thursday.' },
+            { raw: '8月31号，星期二。', speak: '8月31号，星期二。', pinyin: 'Bā yuè sānshíyī hào, xīngqī\'èr.', en: 'August 31st, Tuesday.' },
           ],
         },
       ],

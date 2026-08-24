@@ -45,9 +45,9 @@ Books.registerGrammar('hsk1', '6', [
           chinese: '疑问代词"怎么"用在动词前，询问动作的方式。',
           english: 'The interrogative pronoun "怎么" is used before a verb to ask about the manner of an action.',
           examples: [
-            { raw: '这个汉字怎么读？', speak: '这个汉字怎么读？', pinyin: 'Zhège Hànzì zěnme dú?' },
-            { raw: '你的汉语名字怎么写？', speak: '你的汉语名字怎么写？', pinyin: 'Nǐ de Hànyǔ míngzi zěnme xiě?' },
-            { raw: '这个字怎么写？', speak: '这个字怎么写？', pinyin: 'Zhège zì zěnme xiě?' },
+            { raw: '这个汉字怎么读？', speak: '这个汉字怎么读？', pinyin: 'Zhège Hànzì zěnme dú?', en: 'How do you read this character?' },
+            { raw: '你的汉语名字怎么写？', speak: '你的汉语名字怎么写？', pinyin: 'Nǐ de Hànyǔ míngzi zěnme xiě?', en: 'How do you write your Chinese name?' },
+            { raw: '这个字怎么写？', speak: '这个字怎么写？', pinyin: 'Zhège zì zěnme xiě?', en: 'How do you write this character?' },
           ],
         },
       ],

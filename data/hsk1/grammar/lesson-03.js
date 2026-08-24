@@ -9,9 +9,9 @@ Books.registerGrammar('hsk1', '3', [
           chinese: '疑问代词"什么"表示疑问，用在指代人或事物的疑问句中，作宾语或与名词性成分连用作定语。',
           english: 'The interrogative pronoun "什么" is used in interrogative sentences, serving as the object by itself or together with a nominal element following it.',
           examples: [
-            { raw: '你叫什么名字？(Nǐ jiào shénme míngzi?)', speak: '你叫什么名字？', pinyin: 'Nǐ jiào shénme míngzi?' },
-            { raw: '这(zhè, this)是什么(shénme)?', speak: '这是什么?', pinyin: 'Zhè shì shénme?' },
-            { raw: '那(nà, this)是什么(shū, book)?', speak: '那是什么?', pinyin: 'Nà shì shénme?' },
+            { raw: '你叫什么名字？(Nǐ jiào shénme míngzi?)', speak: '你叫什么名字？', pinyin: 'Nǐ jiào shénme míngzi?', en: "What's your name?" },
+            { raw: '这(zhè, this)是什么(shénme)?', speak: '这是什么?', pinyin: 'Zhè shì shénme?', en: 'What is this?' },
+            { raw: '那(nà, this)是什么书(shū, book)?', speak: '那是什么书?', pinyin: 'Nà shì shénme shū?', en: 'What book is that?' },
           ],
         },
       ],

@@ -246,3 +246,4 @@ button.nav-btn:active { transform: scale(0.97); }
 .gc-example-text { flex: 1; min-width: 0; }
 .gc-example-raw { color: var(--text); font-size: 14px; line-height: 1.5; }
 .gc-example-pinyin { color: var(--amber-dim); font-size: 12px; margin-top: 2px; }
+.gc-example-en { color: var(--text-dim); font-size: 12px; line-height: 1.5; margin-top: 3px; }
