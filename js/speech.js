@@ -40,7 +40,7 @@ const Speech = (() => {
   // Global speed control (Slow/Normal/Natural), shared by every screen that plays audio.
   // The choice is stored once in Storage's voice pref and applies everywhere — this just
   // renders the same three-button row into whichever container a screen gives it.
-  const SPEEDS = [{ label: 'Slow', val: 0.6 }, { label: 'Normal', val: 0.75 }, { label: 'Natural', val: 0.95 }];
+  const SPEEDS = [{ label: 'Very slow', val: 0.4 }, { label: 'Slow', val: 0.6 }, { label: 'Normal', val: 0.75 }, { label: 'Natural', val: 0.95 }];
   function buildSpeedControl(container) {
     const pref = Storage.getVoicePref();
     container.innerHTML = SPEEDS.map(s => `<div class="speed-btn ${pref.rate === s.val ? 'active' : ''}" data-val="${s.val}">${s.label}</div>`).join('');
