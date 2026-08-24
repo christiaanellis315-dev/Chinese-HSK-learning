@@ -126,7 +126,7 @@
     });
   });
 
-  // ---- NumbersDrill: hanzi/pinyin conversion for 1-99 ----
+  // ---- NumbersDrill: hanzi/pinyin conversion for 1-999 ----
   group('NumbersDrill — number/hanzi/pinyin conversion', () => {
     test('single digits', () => {
       assertEqual(NumbersDrill.numberToHanzi(5), '五');
@@ -157,6 +157,40 @@
     test('compound tens ending in 2 get the apostrophe break', () => {
       assertEqual(NumbersDrill.numberToHanzi(22), '二十二');
       assertEqual(NumbersDrill.numberToPinyin(22), "èrshí'èr");
+    });
+    test('an even hundred uses tone-sandhi "yì" before "bǎi" (matches "一百" elsewhere in this app\'s data)', () => {
+      assertEqual(NumbersDrill.numberToHanzi(100), '一百');
+      assertEqual(NumbersDrill.numberToPinyin(100), 'yìbǎi');
+    });
+    test('a hundred with a bare ones digit gets "零" (e.g. 101, not "一百一")', () => {
+      assertEqual(NumbersDrill.numberToHanzi(101), '一百零一');
+      assertEqual(NumbersDrill.numberToPinyin(101), 'yìbǎilíngyī');
+    });
+    test('a hundred with "10-19" as the remainder keeps the explicit leading "一" (110, not "一百十")', () => {
+      assertEqual(NumbersDrill.numberToHanzi(110), '一百一十');
+      assertEqual(NumbersDrill.numberToPinyin(110), 'yìbǎiyīshí');
+      assertEqual(NumbersDrill.numberToHanzi(111), '一百一十一');
+      assertEqual(NumbersDrill.numberToPinyin(111), 'yìbǎiyīshíyī');
+    });
+    test('a hundred plus an even multiple of ten (e.g. 120) gets the apostrophe break before "èr"', () => {
+      assertEqual(NumbersDrill.numberToHanzi(120), '一百二十');
+      assertEqual(NumbersDrill.numberToPinyin(120), "yìbǎi'èrshí");
+    });
+    test('200 uses "两" instead of "二" for the hundreds digit (两百, not 二百)', () => {
+      assertEqual(NumbersDrill.numberToHanzi(200), '两百');
+      assertEqual(NumbersDrill.numberToPinyin(200), 'liǎngbǎi');
+    });
+    test('220 keeps "两" for the hundreds digit but "二" (not "两") for the tens digit', () => {
+      assertEqual(NumbersDrill.numberToHanzi(220), '两百二十');
+      assertEqual(NumbersDrill.numberToPinyin(220), "liǎngbǎi'èrshí");
+    });
+    test('a hundred plus a bare "2" ones digit gets both the "零" and the apostrophe break (302)', () => {
+      assertEqual(NumbersDrill.numberToHanzi(302), '三百零二');
+      assertEqual(NumbersDrill.numberToPinyin(302), "sānbǎilíng'èr");
+    });
+    test('999 (max of the round pool) builds correctly end to end', () => {
+      assertEqual(NumbersDrill.numberToHanzi(999), '九百九十九');
+      assertEqual(NumbersDrill.numberToPinyin(999), 'jiǔbǎijiǔshíjiǔ');
     });
   });
 })();

@@ -1,4 +1,4 @@
-// Numbers 1-99 screen: a standalone, recurring drill (moved out of Lesson 5, since it's a
+// Numbers 1-999 screen: a standalone, recurring drill (moved out of Lesson 5, since it's a
 // tool people come back to regardless of which lesson they're on, not one-time lesson content).
 // Runs as a fixed 20-number round (20 unique numbers, no repeats) with a completion screen at
 // the end, matching the pattern used by the Lessons screen's Flip/Type/Listen modes. Also offers
@@ -16,7 +16,10 @@ const NumbersDrill = (() => {
   let completed = false;
 
   const digitsHan = ['','一','二','三','四','五','六','七','八','九'];
-  function numberToHanzi(n) {
+  const digitsPin = { 1:'yī',2:'èr',3:'sān',4:'sì',5:'wǔ',6:'liù',7:'qī',8:'bā',9:'jiǔ' };
+
+  function tensToHanzi(n) {
+    // n is 1-99, used both standalone and as the last two digits after a hundreds place.
     if (n < 10) return digitsHan[n];
     if (n === 10) return '十';
     if (n < 20) return '十' + digitsHan[n - 10];
@@ -24,20 +27,45 @@ const NumbersDrill = (() => {
     if (ones === 0) return digitsHan[tens] + '十';
     return digitsHan[tens] + '十' + digitsHan[ones];
   }
-  function numberToPinyin(n) {
-    const pin = { 1:'yī',2:'èr',3:'sān',4:'sì',5:'wǔ',6:'liù',7:'qī',8:'bā',9:'jiǔ' };
-    if (n < 10) return pin[n];
+  function tensToPinyin(n) {
+    if (n < 10) return digitsPin[n];
     if (n === 10) return 'shí';
-    if (n < 20) { const ones = n - 10; return 'shí' + (ones === 2 ? "'" : '') + pin[ones]; }
+    if (n < 20) { const ones = n - 10; return 'shí' + (ones === 2 ? "'" : '') + digitsPin[ones]; }
     const tens = Math.floor(n / 10), ones = n % 10;
-    let s = pin[tens] + 'shí';
+    let s = digitsPin[tens] + 'shí';
     if (ones === 0) return s;
-    return s + (ones === 2 ? "'" : '') + pin[ones];
+    return s + (ones === 2 ? "'" : '') + digitsPin[ones];
+  }
+
+  function numberToHanzi(n) {
+    if (n < 100) return tensToHanzi(n);
+    const hundreds = Math.floor(n / 100), rem = n % 100;
+    // "两" replaces "二" for a leading hundreds digit of 2 (两百), matching standard spoken usage —
+    // the tens/ones digits below always keep "二" (二十, not 两十).
+    const hundredsChar = (hundreds === 2 ? '两' : digitsHan[hundreds]) + '百';
+    if (rem === 0) return hundredsChar;
+    if (rem < 10) return hundredsChar + '零' + digitsHan[rem]; // e.g. 302 -> 三百零二
+    // 10-19 after a hundreds place needs the explicit leading "一" (一百一十, not 一百十).
+    const tens = Math.floor(rem / 10), ones = rem % 10;
+    return hundredsChar + digitsHan[tens] + '十' + (ones === 0 ? '' : digitsHan[ones]);
+  }
+  function numberToPinyin(n) {
+    if (n < 100) return tensToPinyin(n);
+    const hundreds = Math.floor(n / 100), rem = n % 100;
+    // Tone sandhi: 一 shifts from yī to yì before 百 (3rd tone) — matches "一百" (yìbǎi) already
+    // used elsewhere in this app's own data (e.g. HSK1 L8's "一百元").
+    const hundredsPin = (hundreds === 1 ? 'yì' : hundreds === 2 ? 'liǎng' : digitsPin[hundreds]) + 'bǎi';
+    if (rem === 0) return hundredsPin;
+    if (rem < 10) return hundredsPin + 'líng' + (rem === 2 ? "'" : '') + digitsPin[rem];
+    const tens = Math.floor(rem / 10), ones = rem % 10;
+    let s = hundredsPin + (tens === 2 ? "'" : '') + digitsPin[tens] + 'shí';
+    if (ones === 0) return s;
+    return s + (ones === 2 ? "'" : '') + digitsPin[ones];
   }
 
   function newRound() {
     const pool = [];
-    for (let i = 1; i <= 99; i++) pool.push(i);
+    for (let i = 1; i <= 999; i++) pool.push(i);
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -55,7 +83,7 @@ const NumbersDrill = (() => {
   function html() {
     return `
       <div class="lamp"></div>
-      <h1>Numbers 1-99</h1>
+      <h1>Numbers 1-999</h1>
       <div class="sub">Listen and type the number you hear — a 20-number round, independent of any lesson</div>
       <div class="autoplay-row">
         <span>Auto-play audio</span>
@@ -115,8 +143,8 @@ const NumbersDrill = (() => {
 
     root.querySelector('#cardArea').innerHTML = `
       <div class="card" style="cursor:default;">
-        <div class="back-english" style="margin-bottom:14px;">Numbers 1-99</div>
-        <div class="mnemonic" style="margin-bottom:0;">You'll hear 20 random numbers between 1 and 99, one at a time — type each one as a digit (e.g. "23"). Get through all 20 to see your score.</div>
+        <div class="back-english" style="margin-bottom:14px;">Numbers 1-999</div>
+        <div class="mnemonic" style="margin-bottom:0;">You'll hear 20 random numbers between 1 and 999, one at a time — type each one as a digit (e.g. "233"). Get through all 20 to see your score.</div>
         ${buttonsHtml}
       </div>
     `;
@@ -197,7 +225,7 @@ const NumbersDrill = (() => {
             <button class="speak-btn" id="speakNumBtn" aria-label="Play number">&#128266;</button>
             <span id="micAreaNum"></span>
           </div>
-          <input type="text" class="type-input" id="numInput" placeholder="e.g. 23" autocomplete="off" inputmode="numeric">
+          <input type="text" class="type-input" id="numInput" placeholder="e.g. 233" autocomplete="off" inputmode="numeric">
           <div class="error-text" id="numError"></div>
           <button class="submit-btn" id="numSubmitBtn">Check</button>
         </div>
