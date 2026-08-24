@@ -1,9 +1,12 @@
 # HSK3 Grammar Notes (注释)
 
 Source: extracted directly from the "注释 / Notes" section of each lesson in
-the HSK3 Standard Course textbook. Chinese text, English translations, and
-example sentences transcribed as printed — nothing added, reworded, or
-invented. Same discipline as HSK1/2's grammar notes files.
+the HSK3 Standard Course textbook. Chinese text and English translations of
+the rule itself are transcribed as printed — nothing added, reworded, or
+invented there. The pinyin and English line under each numbered example
+sentence is mine, added so the audio/read-aloud feature has something to
+display alongside it — these were not in the original textbook. Same
+discipline as HSK1/2's grammar notes files.
 
 ---
 
@@ -16,10 +19,10 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** The complement of result "好" follows a verb as in "吃好" and "准备好" to indicate that the action is satisfactorily completed. Compared with "我吃完了" (I've finished eating), which only indicates the completion of the action, "我吃好了" means both "I've finished eating" and "I've enjoyed the meal."
 
 **Examples:**
-1. 今晚的电影小刚已经买好票了。
-2. 饭还没做好，请你等一会儿。
-3. 去旅游的东西准备好了吗？
-4. 我还没想好要不要跟你去呢。
+1. 今晚的电影小刚已经买好票了。(Jīnwǎn de diànyǐng Xiǎogāng yǐjīng mǎihǎo piào le.) — Xiaogang has already bought the tickets for tonight's movie.
+2. 饭还没做好，请你等一会儿。(Fàn hái méi zuòhǎo, qǐng nǐ děng yíhuìr.) — The meal isn't ready yet, please wait a moment.
+3. 去旅游的东西准备好了吗？(Qù lǚyóu de dōngxi zhǔnbèi hǎo le ma?) — Are the things for the trip ready?
+4. 我还没想好要不要跟你去呢。(Wǒ hái méi xiǎnghǎo yào bu yào gēn nǐ qù ne.) — I haven't decided yet whether to go with you.
 
 ### 2. "一……也/都 + 不/没……" 表示否定 — The Negative Structure "一……也/都 + 不/没……"
 
@@ -28,18 +31,18 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** "一 + Measure Word + Noun + 也/都 + 不/没 + V" indicates complete negation. Sometimes the "一 + Measure Word" used in the structure can be replaced with "一点儿." When the predicate is an adjective, the structure "一点儿也/都 + 不 + Adj" is used to indicate complete negation.
 
 **Examples:**
-1. 我一个苹果也不想吃。
-2. 昨天他一件衣服都没买。
-3. 小丽一杯茶也没喝。
-4. 手机、电脑、地图，一个也不能少（带）。
-5. 我一点儿东西也不想吃。
-6. 这个星期我很忙，一点儿时间也没有。
-7. 今天早上我一点儿咖啡都没喝。
-8. 我一点儿钱都没带，所以不能买衣服。
-9. 他一点儿也不累。
-10. 南方一点儿都不冷。
-11. 那个地方一点儿也不远。
-12. 你怎么一点儿也不着急？
+1. 我一个苹果也不想吃。(Wǒ yí ge píngguǒ yě bù xiǎng chī.) — I don't want to eat even one apple.
+2. 昨天他一件衣服都没买。(Zuótiān tā yí jiàn yīfu dōu méi mǎi.) — Yesterday he didn't buy a single piece of clothing.
+3. 小丽一杯茶也没喝。(Xiǎolì yì bēi chá yě méi hē.) — Xiaoli didn't drink even one cup of tea.
+4. 手机、电脑、地图，一个也不能少（带）。(Shǒujī, diànnǎo, dìtú, yí ge yě bù néng shǎo dài.) — Phone, computer, map — not one can be missing.
+5. 我一点儿东西也不想吃。(Wǒ yìdiǎnr dōngxi yě bù xiǎng chī.) — I don't want to eat anything at all.
+6. 这个星期我很忙，一点儿时间也没有。(Zhège xīngqī wǒ hěn máng, yìdiǎnr shíjiān yě méiyǒu.) — I'm very busy this week, I don't have any time at all.
+7. 今天早上我一点儿咖啡都没喝。(Jīntiān zǎoshang wǒ yìdiǎnr kāfēi dōu méi hē.) — I didn't drink any coffee at all this morning.
+8. 我一点儿钱都没带，所以不能买衣服。(Wǒ yìdiǎnr qián dōu méi dài, suǒyǐ bù néng mǎi yīfu.) — I didn't bring any money at all, so I can't buy clothes.
+9. 他一点儿也不累。(Tā yìdiǎnr yě bú lèi.) — He's not tired at all.
+10. 南方一点儿都不冷。(Nánfāng yìdiǎnr dōu bù lěng.) — The south isn't cold at all.
+11. 那个地方一点儿也不远。(Nàge dìfang yìdiǎnr yě bù yuǎn.) — That place isn't far at all.
+12. 你怎么一点儿也不着急？(Nǐ zěnme yìdiǎnr yě bù zháojí?) — Why aren't you worried at all?
 
 ### 3. 连词"那" — The Conjunction "那"
 
@@ -48,8 +51,8 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** Used at the beginning of a sentence, "那" indicates a result or conclusion drawn from what was said previously.
 
 **Examples:**
-1. A: 我不想去看电影。 B: 那我也不去了。
-2. A: （明天的考试）我早就复习好了。 B: 那也不能一直玩儿啊。
+1. A: 我不想去看电影。 B: 那我也不去了。(Wǒ bù xiǎng qù kàn diànyǐng. Nà wǒ yě bú qù le.) — I don't want to go see a movie. Then I won't go either.
+2. A: （明天的考试）我早就复习好了。 B: 那也不能一直玩儿啊。(Míngtiān de kǎoshì wǒ zǎo jiù fùxí hǎo le. Nà yě bù néng yìzhí wánr a.) — I've already finished reviewing for tomorrow's exam. Still, you can't keep playing the whole time.
 
 ---
 
@@ -62,18 +65,18 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** In Chinese, "V + 来/去" indicates the direction of an action, with "来" indicating the direction towards the speaker and "去" the direction away from the speaker. The most frequently used verbs include "上", "下", "进", "出", "回", "过" and "起" as well as some verbs we've learned, such as "买", "带" and "搬". If the object is a place, it should precede "来/去". If the object is a thing, it can be put before or after "来/去".
 
 **Examples:**
-1. 我们在楼上等你呢，你上来吧。（说话的人在楼上）
-2. 谁在外边？你出去看看吧。（"你"在屋里）
-3. 汉语书你带来了吗？
-4. 那边树多，我们过去坐一下吧。
-5. 小狗下楼来吃东西。
-6. 老师进教室来上课。
-7. 朋友回家去了。
-8. 我上楼去。
-9. 明天要带作业来。
-10. 帮我买来点儿面包。
-11. 你搬这把椅子去吧。
-12. 这次旅游，我想带去这本书。
+1. 我们在楼上等你呢，你上来吧。（说话的人在楼上）(Wǒmen zài lóushàng děng nǐ ne, nǐ shànglai ba.) — We're waiting for you upstairs, come up.
+2. 谁在外边？你出去看看吧。（"你"在屋里）(Shéi zài wàibian? Nǐ chūqu kànkan ba.) — Who's outside? Go out and take a look.
+3. 汉语书你带来了吗？(Hànyǔ shū nǐ dàilai le ma?) — Did you bring the Chinese textbook?
+4. 那边树多，我们过去坐一下吧。(Nàbian shù duō, wǒmen guòqu zuò yíxià ba.) — There are lots of trees over there, let's go sit for a bit.
+5. 小狗下楼来吃东西。(Xiǎo gǒu xiàlóu lái chī dōngxi.) — The puppy came downstairs to eat.
+6. 老师进教室来上课。(Lǎoshī jìn jiàoshì lái shàngkè.) — The teacher came into the classroom to teach.
+7. 朋友回家去了。(Péngyou huí jiā qù le.) — My friend went home.
+8. 我上楼去。(Wǒ shànglóu qù.) — I'm going upstairs.
+9. 明天要带作业来。(Míngtiān yào dài zuòyè lái.) — Bring your homework tomorrow.
+10. 帮我买来点儿面包。(Bāng wǒ mǎilai diǎnr miànbāo.) — Buy me some bread.
+11. 你搬这把椅子去吧。(Nǐ bān zhè bǎ yǐzi qù ba.) — Take this chair over there.
+12. 这次旅游，我想带去这本书。(Zhè cì lǚyóu, wǒ xiǎng dàiqu zhè běn shū.) — I want to bring this book on this trip.
 
 ### 2. 两个动作连续发生 — The Successive Occurrence of Two Actions
 
@@ -82,14 +85,14 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** In Chinese, "V₁了……就V₂……" can be used to indicate two actions which occur successively, with the second immediately following the first. In a sentence with two subjects, the second subject should be put right before "就".
 
 **Examples:**
-1. 我下了课就吃饭。
-2. 妈妈起了床就做早饭。
-3. 小刚拿了伞就下来。
-4. 你每天晚上吃了饭就睡觉。
-5. 你下了课我们就去书店。
-6. 老师进了教室我们就对她说"生日快乐"。
-7. 爸爸回来了我们就吃饭。
-8. 他到了办公室我就告诉他。
+1. 我下了课就吃饭。(Wǒ xiàle kè jiù chī fàn.) — I eat right after class ends.
+2. 妈妈起了床就做早饭。(Māma qǐle chuáng jiù zuò zǎofàn.) — Mom makes breakfast right after getting up.
+3. 小刚拿了伞就下来。(Xiǎogāng nále sǎn jiù xiàlai.) — Xiaogang came down right after grabbing the umbrella.
+4. 你每天晚上吃了饭就睡觉。(Nǐ měitiān wǎnshang chīle fàn jiù shuìjiào.) — You go to sleep right after dinner every night.
+5. 你下了课我们就去书店。(Nǐ xiàle kè wǒmen jiù qù shūdiàn.) — We'll go to the bookstore right after your class ends.
+6. 老师进了教室我们就对她说"生日快乐"。(Lǎoshī jìnle jiàoshì wǒmen jiù duì tā shuō "shēngrì kuàilè".) — We'll say "happy birthday" to the teacher right when she enters the classroom.
+7. 爸爸回来了我们就吃饭。(Bàba huílai le wǒmen jiù chī fàn.) — We'll eat right when dad gets home.
+8. 他到了办公室我就告诉他。(Tā dàole bàngōngshì wǒ jiù gàosu tā.) — I'll tell him right when he gets to the office.
 
 ### 3. 反问的表达：能……吗？ — The Rhetoric Question "能……吗？"
 
@@ -98,8 +101,8 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** "能……吗" is used in a rhetorical question in Chinese, with its positive form meaning the negative and the negative form meaning the positive.
 
 **Examples:**
-1. A: 为什么我的汉语学得不好？ B: 你不做作业，也不练习，能学好吗？（不能学好）
-2. A: 你看我这么胖，怎么办呢？ B: 你每天晚上吃了饭就睡觉，也不出去走走，能不胖吗？（会胖）
+1. A: 为什么我的汉语学得不好？ B: 你不做作业，也不练习，能学好吗？（不能学好）(Wèishénme wǒ de Hànyǔ xué de bù hǎo? Nǐ bú zuò zuòyè, yě bú liànxí, néng xuéhǎo ma?) — Why isn't my Chinese good? You don't do homework or practice, how could you learn it well?
+2. A: 你看我这么胖，怎么办呢？ B: 你每天晚上吃了饭就睡觉，也不出去走走，能不胖吗？（会胖）(Nǐ kàn wǒ zhème pàng, zěnme bàn ne? Nǐ měitiān wǎnshang chīle fàn jiù shuìjiào, yě bù chūqu zǒuzou, néng bú pàng ma?) — Look how fat I am, what should I do? You sleep right after dinner every night and never go for walks, how could you not be fat?
 
 ---
 
@@ -112,14 +115,14 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** Both "还是" and "或者" are used to connect choices. "还是" is used in interrogative sentences, and "或者" in declarative sentences. For sentences with an interrogative clause, only "还是" can be used in the clause.
 
 **Examples:**
-1. 你要喝咖啡还是喝茶？
-2. 明天是晴天还是阴天？
-3. 今天晚上吃米饭或者面条都可以。
-4. 天冷了或者工作累了的时候，喝杯热茶很舒服。
-5. 周太太40岁还是50岁，我们不知道。
-6. 小丽还没想好周末去爬山还是去看电影。
-7. 他的生日是10月还是11月，我不记得了。
-8. 我不知道这个人是男的还是女的。
+1. 你要喝咖啡还是喝茶？(Nǐ yào hē kāfēi háishi hē chá?) — Do you want coffee or tea?
+2. 明天是晴天还是阴天？(Míngtiān shì qíngtiān háishi yīntiān?) — Will tomorrow be sunny or cloudy?
+3. 今天晚上吃米饭或者面条都可以。(Jīntiān wǎnshang chī mǐfàn huòzhě miàntiáo dōu kěyǐ.) — Tonight we can eat either rice or noodles.
+4. 天冷了或者工作累了的时候，喝杯热茶很舒服。(Tiān lěng le huòzhě gōngzuò lèi le de shíhou, hē bēi rè chá hěn shūfu.) — When it's cold or you're tired from work, a cup of hot tea feels great.
+5. 周太太40岁还是50岁，我们不知道。(Zhōu tàitai sìshí suì háishi wǔshí suì, wǒmen bù zhīdào.) — We don't know if Mrs. Zhou is 40 or 50.
+6. 小丽还没想好周末去爬山还是去看电影。(Xiǎolì hái méi xiǎnghǎo zhōumò qù páshān háishi qù kàn diànyǐng.) — Xiaoli hasn't decided whether to go hiking or see a movie this weekend.
+7. 他的生日是10月还是11月，我不记得了。(Tā de shēngrì shì shí yuè háishi shíyī yuè, wǒ bú jìde le.) — I don't remember if his birthday is in October or November.
+8. 我不知道这个人是男的还是女的。(Wǒ bù zhīdào zhège rén shì nán de háishi nǚ de.) — I don't know if this person is male or female.
 
 ### 2. 存在的表达：Location Word + V着 + Numeral + Measure Word + N — The Expression of Existence: Location Word + V着 + Numeral + Measure Word + N
 
@@ -128,16 +131,16 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** The structure "Location Word + V着 + NP" means there is something somewhere. In this structure, the verb "放", "写", "坐", or "住" etc. is often used, and the noun phrase is usually an indefinite object, for example "一本书" (a book) and "几个人 (several people)" rather than "这本书 (this book)" and "周经理 (Manager Zhou)." The negative form of the structure is "Location Word + 没V着 + NP", without a measure word before the noun phrase.
 
 **Table examples (positive):**
-- 桌子上 / 放着 / 一杯咖啡。
-- 我家楼上 / 住着 / 一个老师。
-- 上面 / 写着 / 320元。
-- 桌子上 / 放着 / 很多饮料。
+- 桌子上放着一杯咖啡。(Zhuōzi shang fàngzhe yì bēi kāfēi.) — There's a cup of coffee on the table.
+- 我家楼上住着一个老师。(Wǒ jiā lóushàng zhùzhe yí ge lǎoshī.) — A teacher lives upstairs from my home.
+- 上面写着320元。(Shàngmian xiězhe sānbǎi èrshí yuán.) — It says 320 yuan on it.
+- 桌子上放着很多饮料。(Zhuōzi shang fàngzhe hěn duō yǐnliào.) — There are lots of drinks on the table.
 
 **Table examples (negative):**
-- 桌子上 / 没放着 / 咖啡。
-- 我家楼上 / 没住着 / 老师。
-- 上面 / 没写着 / 多少钱。
-- 桌子上 / 没放着 / 饮料。
+- 桌子上没放着咖啡。(Zhuōzi shang méi fàngzhe kāfēi.) — There's no coffee on the table.
+- 我家楼上没住着老师。(Wǒ jiā lóushàng méi zhùzhe lǎoshī.) — No teacher lives upstairs from my home.
+- 上面没写着多少钱。(Shàngmian méi xiězhe duōshao qián.) — It doesn't say how much it costs.
+- 桌子上没放着饮料。(Zhuōzi shang méi fàngzhe yǐnliào.) — There are no drinks on the table.
 
 ### 3. "会"表示可能 — "会" Indicating the Possibility
 
@@ -146,10 +149,10 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** The auxiliary verb "会" is used in a sentence to indicate the possibility, usually referring to something that hasn't happened.
 
 **Examples:**
-1. 你穿得那么少，会感冒的。
-2. 别担心，我会照顾好自己。
-3. 你不给他打电话吗，他会不高兴的。
-4. 喝杯热茶会很舒服。
+1. 你穿得那么少，会感冒的。(Nǐ chuān de nàme shǎo, huì gǎnmào de.) — You're wearing so little, you'll catch a cold.
+2. 别担心，我会照顾好自己。(Bié dānxīn, wǒ huì zhàogù hǎo zìjǐ.) — Don't worry, I'll take good care of myself.
+3. 你不给他打电话吗，他会不高兴的。(Nǐ bù gěi tā dǎ diànhuà ma, tā huì bù gāoxìng de.) — If you don't call him, he'll be unhappy.
+4. 喝杯热茶会很舒服。(Hē bēi rè chá huì hěn shūfu.) — Drinking a cup of hot tea will feel great.
 
 ---
 
@@ -162,10 +165,10 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** In Chinese, "又Adj₁ + 又Adj₂" is used to describe two qualities existing in the same person or thing, such as "又高又漂亮" (both tall and pretty).
 
 **Examples:**
-1. 这个西瓜又大又甜。
-2. 外边又黑又冷。
-3. 服务员又年轻又漂亮。
-4. 她工作又认真又热情。
+1. 这个西瓜又大又甜。(Zhège xīguā yòu dà yòu tián.) — This watermelon is both big and sweet.
+2. 外边又黑又冷。(Wàibian yòu hēi yòu lěng.) — It's dark and cold outside.
+3. 服务员又年轻又漂亮。(Fúwùyuán yòu niánqīng yòu piàoliang.) — The waitress is both young and pretty.
+4. 她工作又认真又热情。(Tā gōngzuò yòu rènzhēn yòu rèqíng.) — She works both seriously and warmly.
 
 ### 2. 动作的伴随：V₁着(O₁)+V₂(O₂) — The Accompanying Action: V₁着(O₁) + V₂(O₂)
 
@@ -174,10 +177,10 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** In Chinese, "V₁着(O₁) + V₂(O₂)" indicates two actions taking place at the same time, V₁ being the accompanying state or manner of V₂. For example, "他们站着聊天儿" means "they are talking" while "standing" rather than "sitting."
 
 **Examples:**
-1. 弟弟吃着苹果写作业。
-2. 周先生和周太太坐着看电视。
-3. 很多人拿着鲜花站在门口。
-4. 她总是笑着跟客人说话。
+1. 弟弟吃着苹果写作业。(Dìdi chīzhe píngguǒ xiě zuòyè.) — My younger brother does homework while eating an apple.
+2. 周先生和周太太坐着看电视。(Zhōu xiānsheng hé Zhōu tàitai zuòzhe kàn diànshì.) — Mr. and Mrs. Zhou watch TV sitting down.
+3. 很多人拿着鲜花站在门口。(Hěn duō rén názhe xiānhuā zhàn zài ménkǒu.) — Many people are standing at the door holding fresh flowers.
+4. 她总是笑着跟客人说话。(Tā zǒngshì xiàozhe gēn kèrén shuōhuà.) — She always talks to customers with a smile.
 
 ---
 
@@ -190,10 +193,10 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** Used at the end of a declarative sentence, the modal particle "了" indicates a change in the situation or the occurrence of a new situation. For example, "我现在没钱了" means "I used to have money, but now I don't", implying a change.
 
 **Examples:**
-1. 上个月很冷，现在天气不那么冷了。
-2. 我前几天有点儿发烧，现在好多了。
-3. 我现在喜欢夏天了。
-4. 这条裙子是去年买的，今年就不能穿了。
+1. 上个月很冷，现在天气不那么冷了。(Shàng ge yuè hěn lěng, xiànzài tiānqì bú nàme lěng le.) — Last month was very cold, now it's not so cold anymore.
+2. 我前几天有点儿发烧，现在好多了。(Wǒ qián jǐ tiān yǒudiǎnr fāshāo, xiànzài hǎoduō le.) — I had a bit of a fever a few days ago, I'm much better now.
+3. 我现在喜欢夏天了。(Wǒ xiànzài xǐhuan xiàtiān le.) — I like summer now.
+4. 这条裙子是去年买的，今年就不能穿了。(Zhè tiáo qúnzi shì qùnián mǎi de, jīnnián jiù bù néng chuān le.) — This dress was bought last year, and I can't wear it this year.
 
 ### 2. 越来越+Adj/Mental V — The Structure "越来越+Adj/Mental V"
 
@@ -202,10 +205,10 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** Followed by an adjective or a mental verb as in "越来越冷" (colder and colder) and "越来越喜欢" (like...more and more), "越来越" indicates the change in degree occurs as time passes by. Note that no adverb of degree is used before the adjective or mental verb, so phrases like "越来越很热" and "越来越非常想" are unacceptable.
 
 **Examples:**
-1. 我认识的汉字越来越多。
-2. 你越来越漂亮。
-3. 我越来越喜欢运动。
-4. 我做的饭越来越好吃。
+1. 我认识的汉字越来越多。(Wǒ rènshi de Hànzì yuè lái yuè duō.) — The Chinese characters I know are increasing more and more.
+2. 你越来越漂亮。(Nǐ yuè lái yuè piàoliang.) — You're getting prettier and prettier.
+3. 我越来越喜欢运动。(Wǒ yuè lái yuè xǐhuan yùndòng.) — I like exercising more and more.
+4. 我做的饭越来越好吃。(Wǒ zuò de fàn yuè lái yuè hǎochī.) — My cooking keeps getting tastier and tastier.
 
 ---
 
@@ -218,10 +221,10 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** In Chinese, "V得 + Complements" or "V不 + Complements" can be used to indicate whether or not a result can be obtained or a goal be reached. "V得 + Complements" is the positive form, and "V不 + Complements" is the negative form. The complements used in this structure are usually complements of result or direction, and certain adjectives or verbs. The interrogative form is "V得 + Complements V不 + Complements" or "V得 + Complements 吗".
 
 **Examples:**
-1. 我看得清楚那个汉字。
-2. 楼太高了，我上不去。
-3. 老师说的话你听得见听不见？
-4. 我找不到好饭馆。
+1. 我看得清楚那个汉字。(Wǒ kàn de qīngchu nàge Hànzì.) — I can see that character clearly.
+2. 楼太高了，我上不去。(Lóu tài gāo le, wǒ shàng bu qù.) — The building is too tall, I can't get up there.
+3. 老师说的话你听得见听不见？(Lǎoshī shuō de huà nǐ tīng de jiàn tīng bu jiàn?) — Can you hear what the teacher says or not?
+4. 我找不到好饭馆。(Wǒ zhǎo bu dào hǎo fànguǎn.) — I can't find a good restaurant.
 
 ### 2. "呢"询问处所：N+呢 — "N+呢" Used to Ask about Location
 
@@ -230,11 +233,11 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** In Chinese, "Noun + 呢" is used to ask about where somebody or something is. For example, "妈妈呢？" means "where is mom?", and "小狗呢？" means "where is the dog?".
 
 **Examples:**
-1. A: 你的书呢？放在哪儿了？ B: 就在桌子上啊。
-2. A: 我的眼镜呢？你看见了吗？ B: 我没看见啊。
-3. A: 你的手机呢？ B: (open answer)
-4. A: 你的车呢？ B: (open answer)
-5. A: (question implied by context) B: 爸爸拿走了。
+1. A: 你的书呢？放在哪儿了？ B: 就在桌子上啊。(Nǐ de shū ne? Fàng zài nǎr le? Jiù zài zhuōzi shang a.) — Where's your book? Where did you put it? It's right on the table.
+2. A: 我的眼镜呢？你看见了吗？ B: 我没看见啊。(Wǒ de yǎnjìng ne? Nǐ kànjiàn le ma? Wǒ méi kànjiàn a.) — Where are my glasses? Have you seen them? I haven't seen them.
+3. A: 你的手机呢？(Nǐ de shǒujī ne?) — Where's your phone?
+4. A: 你的车呢？(Nǐ de chē ne?) — Where's your car?
+5. B: 爸爸拿走了。(Bàba názǒu le.) — Dad took it.
 
 ### 3. "刚"和"刚才" — Comparison of "刚" and "刚才"
 
@@ -243,10 +246,10 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** The adverb "刚" and the noun "刚才" both indicate that the action has happened not long ago. However, "刚才" usually means several minutes ago, while "刚" means a short time from the speaker's point of view, which can be several minutes, a few days, even months. For example, "我刚来中国两个月" (I've been in China for only two months) shows that the speaker considers two months a short period of time. "刚" is only used right before the verb, while "刚才" can be used before the verb or at the beginning of the sentence.
 
 **Comparison examples:**
-- 刚: 爸爸刚出去。 / 刚才: 爸爸刚才出去了。
-- 刚: 我刚喝完一杯咖啡。 / 刚才: 刚才我喝了一杯咖啡。
-- 刚: 我刚放在桌子上，现在就没了。 / 刚才: 眼镜周明刚才放在桌子上了。
-- 刚: 儿子刚做完作业。 / 刚才: 刚才儿子在做作业。
+- 刚: 爸爸刚出去。(Bàba gāng chūqu.) — Dad just went out. / 刚才: 爸爸刚才出去了。(Bàba gāngcái chūqu le.) — Dad went out a moment ago.
+- 刚: 我刚喝完一杯咖啡。(Wǒ gāng hēwán yì bēi kāfēi.) — I just finished a cup of coffee. / 刚才: 刚才我喝了一杯咖啡。(Gāngcái wǒ hēle yì bēi kāfēi.) — I had a cup of coffee a moment ago.
+- 刚: 我刚放在桌子上，现在就没了。(Wǒ gāng fàng zài zhuōzi shang, xiànzài jiù méi le.) — I just put it on the table, and now it's gone. / 刚才: 眼镜周明刚才放在桌子上了。(Yǎnjìng Zhōu Míng gāngcái fàng zài zhuōzi shang le.) — Zhou Ming put the glasses on the table a moment ago.
+- 刚: 儿子刚做完作业。(Érzi gāng zuòwán zuòyè.) — My son just finished his homework. / 刚才: 刚才儿子在做作业。(Gāngcái érzi zài zuò zuòyè.) — My son was doing homework a moment ago.
 
 ---
 
@@ -259,14 +262,14 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** A period of time refers to the length of time that an action or a state lasts, usually indicated by a complement of duration, such as "一刻钟" (a quarter), "半个小时" (half an hour), "两天" (two days), or "三个月" (three months) etc. "S + V + 了 + Duration + O" indicates the duration of an action. "S + V + 了 + Duration + O + 了" indicates the duration of an action which is still going on. For example, "看了一个小时书了" means one has already read for an hour and is still reading.
 
 **Examples:**
-1. 她工作了三年。
-2. 我们坐了一个小时公共汽车。
-3. 你怎么晚到了一刻钟？
-4. 我们唱了两个小时歌。
-5. 我学习了一年汉语了。
-6. 她看了半个小时电视了。
-7. 他们游了二十分钟泳了。
-8. 我都在这儿坐了半个小时了。
+1. 她工作了三年。(Tā gōngzuòle sān nián.) — She's worked for three years.
+2. 我们坐了一个小时公共汽车。(Wǒmen zuòle yí ge xiǎoshí gōnggòng qìchē.) — We rode the bus for an hour.
+3. 你怎么晚到了一刻钟？(Nǐ zěnme wǎn dàole yí kè zhōng?) — Why are you 15 minutes late?
+4. 我们唱了两个小时歌。(Wǒmen chàngle liǎng ge xiǎoshí gē.) — We sang for two hours.
+5. 我学习了一年汉语了。(Wǒ xuéxíle yì nián Hànyǔ le.) — I've been studying Chinese for a year, and I'm still studying.
+6. 她看了半个小时电视了。(Tā kànle bàn ge xiǎoshí diànshì le.) — She's been watching TV for half an hour, and she's still watching.
+7. 他们游了二十分钟泳了。(Tāmen yóule èrshí fēnzhōng yǒng le.) — They've been swimming for twenty minutes, and they're still swimming.
+8. 我都在这儿坐了半个小时了。(Wǒ dōu zài zhèr zuòle bàn ge xiǎoshí le.) — I've already been sitting here for half an hour.
 
 ### 2. 表达兴趣 — To Express an Interest
 
@@ -275,10 +278,10 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** In Chinese, one can use "对……感兴趣" or "对……有兴趣" to express an interest in something. The negative form is "对……不感兴趣" or "对……没（有）兴趣". The adverb of degree should be put before "感兴趣" or "有兴趣" if there is any, such as "很感兴趣" and "非常有兴趣".
 
 **Examples:**
-1. 他们对电影感兴趣。
-2. 我儿子对打篮球不感兴趣。
-3. 同学们对汉语有兴趣。你们都对音乐感兴趣吗？
-4. 我对她更感兴趣。
+1. 他们对电影感兴趣。(Tāmen duì diànyǐng gǎn xìngqù.) — They're interested in movies.
+2. 我儿子对打篮球不感兴趣。(Wǒ érzi duì dǎ lánqiú bù gǎn xìngqù.) — My son isn't interested in basketball.
+3. 同学们对汉语有兴趣。你们都对音乐感兴趣吗？(Tóngxuémen duì Hànyǔ yǒu xìngqù. Nǐmen dōu duì yīnyuè gǎn xìngqù ma?) — The classmates are interested in Chinese. Are you all interested in music?
+4. 我对她更感兴趣。(Wǒ duì tā gèng gǎn xìngqù.) — I'm more interested in her.
 
 ### 3. 用"半""刻""差"表示时间 — To Indicate Time Using "半", "刻" or "差"
 
@@ -297,16 +300,16 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** The adverbs "又" and "再" can both be put before a verb to indicate the recurrence of an action or a situation. "又 + V" usually means the recurrence has already happened, while "再 + V" means the recurrence has not happened yet.
 
 **Examples of "又":**
-1. 上个星期我买了一条裤子，昨天又买了一条。
-2. 你上午已经喝了一杯咖啡，下午怎么又喝了一杯？
-3. 小刚，你前天迟到，昨天迟到，今天怎么又迟到了？
-4. 我昨天看了一个电影，今天又看了一个。
+1. 上个星期我买了一条裤子，昨天又买了一条。(Shàng ge xīngqī wǒ mǎile yì tiáo kùzi, zuótiān yòu mǎile yì tiáo.) — Last week I bought a pair of pants, and yesterday I bought another pair.
+2. 你上午已经喝了一杯咖啡，下午怎么又喝了一杯？(Nǐ shàngwǔ yǐjīng hēle yì bēi kāfēi, xiàwǔ zěnme yòu hēle yì bēi?) — You already had a cup of coffee this morning, why did you have another this afternoon?
+3. 小刚，你前天迟到，昨天迟到，今天怎么又迟到了？(Xiǎogāng, nǐ qiántiān chídào, zuótiān chídào, jīntiān zěnme yòu chídào le?) — Xiaogang, you were late the day before yesterday, late yesterday, why are you late again today?
+4. 我昨天看了一个电影，今天又看了一个。(Wǒ zuótiān kànle yí ge diànyǐng, jīntiān yòu kànle yí ge.) — I watched a movie yesterday, and watched another one today.
 
 **Examples of "再":**
-5. 你只吃了一点儿饭，再吃一点儿吧。
-6. 家里只有一个面包了，我们再买一些吧。
-7. 那个饭馆我昨天去了一次，明天还想再去一次。
-8. 昨天去看了看，今天又去看了看，明天还要再去看看。
+5. 你只吃了一点儿饭，再吃一点儿吧。(Nǐ zhǐ chīle yìdiǎnr fàn, zài chī yìdiǎnr ba.) — You've only eaten a little, eat some more.
+6. 家里只有一个面包了，我们再买一些吧。(Jiā li zhǐyǒu yí ge miànbāo le, wǒmen zài mǎi yìxiē ba.) — There's only one loaf of bread left at home, let's buy some more.
+7. 那个饭馆我昨天去了一次，明天还想再去一次。(Nàge fànguǎn wǒ zuótiān qùle yí cì, míngtiān hái xiǎng zài qù yí cì.) — I went to that restaurant once yesterday, and I want to go again tomorrow.
+8. 昨天去看了看，今天又去看了看，明天还要再去看看。(Zuótiān qù kànle kàn, jīntiān yòu qù kànle kàn, míngtiān hái yào zài qù kànkan.) — I went to look yesterday, went to look again today, and I'll go look again tomorrow.
 
 ### 2. 疑问代词活用1 — Flexible Use of Interrogative Pronouns 1
 
@@ -315,10 +318,10 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** In Chinese, "就" is used to connect two same interrogative pronouns, indicating an uncertain person, thing or manner. The interrogative pronoun appears twice in the sentence, referring to the same thing. When the two clauses of a sentence share one subject, the subject of the second clause can be left out; when the two clauses have different subjects, the second subject is put right before "就".
 
 **Examples:**
-1. 什么东西便宜我就买什么。
-2. 你哪天有时间就哪天来我家吧。
-3. 谁喜欢他他就喜欢谁。
-4. 你坐哪儿我就坐哪儿。
+1. 什么东西便宜我就买什么。(Shénme dōngxi piányi wǒ jiù mǎi shénme.) — Whatever's cheap, I'll buy that.
+2. 你哪天有时间就哪天来我家吧。(Nǐ nǎ tiān yǒu shíjiān jiù nǎ tiān lái wǒ jiā ba.) — Come to my place whenever you're free.
+3. 谁喜欢他他就喜欢谁。(Shéi xǐhuan tā tā jiù xǐhuan shéi.) — He likes whoever likes him.
+4. 你坐哪儿我就坐哪儿。(Nǐ zuò nǎr wǒ jiù zuò nǎr.) — Wherever you sit, I'll sit.
 
 ---
 
@@ -331,10 +334,10 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** "越A越B" (the more A, the more B) means B changes with A.
 
 **Examples:**
-1. 雨越下越大。
-2. 你的中文越说越好。
-3. 越往南，天气越热。
-4. 山越高，路越难走。
+1. 雨越下越大。(Yǔ yuè xià yuè dà.) — The rain is getting heavier and heavier.
+2. 你的中文越说越好。(Nǐ de Zhōngwén yuè shuō yuè hǎo.) — Your Chinese keeps getting better and better.
+3. 越往南，天气越热。(Yuè wǎng nán, tiānqì yuè rè.) — The further south, the hotter it gets.
+4. 山越高，路越难走。(Shān yuè gāo, lù yuè nán zǒu.) — The higher the mountain, the harder the path.
 
 ### 2. 比较句1：A跟B一样（+Adj） — Comparative Sentences 1: A跟B一样 (+ Adj)
 
@@ -343,10 +346,10 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** "A跟B一样" means A and B are the same after comparison. The structure can take an adjective to indicate the aspect being compared, for example, "一样大" means "the same in size". In the negative form, "不" is added before "一样".
 
 **Examples:**
-1. 这本书跟那本书一样。
-2. 儿子跟爸爸一样高。
-3. 这辆车的颜色跟那辆车不一样。
-4. 她的汉语说得跟中国人一样好。
+1. 这本书跟那本书一样。(Zhè běn shū gēn nà běn shū yíyàng.) — This book is the same as that one.
+2. 儿子跟爸爸一样高。(Érzi gēn bàba yíyàng gāo.) — The son is as tall as his father.
+3. 这辆车的颜色跟那辆车不一样。(Zhè liàng chē de yánsè gēn nà liàng chē bù yíyàng.) — This car's color is different from that car's.
+4. 她的汉语说得跟中国人一样好。(Tā de Hànyǔ shuō de gēn Zhōngguórén yíyàng hǎo.) — Her Chinese is as good as a native speaker's.
 
 ---
 
@@ -359,388 +362,23 @@ invented. Same discipline as HSK1/2's grammar notes files.
 **English:** "一点儿", "一些", "得多" or "多了" etc. can follow an adjective in a comparative sentence, indicating the degree of difference between things, among which "一点儿" and "一些" indicate a slight difference, while "得多" and "多了" indicate a big difference. The negative form is "A没有B（+这么/那么）+Adj".
 
 **Examples:**
-1. 大山比大卫矮一点儿。
-2. 我今天起得比昨天晚一些。
-3. 今天的作业比昨天多得多。
-4. 数学比历史难多了。
-5. 咖啡没有茶好喝。
-6. 他没有我这么高。
-7. 这个电影没有那个电影那么有意思。
-8. 学校里边的（房子）没有学校外边的那么安静。
+1. 大山比大卫矮一点儿。(Dàshān bǐ Dàwèi ǎi yìdiǎnr.) — Dashan is a bit shorter than David.
+2. 我今天起得比昨天晚一些。(Wǒ jīntiān qǐ de bǐ zuótiān wǎn yìxiē.) — I got up a bit later today than yesterday.
+3. 今天的作业比昨天多得多。(Jīntiān de zuòyè bǐ zuótiān duō de duō.) — Today's homework is much more than yesterday's.
+4. 数学比历史难多了。(Shùxué bǐ lìshǐ nán duō le.) — Math is much harder than history.
+5. 咖啡没有茶好喝。(Kāfēi méiyǒu chá hǎohē.) — Coffee isn't as good to drink as tea.
+6. 他没有我这么高。(Tā méiyǒu wǒ zhème gāo.) — He's not as tall as me.
+7. 这个电影没有那个电影那么有意思。(Zhège diànyǐng méiyǒu nàge diànyǐng nàme yǒu yìsi.) — This movie isn't as interesting as that one.
+8. 学校里边的（房子）没有学校外边的那么安静。(Xuéxiào lǐbian de fángzi méiyǒu xuéxiào wàibian de nàme ānjìng.) — The houses inside the school aren't as quiet as those outside.
 
 ### 2. 概数的表达1 — Expression of Approximate Numbers 1
 
 **Chinese:** 汉语中，相邻两个数词连用可以表达概数。如"一二（两）、两三、三四、五六、七八、八九"等。
 
-**English:** In Chinese, two adjacent numerals can be used together to indicate an approximate number, for example, "一二（两）" (one or two), "两三" (two or three), "三四 (three or four)", "五六 (five or six)", "七八 (seven or eight)", and "八九 (eight or nine)". For example:
+**English:** In Chinese, two adjacent numerals can be used together to indicate an approximate number, for example, "一二（两）" (one or two), "两三" (two or three), "三四 (three or four)", "五六 (five or six)", "七八 (seven or eight)", and "八九 (eight or nine)".
 
 **Examples:**
-1. 我每天学习一两个小时汉语。
-2. 你都喝了三四杯咖啡了，别再喝了！
-3. 从小丽家到公司骑车七八分钟就能到。
-4. 学校里边比学校外边方便，附近有三四个车站。
-
----
-
-## Lesson 11 — 别忘了把空调关了
-
-### 1. "把"字句1：A把B+V+…… — The Ba-Sentence 1: A把B + V + ……
-
-**Chinese:** 汉语中，表示对确定的人或确定的事物做出相应处置，可以用"把"字句，其结构为"A把B+V+……"。这种"把"字句多用于对别人的请求、命令的情境中。注意：A为动作的发出者；B为动词涉及的对象，必须是特指或已知的。否定副词和能愿动词等应该放在"把"字的前边。
-
-**English:** In Chinese, a ba-sentence can be used to indicate a certain action done on a definite person or thing, the structure being "A把B + V + ……". This type of ba-sentence is often used to request or order other people to do something. It is noteworthy that A is the agent of the action, and B is the patient. Both A and B should be specific or known to the speaker and the listener. If there is a negative adverb or a modal verb etc., it should precede "把".
-
-**Examples:**
-1. 请你把衣服洗了。
-2. 帮我把这本词典还了。
-3. 你把灯关了吧。
-4. 我把爸爸的生日忘了。
-5. 你没把书给我。
-6. 你别把手机忘了。
-7. 我不能把电脑给你。
-8. 你可以把空调关了吗？
-
-### 2. 概数的表达2：左右 — Expression of Approximate Numbers 2: 左右
-
-**Chinese:** 汉语中，"左右"用在数字后面表示概数，如：三点左右，五个左右，十年左右。
-
-**English:** In Chinese, "左右" can be used after a numeral to indicate an approximate number, such as "三点左右" (around three o'clock), "五个左右" (about five), and "十年左右" (ten years or so).
-
-**Examples:**
-1. 周末我一般十点左右起床。
-2. 我们公司有五百人左右。
-3. 王经理两点左右来了个电话。
-4. 这个笔记本电脑我去年买的时候要五千块左右。
-
----
-
-## Lesson 12 — 把重要的东西放在我这儿吧
-
-### 1. "才"和"就" — Comparison of "才" and "就"
-
-**Chinese:** "才"和"就"都可以放在动词前做状语。"就"表示说话人认为动作发生得早，进行得快、顺利。"才"表示说话人认为动作发生得晚，进行得慢、不顺利。
-
-**English:** Both "才" and "就" can be used as an adverbial modifier before a verb. "就" indicates that in the speaker's opinion, the action happened early, or went fast or smoothly. "才" indicates that in the speaker's opinion, the action happened late, or went slowly or unsatisfactorily.
-
-**Examples of "就":**
-1. 我早上五点就起床了。
-2. 坐飞机一个小时就到了。
-3. 我很容易就找到了他的家。
-4. 你怎么这么早就要睡觉了？
-
-**Examples of "才":**
-5. 八点上课，他九点才起床。
-6. 坐火车八个小时才能到。
-7. 弟弟三个小时才做完作业。
-8. 来机场的路上我才发现忘带护照了。
-
-### 2. "把"字句2：A把B+V+在/到/给…… — The Ba-Sentence 2: A把B + V + 在/到/给……
-
-**Chinese:** 汉语中，表示对确定的人或事物做出相应动作，使其发生位置上的改变，多用"把"字句表达，其结构为"A把B+V+在/到+location"。表示通过动作使某确定事物发生关系上的转移，可以用"A把B+V+给+sb."。
-
-**English:** In Chinese, a ba-sentence is often used to indicate a certain action is done on a definite person or thing and has changed the location of the person or thing, the structure being "A把B + V + 在/到 + location". If an action has changed the owner or user of a definite object, the structure "A把B + V + 给 + sb." is used.
-
-**Examples:**
-1. 我把照片放在你包里了。
-2. 老师把作业放在桌子上了。
-3. 我没把裤子放到椅子上。
-4. 我帮你把衣服放到行李箱里吧。
-5. 我把鲜花送给老师了。
-6. 我朋友把书借给我了。
-7. 弟弟没把钱还给哥哥。
-8. 你帮我把这本书带给小刚。
-
----
----
-
-## Lesson 13 — 我是走回来的
-
-### 1. 复合趋向补语 — Compound Complements of Direction
-
-**Chinese:** 汉语中，"动词+简单趋向补语"构成复合趋向补语，描述动作的方向。宾语是处所时，要放在"来""去"之前。一般事物宾语既可放在"来""去"之前，又可放在"来""去"之后。如果动作已经完成并实现，那么宾语往往放在"来/去"后边。
-
-**English:** In Chinese, a compound complement of direction is formed by a verb and a simple complement of direction following the verb, describing the direction of an action. When the object is a place, it should be put before "来/去". When the object is a general item, it can be put either before or after "来/去". If the action has already been completed and realized, the object is usually put after "来/去".
-
-**Examples:**
-1. 老师拿出一本书来。
-2. 小狗从房间跑出来。
-3. 我给你拿过去吧。
-4. 坐久了还可以站起来休息一会儿。
-5. 老师走进教室来。
-6. 弟弟跑下楼去。
-7. 周太太走进咖啡店去。
-8. 下课了，同学们走出教室去。
-9. 哥哥买回一个西瓜来。=哥哥买回来一个西瓜。
-10. 请大家拿出笔记本来。=请大家拿出来笔记本。
-11. 爸爸从国外带回一些礼物来。=爸爸从国外带回来一些礼物。
-12. 小刚买回很多东西来。=小刚买回来很多东西。
-
-**Note:** 哥哥买回来了一个西瓜。/ 爸爸带回来了一些礼物。 (My elder brother has bought a watermelon. / Dad has brought some gifts home.)
-
-### 2. 一边……一边…… — The Structure "一边……一边……"
-
-**Chinese:** 汉语中，用"一边……一边……"表示两个动作同时进行，比如"一边听音乐一边做作业"表示"听音乐""做作业"这两个动作同时进行。"一"可以省略。
-
-**English:** In Chinese, "一边……一边……" is used to indicate two actions taking place at the same time. For example, "一边听音乐一边做作业" means the two actions "listening to music" and "doing homework" happen simultaneously. "一" can be left out.
-
-**Examples:**
-1. 妈妈一边唱歌一边做饭。
-2. 老师边说边笑。
-3. 小丽和老同学边喝咖啡边聊天儿。
-4. 我丈夫喜欢一边吃早饭一边看报纸。
-
----
-
-## Lesson 14 — 你把水果拿过来
-
-### 1. "把"字句3：A把B+V+结果补语/趋向补语 — The Ba-Sentence 3: A把B + V + Complement of Result/Direction
-
-**Chinese:** 汉语中，表达对确定的人或事物产生某种结果或发生位置上的改变，可用"A把B+V+结果补语/趋向补语"。
-
-**English:** In Chinese, the structure "A把B + V + Complement of Result/Direction" can be used to indicate an action which is done on a definite person or thing and has brought a result to or has changed the position of the person or thing.
-
-**Table examples:**
-- 我把衣服 / 洗 / 干净了。
-- 妈妈还没把饭 / 做 / 好呢。
-- 请同学们把铅笔 / 拿 / 出来。
-- 你把水果 / 拿 / 过来。
-
-### 2. 先……，再/又……，然后…… — The Structure "先……，再/又……，然后……"
-
-**Chinese:** "先……，再/又……，然后……"表示动作的先后顺序。"再"表示动作还没有发生，"又"表示动作已经发生了。
-
-**English:** The structure "先……，再/又……，然后……" (first…, then…, and then…) indicates the sequence of a series of actions. "再" indicates the action has not happened yet, while "又" indicates the action has already happened.
-
-**Examples:**
-1. 回家以后，我先做作业，然后吃饭。
-2. 我先坐了一个小时公共汽车，又坐了一会儿地铁才到小刚家。
-3. 你先把电视节目看完吧，然后再给我回电话。
-4. 先把米饭做好，然后再把一块块新鲜的水果放进去。
-
----
-
-## Lesson 15 — 其他都没什么问题
-
-### 1. 除了……以外，都/还/也…… — The Structure "除了……以外，都/还/也……"
-
-**Chinese:** "除了……以外，都……"表示在一个范围内，排除一部分，其他的都有相同的情况。其中"以外"可以省略。"除了……以外，还/也……"表示排除一部分，补充其他的。句子的主语放在句首，或者放在"还/也"的前边。
-
-**English:** "除了……以外，都……" (all...except...) indicates that except the part being mentioned, all the others in a certain scope are the same in a certain way. "以外" can be left out. "除了……以外，还/也……" (besides...) indicates that there are still others besides the part being mentioned. The subject is put at the beginning of the sentence or right before "还/也".
-
-**Examples ("都"):**
-1. 除了这个汉字以外，别的汉字我都认识。
-2. 除了我以外，大家都听懂了。
-3. 除了这个句子意思有些不清楚外，其他都没什么问题。
-4. 除了小云，其他人都来了。
-
-**Examples ("还/也"):**
-5. 除了唱歌以外，他还喜欢跳舞。
-6. 除了汉语以外，我还会说英语。
-7. 上网除了看新闻，还可以听音乐。
-8. 除了春节、中秋节以外，啤酒节也是这里很重要的一个节日。
-
-### 2. 疑问代词活用2 — Flexible Use of Interrogative Pronouns 2
-
-**Chinese:** 汉语中，"什么"可以做指示代词，用来代替不确定的人或事物，表达的语气更客气。去掉"什么"以后，句子的意思不变。
-
-**English:** In Chinese, "什么" can be used as a demonstrative pronoun instead of an indefinite person or thing, making the tone politer. The meaning of the sentence won't change if "什么" is left out.
-
-**Examples:**
-1. 这个饭馆有没有什么特别好吃的菜？
-2. 周末你有没有什么打算？
-3. 你写得很好，没什么问题。
-4. 以后有什么不明白的地方，可以给我打电话或者发电子邮件。
-
-### 3. 程度的表达：极了 — "极了" Used to Indicate Degree
-
-**Chinese:** 汉语中，表达最高程度可以用"形容词/心理动词+极了"。
-
-**English:** In Chinese, the superlative degree can be expressed using "Adj/Mental V + 极了".
-
-**Examples:**
-1. 我的小狗可爱极了。
-2. 今天天气冷极了。
-3. 那件衣服我喜欢极了。
-4. 他满意极了。
-
----
-
-## Lesson 16 — 我现在累得下了班就想睡觉
-
-### 1. 如果……（的话），（S）就…… — The Structure "如果……（的话），（S）就……"
-
-**Chinese:** "如果"后边的分句是一个假设，"就"后边的分句是在这种假设情况下产生的结果。注意，第二个分句的主语要放在"就"的前边。
-
-**English:** The clause following "如果" is a hypothesis, and the clause after "就" is the result based on the hypothesis. Note that the subject of the second clause should be put right before "就".
-
-**Examples:**
-1. 如果你太累了，就休息一会儿。
-2. 如果你喜欢，我就给你买。
-3. 如果有钱的话，我就去旅游。
-4. 如果不舒服，就去医院检查一下吧。
-
-### 2. 复杂的状态补语 — Complex Complements of State
-
-**Chinese:** 汉语中，可以用"得"构成状态补语，描写某种状态。"得"前一般是形容词或动词，"得"后一般是动词词组。
-
-**English:** In Chinese, "得" can be used to form a complement to describe a certain state. Usually "得" is preceded by an adjective or a verb and followed by a verb phrase.
-
-**Examples:**
-1. 孩子们玩儿得不想回家。
-2. 弟弟高兴得跳了起来。
-3. 儿子累得下了班就睡觉了。
-4. 人们忙得没时间跟别人见面。
-
-### 3. 单音节形容词重叠 — Reduplication of Monosyllabic Adjectives
-
-**Chinese:** 汉语中，单音节形容词重叠表示程度深，形式为"AA的"，常用来描述人或事物的特征。
-
-**English:** In Chinese, a monosyllabic adjective is often reduplicated in the form of "AA的" to describe the characteristics of a person or thing, indicating a deep degree.
-
-**Examples:**
-1. 你送的花红红的，我很喜欢。
-2. 这些草绿绿的，真漂亮。
-3. 他鼻子小小的，长得像谁？
-4. 你女儿长得白白的、胖胖的，真可爱！
-
----
-
-## Lesson 17 — 谁都有办法看好你的"病"
-
-### 1. 双音节动词重叠 — Reduplication of Disyllabic Verbs
-
-**Chinese:** 双音节动词重叠形式为"ABAB"，如"休息休息"，表达动作时间短、尝试等意义。
-
-**English:** The form of a reduplicated disyllabic verb is "ABAB", such as "休息休息", indicating a short action or an attempt.
-
-**Examples:**
-1. 他是谁？你介绍我们认识认识吧。
-2. 他是新来的，有时间你帮助帮助他吧。
-3. 这是本新书，你学习学习吧。
-4. 我真应该多锻炼锻炼了。
-
-### 2. 疑问代词活用3 — Flexible Use of Interrogative Pronouns 3
-
-**Chinese:** 汉语中，可以用"谁""什么""怎么""哪儿"等疑问代词代替某个范围内的每一个对象，它们都有相同的情况，没有例外。
-
-**English:** In Chinese, interrogative pronouns such as "谁", "什么", "怎么" and "哪儿" can be used to refer to every member in a certain scope, indicating all of them are the same in a certain way without exception.
-
-**Examples:**
-1. 谁都喜欢小丽。
-2. 小刚什么都喜欢吃。
-3. 我们怎么去公园都可以。
-4. 最近我觉得哪儿都不舒服。
-
----
-
-## Lesson 18 — 我相信他们会同意的
-
-### 1. 只要……，就…… — The Structure "只要……，就……"
-
-**Chinese:** "只要……就……"连接的是一个条件复句，"只要"后边是必要条件，"就"后边是其结果。主语可以放在"只要"前，也可以放在"只要"后。如果有第二个主语，要放在"就"的前边。
-
-**English:** "只要……，就……" is used to connect the two clauses of a conditional complex sentence, with "只要" introducing a necessary condition and "就" followed by the consequent result. The subject can be put before or after "只要". If there is a second subject in the sentence, it is put right before "就".
-
-**Examples:**
-1. 只要我有时间，就一定跟你去旅游。
-2. 我只要喜欢，就一定会买。
-3. 只要你想去，我就跟你去。
-4. 只要你给我买，我就能照顾好它。
-
-### 2. 介语"关于" — The Preposition "关于"
-
-**Chinese:** "关于"后边接名词，引出涉及的对象。
-
-**English:** "关于" is used before a noun, introducing the object to be talked about.
-
-**Examples:**
-1. 我最近看了一些关于中国文化的电影。
-2. 关于这件事，我们还没有决定呢。
-3. 关于出国学习的事，妈妈已经同意了。
-4. 关于这个工作，还有什么问题吗？
-
----
-
-## Lesson 19 — 你没看出来吗
-
-### 1. 趋向补语的引申义 — Extension of the Complements of Direction
-
-**Chinese:** 汉语中，趋向补语用在动词和形容词后，还可以表示其他的意义。
-
-**English:** In Chinese, a complement of direction can be used after a verb or an adjective to mean different things.
-
-**动词加"出来"，表示从无到有，产生新事物 — "出来" after a verb indicates the emergence of something new:**
-1. 这个字你能写出来吗？
-2. 朋友想出来一个学汉语的好办法。
-3. 你画得真快，一会儿就画出来了。
-4. 照片我选了几张洗出来了。
-
-**动词加"出来"，也表示分辨识别，从隐到显的意思 — "出来" can also indicate recognition of something implicit:**
-5. 你听出来了吗？这是谁的声音？
-6. 我看出来了，这是二年级的那个女孩子。
-7. 我喝不出来这两杯咖啡有什么不一样。
-8. 你没看出来吗？他是小刚啊。
-
-**一些形容词或动词加"下来"表示由动到静、由强到弱、由快到慢等变化 — "下来" indicates a change from movement to stillness, strong to weak, or fast to slow:**
-9. 前边的车越开越慢，停下来了。
-10. 天黑下来了，孩子们要回家了。
-11. 我真希望时间能慢下来，不要过得那么快。
-12. 只要他爸爸学小鸟叫，她马上就安静下来了。
-
-**动词加"起来"，表示回忆有了结果 — "起来" after a verb indicates the act of recalling has reached a result:**
-13. 你记起来我是谁了吗？
-14. 你能想起来那是什么时候的事吗？
-15. 对不起，我想不起来你的名字了。
-16. 我想起来了，她小时候像个男孩子。
-
-**"看上去"与"看起来" — "看上去" and "看起来" (to seem) are similar to each other, both used to make an estimation or evaluation by looking:**
-17. 把头发放在耳朵后边，可以使脸看上去漂亮一些。
-18. 他今天穿蓝西服，看上去像40多岁。
-19. 这是你做的饭吗？看起来很好吃。
-20. 他今天一句话也没说，看起来有点儿不高兴。
-
-### 2. "使""叫""让" — Comparison of "使", "叫" and "让"
-
-**Chinese:** 汉语中用"使""叫""让"后搭配兼语表示致使的意思。三个词基本意思相同，"使"常用于书面语，"叫"常用于口语。
-
-**English:** The Chinese words "使", "叫" and "让" can all be followed by a pivotal element to mean "to cause". The three of them basically mean the same thing, with "使" usually used in written Chinese, while "叫" usually used in spoken Chinese.
-
-**Examples:**
-1. 读书使我快乐。
-2. 考试让我很紧张。
-3. 穿运动服让他更年轻。
-4. 我想快点儿把照片发给大家，叫朋友们也高兴高兴。
-
----
-
-## Lesson 20 — 我被他影响了
-
-### 1. "被"字句 — The Bei-Sentence
-
-**Chinese:** 汉语中，可以用"被"的句子表达被动意义，其结构形式为"主语+被/叫/让+宾语+动词+其他成分"。其中主语一般是动作的接受者，宾语一般是动作的发出者。"被"字后边的宾语可以省略，"叫""让"后边必须有宾语。注意，否定副词和能愿动词等应该放在"被"的前边。
-
-**English:** In Chinese, a sentence with "被" can express the passive voice, its structure being "S + 被/叫/让 + O + V + Other Elements", in which the subject is the patient of the action and the object the agent. The object following "被" can be left out, while the object after "叫" or "让" cannot. Note that negative adverbs and modal verbs should precede "被" if there are any.
-
-**Table examples:**
-- 我 / 被 / 男朋友 / 影响 / 了。
-- 帽子 / 被 / 刮 / 跑 / 了。
-- 蛋糕 / 让 / 弟弟 / 吃完 / 了。
-- 我的照相机 / 被 / 谁 / 拿走 / 了？
-
-**Examples (negation/modal before 被):**
-1. 问题还没有被解决呢。
-2. 病人还没被送到医院呢。
-3. 下个月她会被妈妈送到美国。
-4. 我们经常被别人认错。
-
-### 2. 只有……才…… — The Structure "只有……才……"
-
-**Chinese:** "只有……才……"连接的是一个条件复句，"只有"后边是唯一的条件，"才"后边是在这个条件下才会出现的结果。
-
-**English:** "只有……才……" is used to connect the two clauses of a conditional complex sentence, with "只有" introducing the one and only condition and "才" followed by the result which will be reached only if the said condition is met.
-
-**Examples:**
-1. 只有写完作业，才能看电视。
-2. 只有妈妈做的饭，她才爱吃。
-3. 只有爸爸、妈妈才能分出来。
-4. 看来只有爱，才能让人有变化。
+1. 我每天学习一两个小时汉语。(Wǒ měitiān xuéxí yì-liǎng ge xiǎoshí Hànyǔ.) — I study Chinese for one or two hours every day.
+2. 你都喝了三四杯咖啡了，别再喝了！(Nǐ dōu hēle sān-sì bēi kāfēi le, bié zài hē le!) — You've already had three or four cups of coffee, don't drink any more!
+3. 从小丽家到公司骑车七八分钟就能到。(Cóng Xiǎolì jiā dào gōngsī qí chē qī-bā fēnzhōng jiù néng dào.) — It's just seven or eight minutes by bike from Xiaoli's home to the company.
+4. 学校里边比学校外边方便，附近有三四个车站。(Xuéxiào lǐbian bǐ xuéxiào wàibian fāngbiàn, fùjìn yǒu sān-sì ge chēzhàn.) — Inside the school is more convenient than outside, there are three or four bus stops nearby.
