@@ -36,7 +36,7 @@ Books.registerGrammar('hsk1', '5', [
               ['90 jiǔshí', '', '', '', '', '', '', '', '', '99 jiǔshíjiǔ'],
             ],
           },
-          note: 'This matches the number-construction logic already implemented in the Numbers 1-99 drill — tens digit + 十 + ones digit, e.g. 五十六 = wǔshíliù.',
+          note: 'This matches the number-construction logic already implemented in the Numbers drill — tens digit + 十 + ones digit, e.g. 五十六 = wǔshíliù.',
         },
       ],
     },

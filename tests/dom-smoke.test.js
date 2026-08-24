@@ -50,6 +50,10 @@
       assertEqual(Storage.getCurrentBook(), 'hsk2');
       assert(c.querySelector('#masteryGrid'), 'HSK2 has real content — switching to it should show the mastery grid, not an empty state');
 
+      tabs[2].click(); // HSK3
+      assertEqual(Storage.getCurrentBook(), 'hsk3');
+      assert(c.querySelector('#masteryGrid'), 'HSK3 has real content (vocab+grammar) — switching to it should show the mastery grid, not an empty state');
+
       c.querySelector('#bookRow .tab').click(); // back to HSK1 (first tab)
       assertEqual(Storage.getCurrentBook(), 'hsk1');
       assert(c.querySelector('#masteryGrid'), 'switching back to HSK1 should restore the mastery grid');
@@ -173,30 +177,83 @@
       assert(c.querySelectorAll('.grammar-card').length > 0, 'expected at least one grammar point card rendered');
     });
 
-    // ---- Book selector: HSK3 has no content yet, and every book-aware screen needs to show a
-    // plain empty state instead of crashing (e.g. today's code would otherwise do
-    // Books.getLessonOrder('hsk3')[0] and get undefined). This is what actually proves the
-    // "switch to an empty book, no crash" checklist item, rather than a one-off manual click. ----
-    test('Dashboard shows an empty state for HSK3 (no crash, no mastery grid)', () => {
+    // ---- HSK3 is now a complete book — all four content types (Vocabulary, Grammar Notes,
+    // Listening, Sentence Builder) populated for all 20 lessons. Confirm every mode actually
+    // renders real content, the same way the HSK2 checks above do (Books.getLessonOrder('hsk3')[0]
+    // used to be undefined before this data existed — this proves that gap is closed the right
+    // way, not just closed). Listening also gets its own item-count check, since HSK3's workbook
+    // gives 10 items per lesson (Part III + Part IV) instead of the usual 5 — see hsk3_listening.md. ----
+    test('Lessons — HSK3 L1 renders real vocabulary (Flip & Recall)', () => {
       const c = freshContainer();
-      Storage.setCurrentBook('hsk3'); // Dashboard.mount takes no book param — reads Storage directly
+      Lessons.mount(c, { book: 'hsk3', lesson: '1', mode: 'flip' }, noopNavigate);
+      const entryBtn = c.querySelector('#goBtn') || c.querySelector('#resumeBtn');
+      entryBtn.click();
+      const hanzi = c.querySelector('.hanzi');
+      assert(hanzi && hanzi.textContent.trim().length > 0, 'expected a real HSK3 word on the flashcard');
+    });
+
+    test('Lessons — HSK3 L20 (last lesson) renders real vocabulary, confirming all 20 lessons are wired up', () => {
+      const c = freshContainer();
+      Lessons.mount(c, { book: 'hsk3', lesson: '20', mode: 'flip' }, noopNavigate);
+      const entryBtn = c.querySelector('#goBtn') || c.querySelector('#resumeBtn');
+      entryBtn.click();
+      const hanzi = c.querySelector('.hanzi');
+      assert(hanzi && hanzi.textContent.trim().length > 0, 'expected a real HSK3 word on the flashcard');
+    });
+
+    test('Lessons — HSK3 Listening renders a real question with 3 options, and all 10 items are reachable', () => {
+      const c = freshContainer();
+      Storage.clearSession('lessons:hsk3:1:listen');
+      Lessons.mount(c, { book: 'hsk3', lesson: '1', mode: 'listen' }, noopNavigate);
+      const entryBtn = c.querySelector('#goBtn') || c.querySelector('#resumeBtn');
+      entryBtn.click();
+      assert(c.querySelectorAll('.option-btn').length === 3, 'expected 3 answer options on the listening question');
+      assert(c.querySelector('#posLabel').textContent.indexOf('10') !== -1, `expected a 10-item round (Part III + Part IV combined), got: ${c.querySelector('#posLabel').textContent}`);
+      Storage.clearSession('lessons:hsk3:1:listen');
+    });
+
+    test('Lessons — HSK3 Sentence Builder renders real tiles for L1', () => {
+      const c = freshContainer();
+      Lessons.mount(c, { book: 'hsk3', lesson: '1', mode: 'build' }, noopNavigate);
+      const entryBtn = c.querySelector('#goBtn') || c.querySelector('#resumeBtn');
+      entryBtn.click();
+      const tiles = c.querySelectorAll('#tileBank .tile-btn');
+      assert(tiles.length > 0, 'expected the tile bank to render at least one tile');
+    });
+
+    test('Grammar — HSK3 renders 20 lesson tabs (all 20 lessons have notes)', () => {
+      const c = freshContainer();
+      Storage.setCurrentBook('hsk3'); // Grammar.mount takes no book param — reads Storage directly
+      Grammar.mount(c);
+      Storage.setCurrentBook('hsk1');
+      const tabCount = c.querySelectorAll('#tabs .tab').length;
+      assertEqual(tabCount, 20, 'HSK3 grammar should have one tab per lesson');
+      assert(c.querySelectorAll('.grammar-card').length > 0, 'expected at least one grammar point card rendered');
+    });
+
+    // ---- Book selector: an unregistered book still needs every book-aware screen to show a
+    // plain empty state instead of crashing (e.g. today's code would otherwise do
+    // Books.getLessonOrder('__no_such_book__')[0] and get undefined). Now that HSK1/HSK2/HSK3 all
+    // have real content, this uses a fake book id to keep exercising that code path. ----
+    test('Dashboard shows an empty state for an unregistered book (no crash, no mastery grid)', () => {
+      const c = freshContainer();
+      Storage.setCurrentBook('__no_such_book__'); // Dashboard.mount takes no book param — reads Storage directly
       Dashboard.mount(c, noopNavigate);
       Storage.setCurrentBook('hsk1');
       assert(c.querySelector('.lamp'), 'missing .lamp marker');
       assert(!c.querySelector('#masteryGrid'), 'should not render a mastery grid for a book with no lessons');
     });
 
-    test('Lessons shows an empty state for HSK3 (no crash, no tabs/mode-toggle)', () => {
+    test('Lessons shows an empty state for an unregistered book (no crash, no tabs/mode-toggle)', () => {
       const c = freshContainer();
-      Lessons.mount(c, { book: 'hsk3' }, noopNavigate);
+      Lessons.mount(c, { book: '__no_such_book__' }, noopNavigate);
       assert(c.querySelector('.lamp'), 'missing .lamp marker');
       assert(!c.querySelector('#modeToggle'), 'should not render the mode toggle for a book with no lessons');
-      assert(c.textContent.indexOf('HSK3') !== -1, 'empty state should name the book');
     });
 
-    test('Grammar shows an empty state for HSK3 (no crash, no tabs)', () => {
+    test('Grammar shows an empty state for an unregistered book (no crash, no tabs)', () => {
       const c = freshContainer();
-      Storage.setCurrentBook('hsk3'); // Grammar.mount takes no book param — reads Storage directly
+      Storage.setCurrentBook('__no_such_book__'); // Grammar.mount takes no book param — reads Storage directly
       Grammar.mount(c);
       Storage.setCurrentBook('hsk1');
       assert(c.querySelector('.lamp'), 'missing .lamp marker');

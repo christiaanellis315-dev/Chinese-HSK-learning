@@ -1,8 +1,8 @@
 // Data integrity checks. These replace the manual "count the words, grep the file" verification
 // that used to happen by hand once per data-authoring change — now it runs every time this page
 // loads instead of relying on remembering to redo it. Runs the same suite of checks against every
-// book that actually has content (HSK1, HSK2), parameterized by that book's own expected counts —
-// see runBookChecks() below.
+// book that actually has content (HSK1, HSK2, HSK3), parameterized by that book's own expected
+// counts — see runBookChecks() below.
 (() => {
   const { group, test, assert, assertEqual } = TestRunner;
 
@@ -10,14 +10,14 @@
     test('lists exactly HSK1, HSK2, HSK3', () => {
       assertEqual(Books.listBooks().map((b) => b.id), ['hsk1', 'hsk2', 'hsk3']);
     });
-    test('HSK1 and HSK2 have content; HSK3 does not yet', () => {
+    test('HSK1, HSK2, and HSK3 all have lesson content', () => {
       assert(Books.hasContent('hsk1'), 'hsk1 should have lesson content');
       assert(Books.hasContent('hsk2'), 'hsk2 should have lesson content');
-      assert(!Books.hasContent('hsk3'), 'hsk3 should have no lesson content yet');
+      assert(Books.hasContent('hsk3'), 'hsk3 should have lesson content');
     });
     test('an unregistered book returns empty arrays, not throwing', () => {
-      assertEqual(Books.getLessonOrder('hsk3'), []);
-      assertEqual(Books.getGrammarOrder('hsk3'), []);
+      assertEqual(Books.getLessonOrder('__no_such_book__'), []);
+      assertEqual(Books.getGrammarOrder('__no_such_book__'), []);
     });
   });
 
@@ -27,9 +27,12 @@
   function runBookChecks(book) {
     const BOOK = book.id;
 
+    const expectedLessonOrder = [];
+    for (let i = 1; i <= book.lessonCount; i++) expectedLessonOrder.push(String(i));
+
     group(`${book.label} — Lessons data`, () => {
-      test('lesson order has all 15 lessons, in order', () => {
-        assertEqual(Books.getLessonOrder(BOOK), ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15']);
+      test(`lesson order has all ${book.lessonCount} lessons, in order`, () => {
+        assertEqual(Books.getLessonOrder(BOOK), expectedLessonOrder);
       });
 
       test('every lesson has a title, titleP, and words array', () => {
@@ -166,7 +169,7 @@
   }
 
   runBookChecks({
-    id: 'hsk1', label: 'HSK1',
+    id: 'hsk1', label: 'HSK1', lessonCount: 15,
     expectedWordCounts: { '1':6,'2':4,'3':12,'4':10,'5':10,'6':12,'7':12,'8':15,'9':13,'10':14,'11':12,'12':13,'13':11,'14':17,'15':9 },
     totalWords: 170,
     listeningLessons: ['4','5','6','7','8','9','10','11','12','13','14','15'],
@@ -176,13 +179,27 @@
   });
 
   runBookChecks({
-    id: 'hsk2', label: 'HSK2',
+    id: 'hsk2', label: 'HSK2', lessonCount: 15,
     expectedWordCounts: { '1':12,'2':15,'3':16,'4':13,'5':14,'6':13,'7':13,'8':10,'9':11,'10':9,'11':11,'12':9,'13':11,'14':7,'15':8 },
     totalWords: 172,
     listeningLessons: ['1','2','3','4','5','6','7','9','10','11','12','13','14','15'], // 8 is a known source gap
     sentenceBuilderLessons: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'],
     grammarLessons: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'],
     totalGrammarPoints: 44,
+  });
+
+  // Full load: all four content types (Vocabulary, Grammar Notes, Listening, Sentence Builder)
+  // now populated for all 20 lessons. Unlike HSK1/HSK2, HSK3's listening data has 10 items per
+  // lesson (Part III + Part IV combined) instead of 5 — runBookChecks() doesn't assume a fixed
+  // per-lesson item count, so this needs no special-casing here.
+  runBookChecks({
+    id: 'hsk3', label: 'HSK3', lessonCount: 20,
+    expectedWordCounts: { '1':15,'2':18,'3':17,'4':16,'5':13,'6':15,'7':12,'8':17,'9':13,'10':15,'11':19,'12':14,'13':15,'14':17,'15':21,'16':16,'17':16,'18':17,'19':14,'20':14 },
+    totalWords: 314,
+    listeningLessons: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20'],
+    sentenceBuilderLessons: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20'],
+    grammarLessons: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20'],
+    totalGrammarPoints: 47,
   });
 
   group('Pinyin reference data', () => {
