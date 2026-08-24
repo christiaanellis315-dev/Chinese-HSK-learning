@@ -5,7 +5,7 @@
     { id: 'dashboard', icon: '🏠', label: 'Dashboard' },
     { id: 'lessons', icon: '📖', label: 'Lessons' },
     { id: 'review', icon: '🔁', label: 'Review' },
-    { id: 'numbers', icon: '🔢', label: 'Numbers' },
+    { id: 'games', icon: '🎮', label: 'Games' },
     { id: 'grammar', icon: '📝', label: 'Grammar' },
     { id: 'pinyin', icon: '🔤', label: 'Pinyin' },
   ];
@@ -34,7 +34,7 @@
     if (screen === 'dashboard') Dashboard.mount(screenEl, navigate);
     else if (screen === 'lessons') Lessons.mount(screenEl, opts, navigate);
     else if (screen === 'review') Review.mount(screenEl);
-    else if (screen === 'numbers') NumbersDrill.mount(screenEl, navigate);
+    else if (screen === 'games') Games.mount(screenEl, navigate);
     else if (screen === 'grammar') Grammar.mount(screenEl);
     else if (screen === 'pinyin') Pinyin.mount(screenEl);
   }

@@ -214,6 +214,7 @@ const Lessons = (() => {
     currentLesson = key; idx = 0; roundOrder = []; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
     resetBuildExercise();
     saveLastPosition();
+    Storage.setCurrentLesson(currentBook, currentLesson);
     buildTabs();
     render();
   }
@@ -766,7 +767,26 @@ const Lessons = (() => {
       return;
     }
 
-    currentLesson = (initial && initial.lesson) || Books.getLessonOrder(currentBook)[0];
+    // Prefer an explicit lesson (e.g. tapped on Dashboard's mastery grid — a deliberate pick,
+    // always persisted); otherwise pick up whatever lesson was last selected anywhere in the
+    // app for this book — Grammar, Lessons itself, etc. — so the two stay in sync. Falls back
+    // to the book's first lesson only when neither is available. That fallback is persisted as
+    // the new shared choice only when nothing had been chosen yet (rememberedLesson === null) —
+    // a lesson that's merely invalid *here* (doesn't happen today since every book's lessons
+    // and grammar share one numbering space, but keeps this screen from clobbering a choice
+    // that's still valid elsewhere) shouldn't overwrite the person's real last choice.
+    const rememberedLesson = Storage.getCurrentLesson(currentBook);
+    const lessonOrder = Books.getLessonOrder(currentBook);
+    const rememberedValid = rememberedLesson && lessonOrder.indexOf(rememberedLesson) !== -1;
+    if (initial && initial.lesson) {
+      currentLesson = initial.lesson;
+      Storage.setCurrentLesson(currentBook, currentLesson);
+    } else if (rememberedValid) {
+      currentLesson = rememberedLesson;
+    } else {
+      currentLesson = lessonOrder[0];
+      if (!rememberedLesson) Storage.setCurrentLesson(currentBook, currentLesson);
+    }
     if (initial && initial.mode) mode = initial.mode;
     idx = 0; roundOrder = []; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
     resetBuildExercise();

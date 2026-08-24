@@ -30,7 +30,7 @@ const Grammar = (() => {
       const b = document.createElement('div');
       b.className = 'tab' + (key === currentLesson ? ' active' : '');
       b.textContent = 'L' + key;
-      b.onclick = () => { currentLesson = key; buildTabs(); render(); };
+      b.onclick = () => { currentLesson = key; Storage.setCurrentLesson(currentBook, currentLesson); buildTabs(); render(); };
       el.appendChild(b);
     });
   }
@@ -134,7 +134,17 @@ const Grammar = (() => {
       return;
     }
 
-    currentLesson = Books.getGrammarOrder(currentBook)[0];
+    // Same "remembered lesson" logic as Lessons.mount() — picks up whatever lesson was last
+    // selected anywhere in the app for this book, falling back to this book's first grammar
+    // lesson if nothing's remembered yet or the remembered lesson has no grammar notes. Only
+    // seeds the shared value when nothing was ever chosen — a lesson that's merely invalid for
+    // Grammar specifically (e.g. lesson 1, which has no notes) shouldn't overwrite the person's
+    // real last choice for every other screen.
+    const rememberedLesson = Storage.getCurrentLesson(currentBook);
+    const grammarOrder = Books.getGrammarOrder(currentBook);
+    const rememberedValid = rememberedLesson && grammarOrder.indexOf(rememberedLesson) !== -1;
+    currentLesson = rememberedValid ? rememberedLesson : grammarOrder[0];
+    if (!rememberedLesson) Storage.setCurrentLesson(currentBook, currentLesson);
     root.innerHTML = html();
     Speech.buildSpeedControl(root.querySelector('#speedRow'));
     buildTabs();

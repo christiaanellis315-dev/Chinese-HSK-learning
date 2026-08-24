@@ -217,6 +217,14 @@ const Storage = (() => {
   function getCurrentBook() { return readRaw('hsk:currentBook', 'hsk1'); }
   function setCurrentBook(bookId) { writeRaw('hsk:currentBook', bookId); }
 
+  // ---- which lesson is currently selected, per book ----
+  // Shared across every screen with a lesson tab row (Lessons, Grammar, ...) so picking a lesson
+  // on one screen carries over to the next screen you open, rather than each screen defaulting
+  // back to lesson 1 (or remembering its own separate last lesson) independently. Keyed by book
+  // so switching books doesn't clobber the lesson you had selected in the other one.
+  function getCurrentLesson(bookId) { return readRaw('hsk:currentLesson:' + bookId, null); }
+  function setCurrentLesson(bookId, lessonId) { writeRaw('hsk:currentLesson:' + bookId, lessonId); }
+
   // ---- in-progress session state (the "Go" screen's resume data) ----
   // One flat store, keyed by a caller-chosen string — lessons.js uses "lessons:<lesson>:<mode>"
   // (one slot per lesson+mode combination), numbers.js uses the single key "numbers" (its round
@@ -235,6 +243,7 @@ const Storage = (() => {
     getVoicePref, setVoicePref,
     getLastPosition, setLastPosition,
     getCurrentBook, setCurrentBook,
+    getCurrentLesson, setCurrentLesson,
     getSession, setSession, clearSession,
   };
 })();

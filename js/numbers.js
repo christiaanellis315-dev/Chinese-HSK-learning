@@ -1,8 +1,11 @@
-// Numbers 1-999 screen: a standalone, recurring drill (moved out of Lesson 5, since it's a
-// tool people come back to regardless of which lesson they're on, not one-time lesson content).
-// Runs as a fixed 20-number round (20 unique numbers, no repeats) with a completion screen at
-// the end, matching the pattern used by the Lessons screen's Flip/Type/Listen modes. Also offers
-// the same practice-pronunciation mic (record / playback / compare) as Flip & Recall.
+// Numbers 1-999 game: one of the two games under the Games screen (see games.js), a recurring
+// drill people come back to regardless of which lesson they're on, not one-time lesson content
+// (originally moved out of Lesson 5 for that reason). Mounts into Games' own game-area container,
+// not a full screen of its own — Games supplies the page-level lamp/h1/sub and the game-picker
+// above it, so this module's markup starts at the autoplay row. Runs as a fixed 20-number round
+// (20 unique numbers, no repeats) with a completion screen at the end, matching the pattern used
+// by the Lessons screen's Flip/Type/Listen modes. Also offers the same practice-pronunciation mic
+// (record / playback / compare) as Flip & Recall.
 const NumbersDrill = (() => {
   const ROUND_LENGTH = 20;
   let root = null;
@@ -82,9 +85,6 @@ const NumbersDrill = (() => {
 
   function html() {
     return `
-      <div class="lamp"></div>
-      <h1>Numbers 1-999</h1>
-      <div class="sub">Listen and type the number you hear — a 20-number round, independent of any lesson</div>
       <div class="autoplay-row">
         <span>Auto-play audio</span>
         <div class="switch" id="autoplaySwitch"><div class="knob"></div></div>
