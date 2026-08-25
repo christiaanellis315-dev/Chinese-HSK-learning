@@ -493,7 +493,8 @@ const Lessons = (() => {
           <div class="feedback-badge ${isCorrect ? 'correct' : 'wrong'}">${isCorrect ? 'Correct!' : 'Not quite'}</div>
           <button class="speak-btn" id="replayBtn" aria-label="Replay sentence" style="margin-bottom:14px;">&#128266;</button>
           <div class="question-text">${item.questionP}</div>
-          <div class="question-hanzi">${item.question}</div>
+          <div class="question-hanzi${item.questionE ? ' has-english' : ''}">${item.question}</div>
+          ${item.questionE ? `<div class="question-english">${item.questionE}</div>` : ''}
           <div style="width:100%; display:flex; flex-direction:column; align-items:center;">${optsHtml}</div>
           <div class="example" style="margin-top:14px;"><div class="ex-p">${item.sentenceP}</div><div class="ex-h">${item.sentence}</div><div>${item.sentenceE || ''}</div></div>
         </div>
