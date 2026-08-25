@@ -33,6 +33,12 @@ const Lessons = (() => {
   // (a separate, already-working feature) applies there.
   let roundOrder = [];
 
+  // ---- Listening option order (A/B/C) ----
+  // Keyed by the item's stable origIdx (not round position), so the shuffle stays put if you
+  // navigate back to an already-seen item mid-round, but a fresh round (beginSession) gets fresh
+  // shuffles — otherwise the correct answer's letter would become memorizable across attempts.
+  let listenOptionOrders = {};
+
   function identityOrder(n) {
     const a = [];
     for (let i = 0; i < n; i++) a.push(i);
@@ -258,9 +264,26 @@ const Lessons = (() => {
     idx = startIdx;
     roundOrder = order || identityOrder(modeTotal());
     flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false;
+    listenOptionOrders = {};
     resetBuildExercise();
     started = true;
     render();
+  }
+
+  // Returns a copy of a listening item with options/optionsP/correct permuted for display, so
+  // the correct answer doesn't always land on the same letter. The permutation is generated once
+  // per origIdx and cached, so it stays fixed across the unanswered -> answered re-render of the
+  // same item (only a fresh round regenerates it).
+  function shuffledListenItem(item, origIdx) {
+    if (!listenOptionOrders[origIdx]) {
+      listenOptionOrders[origIdx] = shuffle(identityOrder(item.options.length));
+    }
+    const order = listenOptionOrders[origIdx];
+    return Object.assign({}, item, {
+      options: order.map((i) => item.options[i]),
+      optionsP: order.map((i) => item.optionsP[i]),
+      correct: order.indexOf(item.correct),
+    });
   }
 
   function renderGoScreen() {
@@ -630,18 +653,19 @@ const Lessons = (() => {
     // origIdx (the item's stable position in currentListening(), not its shuffled round
     // position) keeps this item's SRS identity fixed across rounds regardless of shuffle order.
     const itemId = Storage.listenItemId(currentBook, currentLesson, origIdx);
+    const displayItem = shuffledListenItem(item, origIdx);
     if (selectedOpt === null) {
       const controlsHtml = `
         <div class="controls">
           <button class="nav-btn" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
           <button class="nav-btn" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
         </div>`;
-      renderListenQuestion(cardArea, item, null, {
+      renderListenQuestion(cardArea, displayItem, null, {
         controlsHtml,
         autoplay: Storage.getAutoplay('lessons'),
         onSelect: (i) => {
           selectedOpt = i;
-          lastCorrect = (i === item.correct);
+          lastCorrect = (i === displayItem.correct);
           Storage.recordSrsResult(itemId, lastCorrect);
           render();
         },
@@ -656,7 +680,7 @@ const Lessons = (() => {
         <div class="controls">
           <button class="nav-btn" id="nextListenBtn">${idx < total - 1 ? 'next question →' : 'lesson complete →'}</button>
         </div>`;
-      renderListenQuestion(cardArea, item, selectedOpt, {
+      renderListenQuestion(cardArea, displayItem, selectedOpt, {
         controlsHtml,
         wireControls: () => {
           root.querySelector('#nextListenBtn').onclick = () => {

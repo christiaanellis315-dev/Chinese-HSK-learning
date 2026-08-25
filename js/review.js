@@ -9,6 +9,7 @@ const Review = (() => {
   let queue = [];
   let flipped = false; // word items: card face
   let selectedOpt = null; // listen items: chosen option, or null if unanswered
+  let listenOptionOrder = null; // listen items: cached A/B/C shuffle for the current item
   let buildBank = []; // build items: shuffled tile pool for the current item
   let builtIds = []; // build items: tile ids tapped so far, in order
   let buildSubmitted = false;
@@ -23,6 +24,22 @@ const Review = (() => {
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
+  }
+
+  // Returns a copy of a listening item with options/optionsP/correct permuted for display, so
+  // the correct answer doesn't always land on the same letter. Cached in listenOptionOrder so it
+  // stays fixed across the unanswered -> answered re-render of the same item; advance() clears
+  // the cache when moving to the next item.
+  function shuffledListenItem(item) {
+    if (!listenOptionOrder) {
+      listenOptionOrder = shuffle(item.options.map((_, i) => i));
+    }
+    const order = listenOptionOrder;
+    return Object.assign({}, item, {
+      options: order.map((i) => item.options[i]),
+      optionsP: order.map((i) => item.optionsP[i]),
+      correct: order.indexOf(item.correct),
+    });
   }
 
   function newBuildBank(item) {
@@ -84,6 +101,7 @@ const Review = (() => {
     queue.shift();
     flipped = false;
     selectedOpt = null;
+    listenOptionOrder = null;
     prepBuildState();
     renderCurrent();
   }
@@ -124,11 +142,12 @@ const Review = (() => {
 
   function renderListenItem(cardArea, current) {
     const { item, itemId } = current;
+    const displayItem = shuffledListenItem(item);
     if (selectedOpt === null) {
-      Lessons.renderListenQuestion(cardArea, item, null, {
+      Lessons.renderListenQuestion(cardArea, displayItem, null, {
         autoplay: Storage.getAutoplay('lessons'),
         onSelect: (i) => {
-          const correct = i === item.correct;
+          const correct = i === displayItem.correct;
           Storage.recordSrsResult(itemId, correct);
           selectedOpt = i;
           sessionReviewed++; if (correct) sessionKnown++;
@@ -138,7 +157,7 @@ const Review = (() => {
       });
     } else {
       const controlsHtml = `<div class="controls"><button class="nav-btn" id="nextReviewBtn">next &rarr;</button></div>`;
-      Lessons.renderListenQuestion(cardArea, item, selectedOpt, {
+      Lessons.renderListenQuestion(cardArea, displayItem, selectedOpt, {
         controlsHtml,
         wireControls: () => {
           root.querySelector('#nextReviewBtn').onclick = () => advance();
@@ -214,6 +233,7 @@ const Review = (() => {
     queue = buildQueue();
     flipped = false;
     selectedOpt = null;
+    listenOptionOrder = null;
     sessionReviewed = 0;
     sessionKnown = 0;
     prepBuildState();
