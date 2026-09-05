@@ -239,7 +239,7 @@ const DateWeekdayGame = (() => {
         <div class="card" style="cursor:default;">
           <div class="sb-prompt-hanzi">${hanziPhrase(q)}</div>
           <div class="sb-prompt-pinyin">${pinyinPhrase(q)}</div>
-          <div class="audio-row"><button class="speak-btn" id="dwSpeakBtn" aria-label="Play date">&#128266;</button></div>
+          <div class="audio-row"><button class="speak-btn" id="dwSpeakBtn" aria-label="Play date">&#128266;</button><span id="dwMicArea"></span></div>
           <input type="text" class="type-input" id="dwInput" placeholder='e.g. &quot;September 1, Monday&quot;' autocomplete="off">
           <div class="error-text" id="dwError"></div>
           <button class="submit-btn" id="dwSubmitBtn" disabled>Check</button>
@@ -249,6 +249,7 @@ const DateWeekdayGame = (() => {
       const speakBtn = root.querySelector('#dwSpeakBtn');
       speakBtn.onclick = () => Speech.speak(speak, speakBtn);
       if (Storage.getAutoplay('lessons')) Speech.speak(speak, speakBtn);
+      Recorder.mountMicButton(root.querySelector('#dwMicArea'), speak);
       const input = root.querySelector('#dwInput');
       const submitBtn = root.querySelector('#dwSubmitBtn');
       const doSubmit = () => {
@@ -278,7 +279,7 @@ const DateWeekdayGame = (() => {
           <div class="feedback-badge ${correct ? 'correct' : 'wrong'}">${correct ? 'Correct!' : 'Not quite'}</div>
           <div class="sb-prompt-hanzi">${hanziPhrase(q)}</div>
           <div class="sb-prompt-pinyin">${pinyinPhrase(q)}</div>
-          <div class="audio-row"><button class="speak-btn" id="dwSpeakBtn2" aria-label="Play date">&#128266;</button></div>
+          <div class="audio-row"><button class="speak-btn" id="dwSpeakBtn2" aria-label="Play date">&#128266;</button><span id="dwMicArea2"></span></div>
           <div class="your-answer">You typed: "${typedAnswer}"</div>
           <div class="back-english">${englishAnswer(q)}</div>
         </div>
@@ -286,6 +287,7 @@ const DateWeekdayGame = (() => {
       `;
       const speakBtn2 = root.querySelector('#dwSpeakBtn2');
       speakBtn2.onclick = () => Speech.speak(speak, speakBtn2);
+      Recorder.mountMicButton(root.querySelector('#dwMicArea2'), speak);
       root.querySelector('#dwNextBtn').onclick = () => advanceRound();
     }
 

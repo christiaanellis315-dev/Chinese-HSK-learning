@@ -308,6 +308,7 @@ const MahjongGame = (() => {
   }
 
   function advanceRound() {
+    Recorder.cleanup();
     if (roundIndex < ROUND_LENGTH - 1) {
       roundIndex++;
       answered = false;
@@ -339,12 +340,13 @@ const MahjongGame = (() => {
     const isLast = roundIndex === ROUND_LENGTH - 1;
 
     if (!answered) {
+      Recorder.cleanup();
       cardArea.innerHTML = `
         <div class="card" style="cursor:default;">
           <div class="mj-tile-art">${tileArtSVG(tile)}</div>
           <div class="hanzi">${tile.han}</div>
           <div class="pinyin">${tile.pin}</div>
-          <div class="audio-row"><button class="speak-btn" id="mjSpeakBtn" aria-label="Play tile name">&#128266;</button></div>
+          <div class="audio-row"><button class="speak-btn" id="mjSpeakBtn" aria-label="Play tile name">&#128266;</button><span id="mjMicArea"></span></div>
           <input type="text" class="type-input" id="mjInput" placeholder='e.g. "2 Bamboo"' autocomplete="off">
           <div class="error-text" id="mjError"></div>
           <button class="submit-btn" id="mjSubmitBtn" disabled>Check</button>
@@ -354,6 +356,7 @@ const MahjongGame = (() => {
       const speakBtn = root.querySelector('#mjSpeakBtn');
       speakBtn.onclick = () => Speech.speak(tile.han, speakBtn);
       if (Storage.getAutoplay('lessons')) Speech.speak(tile.han, speakBtn);
+      Recorder.mountMicButton(root.querySelector('#mjMicArea'), tile.han);
       const input = root.querySelector('#mjInput');
       const submitBtn = root.querySelector('#mjSubmitBtn');
       const doSubmit = () => {
@@ -374,13 +377,14 @@ const MahjongGame = (() => {
       input.focus();
       root.querySelector('#mjSkipBtn').onclick = () => advanceRound();
     } else {
+      Recorder.cleanup();
       cardArea.innerHTML = `
         <div class="card" style="cursor:default;">
           <div class="feedback-badge ${correct ? 'correct' : 'wrong'}">${correct ? 'Correct!' : 'Not quite'}</div>
           <div class="mj-tile-art">${tileArtSVG(tile)}</div>
           <div class="hanzi">${tile.han}</div>
           <div class="pinyin">${tile.pin}</div>
-          <div class="audio-row"><button class="speak-btn" id="mjSpeakBtn2" aria-label="Play tile name">&#128266;</button></div>
+          <div class="audio-row"><button class="speak-btn" id="mjSpeakBtn2" aria-label="Play tile name">&#128266;</button><span id="mjMicArea2"></span></div>
           <div class="your-answer">You typed: "${typedAnswer}"</div>
           <div class="back-english">${displayName(tile)}</div>
         </div>
@@ -388,6 +392,7 @@ const MahjongGame = (() => {
       `;
       const speakBtn2 = root.querySelector('#mjSpeakBtn2');
       speakBtn2.onclick = () => Speech.speak(tile.han, speakBtn2);
+      Recorder.mountMicButton(root.querySelector('#mjMicArea2'), tile.han);
       root.querySelector('#mjNextBtn').onclick = () => advanceRound();
     }
 

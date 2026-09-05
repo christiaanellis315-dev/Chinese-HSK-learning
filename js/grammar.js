@@ -10,6 +10,9 @@ const Grammar = (() => {
   let root = null;
   let currentBook = 'hsk1';
   let currentLesson = null;
+  // Keyed by book+lesson+point (not just lesson+point) — lesson numbers repeat across books, so a
+  // bare "3-1" key would leak an expanded/collapsed state from e.g. HSK2 L3 point 1 into HSK3 L3
+  // point 1 the next time that book is opened, even though the person never touched that card.
   const openCards = {};
 
   function html() {
@@ -75,7 +78,7 @@ const Grammar = (() => {
     content.innerHTML = `
       <div class="mastery-list-title" style="margin-top:6px;">Lesson ${currentLesson} · ${titleParts.hanzi} ${titleParts.pinyin}</div>
       ${points.map((pt) => {
-        const uid = currentLesson + '-' + pt.num;
+        const uid = currentBook + '-' + currentLesson + '-' + pt.num;
         const isOpen = !!openCards[uid];
         return `
           <div class="grammar-card ${isOpen ? 'open' : ''}" data-uid="${uid}">

@@ -262,6 +262,25 @@
       assert(c.querySelectorAll('.grammar-card').length > 0, 'expected at least one grammar point card rendered');
     });
 
+    test('Grammar — expanding a card in one book does not leave the same lesson+point pre-expanded in another book', () => {
+      const c = freshContainer();
+      Storage.setCurrentBook('hsk2'); // Grammar.mount takes no book param — reads Storage directly
+      Grammar.mount(c);
+      const hsk2FirstCard = c.querySelector('.grammar-card');
+      hsk2FirstCard.querySelector('.grammar-card-header').click();
+      assert(hsk2FirstCard.classList.contains('open'), 'expected the clicked HSK2 card to open');
+
+      // HSK3's lesson 1 has the same lesson+point-number combination (L1, point 1) as whatever
+      // HSK2 just opened — before the book-scoped uid fix, that shared key would have carried
+      // HSK2's "open" state over and shown this card pre-expanded, even though it was never
+      // touched in HSK3.
+      Storage.setCurrentBook('hsk3');
+      Grammar.mount(c);
+      const hsk3FirstCard = c.querySelector('.grammar-card');
+      assert(!hsk3FirstCard.classList.contains('open'), 'HSK3\'s card should start closed, not inherit HSK2\'s open state');
+      Storage.setCurrentBook('hsk1');
+    });
+
     // ---- Book selector: an unregistered book still needs every book-aware screen to show a
     // plain empty state instead of crashing (e.g. today's code would otherwise do
     // Books.getLessonOrder('__no_such_book__')[0] and get undefined). Now that HSK1/HSK2/HSK3 all
@@ -365,7 +384,11 @@
     test('NumbersDrill mounts without throwing', () => {
       const c = freshContainer();
       NumbersDrill.mount(c, noopNavigate);
-      assert(c.querySelector('.lamp'), 'missing .lamp marker');
+      // Unlike a full screen, NumbersDrill deliberately renders no .lamp/h1/sub of its own — that
+      // chrome is Games' job (see games.js), and NumbersDrill only ever mounts inside Games' own
+      // game-area container in the real app. #autoplaySwitch is the thing NumbersDrill itself
+      // always renders standalone, so that's what a smoke test on it should check for.
+      assert(c.querySelector('#autoplaySwitch'), 'missing autoplay switch');
     });
 
     test('Grammar mounts without throwing', () => {
@@ -412,6 +435,34 @@
       input.value = '';
       input.dispatchEvent(new Event('input'));
       assert(submitBtn.disabled, 'Check should re-disable if the input is cleared back to empty');
+      Storage.clearSession('mahjong');
+    });
+
+    // Recorder.mountMicButton() renders nothing (silently) when the browser doesn't expose the
+    // mic APIs at all (Recorder.isSupported() === false) — real in supported browsers, but this
+    // keeps the assertion honest instead of assuming a mic-capable test environment.
+    test('Date & Weekday mounts, and offers pronunciation practice alongside the date it shows', () => {
+      const c = freshContainer();
+      Storage.clearSession('dateWeekday');
+      DateWeekdayGame.mount(c, noopNavigate);
+      const entryBtn = c.querySelector('#dwGoBtn') || c.querySelector('#dwResumeBtn');
+      assert(entryBtn, 'expected a Go or Resume button for Date & Weekday');
+      entryBtn.click();
+      assert(c.querySelector('.sb-prompt-hanzi').textContent.trim().length > 0, 'expected a real date phrase on the card');
+      if (Recorder.isSupported()) {
+        assert(c.querySelector('#dwMicArea .mic-btn'), 'expected a mic button alongside the speaker button');
+      }
+      Storage.clearSession('dateWeekday');
+    });
+
+    test('Mahjong Tiles offers pronunciation practice alongside the tile it shows', () => {
+      const c = freshContainer();
+      Storage.clearSession('mahjong');
+      MahjongGame.mount(c, noopNavigate);
+      (c.querySelector('#mjGoBtn') || c.querySelector('#mjResumeBtn')).click();
+      if (Recorder.isSupported()) {
+        assert(c.querySelector('#mjMicArea .mic-btn'), 'expected a mic button alongside the speaker button');
+      }
       Storage.clearSession('mahjong');
     });
 
