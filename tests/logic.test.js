@@ -193,4 +193,48 @@
       assertEqual(NumbersDrill.numberToPinyin(999), 'jiǔbǎijiǔshíjiǔ');
     });
   });
+
+  // ---- MahjongGame: lenient answer checking per data/mahjong_vocabulary.md's rules ----
+  group('MahjongGame — checkMahjongAnswer', () => {
+    const twoBamboo = { han: '二条', pin: 'èr tiáo', answers: ['2 bamboo', 'two bamboo'] };
+    const oneDot = { han: '一筒', pin: 'yī tǒng', answers: ['1 dot', 'one dot'] };
+    const eastWind = { han: '东风', pin: 'dōngfēng', answers: ['east wind', 'east'] };
+    const redDragon = { han: '红中', pin: 'hóngzhōng', answers: ['red dragon', 'red'] };
+
+    test('digit form matches', () => {
+      assert(MahjongGame.checkMahjongAnswer('2 Bamboo', twoBamboo));
+    });
+    test('number-word form matches', () => {
+      assert(MahjongGame.checkMahjongAnswer('two bamboo', twoBamboo));
+    });
+    test('spacing and capitalization do not matter', () => {
+      assert(MahjongGame.checkMahjongAnswer('2bamboo', twoBamboo));
+      assert(MahjongGame.checkMahjongAnswer('  2   BAMBOO  ', twoBamboo));
+    });
+    test('"1 Dot" is singular, matching the vocabulary notes', () => {
+      assert(MahjongGame.checkMahjongAnswer('1 dot', oneDot));
+      assert(!MahjongGame.checkMahjongAnswer('1 dots', oneDot));
+    });
+    test('a wrong number for the right suit is wrong', () => {
+      assert(!MahjongGame.checkMahjongAnswer('3 bamboo', twoBamboo));
+    });
+    test('a wrong suit for the right number is wrong', () => {
+      assert(!MahjongGame.checkMahjongAnswer('2 dot', twoBamboo));
+    });
+    test('winds: full name and shorthand both match', () => {
+      assert(MahjongGame.checkMahjongAnswer('East Wind', eastWind));
+      assert(MahjongGame.checkMahjongAnswer('east', eastWind));
+    });
+    test('dragons: full name and shorthand both match', () => {
+      assert(MahjongGame.checkMahjongAnswer('Red Dragon', redDragon));
+      assert(MahjongGame.checkMahjongAnswer('red', redDragon));
+    });
+    test('empty input is always wrong', () => {
+      assert(!MahjongGame.checkMahjongAnswer('', twoBamboo));
+      assert(!MahjongGame.checkMahjongAnswer('   ', eastWind));
+    });
+    test('unrelated input is wrong', () => {
+      assert(!MahjongGame.checkMahjongAnswer('hello', redDragon));
+    });
+  });
 })();

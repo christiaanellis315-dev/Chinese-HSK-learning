@@ -227,7 +227,7 @@ const NumbersDrill = (() => {
           </div>
           <input type="text" class="type-input" id="numInput" placeholder="e.g. 233" autocomplete="off" inputmode="numeric">
           <div class="error-text" id="numError"></div>
-          <button class="submit-btn" id="numSubmitBtn">Check</button>
+          <button class="submit-btn" id="numSubmitBtn" disabled>Check</button>
         </div>
         <div class="controls"><button class="nav-btn" id="numSkipBtn">skip &rarr;</button></div>
       `;
@@ -236,17 +236,25 @@ const NumbersDrill = (() => {
       if (Storage.getAutoplay('lessons')) Speech.speak(numberToHanzi(num), speakBtn);
       Recorder.mountMicButton(root.querySelector('#micAreaNum'), numberToHanzi(num));
       const input = root.querySelector('#numInput');
+      const submitBtn = root.querySelector('#numSubmitBtn');
       const doSubmit = () => {
         const val = input.value.trim();
+        // Belt-and-suspenders: submitBtn is disabled whenever val is empty, but even if that's
+        // somehow bypassed (e.g. a stray Enter keypress), parseInt('') is NaN, which can never
+        // === num, so an empty submission still can't be scored correct.
         if (!val) { root.querySelector('#numError').textContent = 'Type a number first.'; input.classList.add('wrong-input'); return; }
         correct = (parseInt(val, 10) === num);
         if (correct) correctCount++;
         Storage.recordActivity();
         answered = true; render();
       };
-      root.querySelector('#numSubmitBtn').onclick = doSubmit;
-      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSubmit(); });
-      input.addEventListener('input', () => { input.classList.remove('wrong-input'); root.querySelector('#numError').textContent = ''; });
+      submitBtn.onclick = doSubmit;
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !submitBtn.disabled) doSubmit(); });
+      input.addEventListener('input', () => {
+        input.classList.remove('wrong-input');
+        root.querySelector('#numError').textContent = '';
+        submitBtn.disabled = !input.value.trim();
+      });
       input.focus();
       root.querySelector('#numSkipBtn').onclick = () => advanceRound();
     } else {

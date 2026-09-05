@@ -1,7 +1,7 @@
 // Cache-first app shell service worker. The whole app is static (no external network calls —
 // TTS runs on-device), so a simple versioned precache is all that's needed for full offline use.
 // Bump CACHE_NAME whenever any precached file changes, so installed clients pick up the update.
-const CACHE_NAME = 'chinese-study-v26';
+const CACHE_NAME = 'chinese-study-v29';
 const PRECACHE_URLS = [
   './',
   './index.html',
@@ -108,6 +108,7 @@ const PRECACHE_URLS = [
   './data/hsk3/grammar/lesson-20.js',
   './data/pinyin-data.js',
   './js/storage.js',
+  './js/theme.js',
   './js/speech.js',
   './js/recorder.js',
   './js/lessons.js',
@@ -116,8 +117,10 @@ const PRECACHE_URLS = [
   './js/review.js',
   './js/numbers.js',
   './js/date-weekday.js',
+  './js/mahjong.js',
   './js/games.js',
   './js/grammar.js',
+  './js/settings.js',
   './js/app.js',
   './icons/icon-192.png',
   './icons/icon-512.png',

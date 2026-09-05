@@ -13,26 +13,31 @@ const Dashboard = (() => {
     return { known, total: words.length };
   }
 
-  // How many words + listening items + Sentence Builder exercises, in the current book, have
-  // an SRS due date that's already passed — this is exactly what the Review screen's queue will
-  // contain, shown here so the schedule feels visible rather than a black box deciding behind
-  // the scenes. Naturally 0 for a book with no lessons yet (HSK2/HSK3 today).
+  // How many words + listening items + Sentence Builder exercises, across EVERY book (not just
+  // the one currently selected for study), have an SRS due date that's already passed — this must
+  // match exactly what the Review screen's queue will contain (Review itself pools all books too;
+  // see review.js), so the teaser card here never says "nothing due" while Review actually has
+  // items waiting from a book other than the one currently selected, and never blocks the tap into
+  // Review because only the current book's count was checked. Naturally 0 for a book with no
+  // lessons yet (HSK2/HSK3 today) — Books.getLessonOrder just returns [] for those.
   function countDueItems() {
     let n = 0;
     const now = Date.now();
-    Books.getLessonOrder(currentBook).forEach(lessonId => {
-      const lesson = Books.getLesson(currentBook, lessonId);
-      lesson.words.forEach(w => {
-        const rec = Storage.getSrsRecord(Storage.wordItemId(currentBook, lessonId, w.h));
-        if (rec && rec.due <= now) n++;
-      });
-      (lesson.listening || []).forEach((it, idx) => {
-        const rec = Storage.getSrsRecord(Storage.listenItemId(currentBook, lessonId, idx));
-        if (rec && rec.due <= now) n++;
-      });
-      (lesson.sentenceBuilder || []).forEach((it, idx) => {
-        const rec = Storage.getSrsRecord(Storage.buildItemId(currentBook, lessonId, idx));
-        if (rec && rec.due <= now) n++;
+    Books.listBooks().forEach(({ id: bookId }) => {
+      Books.getLessonOrder(bookId).forEach(lessonId => {
+        const lesson = Books.getLesson(bookId, lessonId);
+        lesson.words.forEach(w => {
+          const rec = Storage.getSrsRecord(Storage.wordItemId(bookId, lessonId, w.h));
+          if (rec && rec.due <= now) n++;
+        });
+        (lesson.listening || []).forEach((it, idx) => {
+          const rec = Storage.getSrsRecord(Storage.listenItemId(bookId, lessonId, idx));
+          if (rec && rec.due <= now) n++;
+        });
+        (lesson.sentenceBuilder || []).forEach((it, idx) => {
+          const rec = Storage.getSrsRecord(Storage.buildItemId(bookId, lessonId, idx));
+          if (rec && rec.due <= now) n++;
+        });
       });
     });
     return n;

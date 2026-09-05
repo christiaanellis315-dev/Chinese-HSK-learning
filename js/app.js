@@ -1,4 +1,4 @@
-// App shell: router between the six screens, plus the persistent bottom nav. The book selector
+// App shell: router between the seven screens, plus the persistent bottom nav. The book selector
 // (HSK1/HSK2/HSK3) lives inside Dashboard itself, not here — see dashboard.js.
 (function () {
   const NAV_ITEMS = [
@@ -8,7 +8,10 @@
     { id: 'games', icon: '🎮', label: 'Games' },
     { id: 'grammar', icon: '📝', label: 'Grammar' },
     { id: 'pinyin', icon: '🔤', label: 'Pinyin' },
+    { id: 'settings', icon: '⚙️', label: 'Settings' },
   ];
+
+  Theme.apply(); // before first render, so the very first paint already matches the saved choice
 
   let currentScreen = 'dashboard';
   const screenEl = document.getElementById('screen');
@@ -37,6 +40,7 @@
     else if (screen === 'games') Games.mount(screenEl, navigate);
     else if (screen === 'grammar') Grammar.mount(screenEl);
     else if (screen === 'pinyin') Pinyin.mount(screenEl);
+    else if (screen === 'settings') Settings.mount(screenEl);
   }
 
   if ('serviceWorker' in navigator) {

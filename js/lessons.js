@@ -427,7 +427,7 @@ const Lessons = (() => {
           <button class="speak-btn" id="speakBtnFront" aria-label="Play pronunciation">&#128266;</button>
           <input type="text" class="type-input" id="typeInput" placeholder="type the English meaning" autocomplete="off">
           <div class="error-text" id="errorText"></div>
-          <button class="submit-btn" id="submitBtn">Check</button>
+          <button class="submit-btn" id="submitBtn" disabled>Check</button>
         </div>
         <div class="controls">
           <button class="nav-btn" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
@@ -438,16 +438,24 @@ const Lessons = (() => {
       speakBtn.onclick = (e) => { e.stopPropagation(); Speech.speak(w.h, speakBtn); };
       if (Storage.getAutoplay('lessons')) Speech.speak(w.h, speakBtn);
       const input = root.querySelector('#typeInput');
+      const submitBtn = root.querySelector('#submitBtn');
       const doSubmit = () => {
         const val = input.value;
+        // Belt-and-suspenders: submitBtn is disabled whenever the trimmed value is empty, but
+        // even if that's somehow bypassed, checkAnswer() also returns false for an empty/
+        // whitespace-only input on its own — an empty answer can never be recorded as correct.
         if (!val.trim()) { root.querySelector('#errorText').textContent = 'Type an answer first.'; input.classList.add('wrong-input'); return; }
         lastCorrect = checkAnswer(val, w);
         Storage.recordSrsResult(Storage.wordItemId(currentBook, currentLesson, w.h), lastCorrect);
         typedAnswer = val; typed = true; render();
       };
-      root.querySelector('#submitBtn').onclick = doSubmit;
-      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSubmit(); });
-      input.addEventListener('input', () => { input.classList.remove('wrong-input'); root.querySelector('#errorText').textContent = ''; });
+      submitBtn.onclick = doSubmit;
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !submitBtn.disabled) doSubmit(); });
+      input.addEventListener('input', () => {
+        input.classList.remove('wrong-input');
+        root.querySelector('#errorText').textContent = '';
+        submitBtn.disabled = !input.value.trim();
+      });
       input.focus();
       const prevBtn = root.querySelector('#prevBtn'), nextBtn = root.querySelector('#nextBtn');
       if (prevBtn) prevBtn.onclick = () => { if (idx > 0) { idx--; typed = false; render(); } };
@@ -555,7 +563,7 @@ const Lessons = (() => {
           <div class="built-row" id="builtRow">${builtHtml}</div>
           <div class="tile-bank" id="tileBank">${bankHtml}</div>
           <div class="error-text" id="sbError"></div>
-          <button class="submit-btn" id="sbSubmitBtn">Check</button>
+          <button class="submit-btn" id="sbSubmitBtn" ${builtIds.length === 0 ? 'disabled' : ''}>Check</button>
         </div>
         ${controlsHtml}
       `;
@@ -578,12 +586,21 @@ const Lessons = (() => {
         opts.onSubmit && opts.onSubmit();
       };
     } else {
+      // Reconstruct what was actually tapped, in order — builtIds/bankTiles are still the same
+      // ones from the unanswered view (never cleared on submit), so this is exactly what the
+      // person built, decoys and all. Only shown when wrong: when correct it's identical to the
+      // answer already shown below, so repeating it would just be noise.
+      const builtTiles = builtIds.map(id => bankTiles.find(t => t.id === id));
+      const yourAnswerHtml = !state.correct
+        ? `<div class="your-answer">You built: "${builtTiles.map(t => t.h).join('')}" <span style="opacity:0.8;">(${builtTiles.map(t => t.p).join(' ')})</span></div>`
+        : '';
       cardArea.innerHTML = `
         <div class="card" style="cursor:default; min-height:auto; padding:36px 24px;">
           <div class="feedback-badge ${state.correct ? 'correct' : 'wrong'}">${state.correct ? 'Correct!' : 'Not quite'}</div>
           <div class="sb-prompt-hanzi">${item.prompt}</div>
           <div class="sb-prompt-pinyin">${item.promptP}</div>
           <div class="sb-prompt-english">${item.promptE}</div>
+          ${yourAnswerHtml}
           <div class="example" style="margin-top:14px;">
             <div class="ex-row"><div class="ex-h">${item.answer}</div><button class="speak-btn" id="sbAnswerSpeakBtn" aria-label="Play answer sentence">&#128266;</button></div>
             <div class="ex-p">${item.answerP}</div>

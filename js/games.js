@@ -1,12 +1,12 @@
-// Games screen: shared page chrome (lamp/h1/sub) for the two recurring, lesson-independent
-// drills — Numbers 1-999 and Date & Weekday — picked with the same mode-toggle pattern the
-// Lessons screen uses for Flip/Type/Listen/Build. Each game owns everything below the toggle
-// (autoplay row, speed row, its own round/session logic) and mounts into #gameArea exactly as
-// it would mount into a full screen — this module never reaches into a game's internals.
+// Games screen: shared page chrome (lamp/h1/sub) for the three recurring, lesson-independent
+// drills — Numbers 1-999, Date & Weekday, and Mahjong Tiles — picked with the same mode-toggle
+// pattern the Lessons screen uses for Flip/Type/Listen/Build. Each game owns everything below the
+// toggle (autoplay row, speed row, its own round/session logic) and mounts into #gameArea exactly
+// as it would mount into a full screen — this module never reaches into a game's internals.
 const Games = (() => {
   let root = null;
   let goTo = null;
-  let game = 'numbers'; // 'numbers' | 'dateWeekday'
+  let game = 'numbers'; // 'numbers' | 'dateWeekday' | 'mahjong'
 
   function html() {
     return `
@@ -23,9 +23,11 @@ const Games = (() => {
     el.innerHTML = `
       <div class="mode-btn ${game === 'numbers' ? 'active' : ''}" id="numbersGameBtn">Numbers 1-999</div>
       <div class="mode-btn ${game === 'dateWeekday' ? 'active' : ''}" id="dateWeekdayGameBtn">Date &amp; Weekday</div>
+      <div class="mode-btn ${game === 'mahjong' ? 'active' : ''}" id="mahjongGameBtn">Mahjong Tiles</div>
     `;
     root.querySelector('#numbersGameBtn').onclick = () => switchGame('numbers');
     root.querySelector('#dateWeekdayGameBtn').onclick = () => switchGame('dateWeekday');
+    root.querySelector('#mahjongGameBtn').onclick = () => switchGame('mahjong');
   }
 
   function switchGame(g) {
@@ -39,7 +41,8 @@ const Games = (() => {
     const area = root.querySelector('#gameArea');
     area.innerHTML = '';
     if (game === 'numbers') NumbersDrill.mount(area, goTo);
-    else DateWeekdayGame.mount(area, goTo);
+    else if (game === 'dateWeekday') DateWeekdayGame.mount(area, goTo);
+    else MahjongGame.mount(area, goTo);
   }
 
   function mount(container, navigate) {

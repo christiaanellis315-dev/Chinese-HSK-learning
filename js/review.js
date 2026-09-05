@@ -1,11 +1,11 @@
-// Review screen: the daily spaced-repetition entry point. Pulls every word AND listening item,
-// across all 15 lessons, whose shared SRS schedule says it's due right now — not "pick a lesson
-// and start from card 1," but "here's what you should practice today." Getting an item right
-// pushes its next appearance further out; getting it wrong drops it back to a 1-day box, so it
-// resurfaces here again tomorrow.
+// Review screen: the daily spaced-repetition entry point. Pulls every word, listening item, and
+// Sentence Builder exercise, across every lesson in EVERY book (HSK1/HSK2/HSK3 at once, not just
+// whichever book happens to be selected on Dashboard), whose shared SRS schedule says it's due
+// right now — not "pick a lesson and start from card 1," but "here's what you should practice
+// today." Getting an item right pushes its next appearance further out; getting it wrong drops
+// it back to a 1-day box, so it resurfaces here again tomorrow.
 const Review = (() => {
   let root = null;
-  let currentBook = 'hsk1';
   let queue = [];
   let flipped = false; // word items: card face
   let selectedOpt = null; // listen items: chosen option, or null if unanswered
@@ -56,28 +56,32 @@ const Review = (() => {
     buildBank = (current && current.type === 'build') ? newBuildBank(current.item) : [];
   }
 
-  // Empty for a book with no lessons yet (HSK2/HSK3 today) — Books.getLessonOrder just returns
-  // [], so this naturally yields an empty queue and the existing "Nothing due right now" state
-  // handles it with no extra code.
+  // Pools due items across every registered book, not just whichever one is currently selected —
+  // that selection is Dashboard/Lessons/Grammar's own concept of "what am I studying right now",
+  // and has nothing to do with what's due for review today. A book with no lessons yet just
+  // contributes nothing (Books.getLessonOrder returns []), so this naturally degrades to "empty"
+  // for HSK2/HSK3 lessons that don't exist without any extra code.
   function buildQueue() {
     const items = [];
     const now = Date.now();
-    Books.getLessonOrder(currentBook).forEach((lessonId) => {
-      const lesson = Books.getLesson(currentBook, lessonId);
-      lesson.words.forEach((w) => {
-        const itemId = Storage.wordItemId(currentBook, lessonId, w.h);
-        const rec = Storage.getSrsRecord(itemId);
-        if (rec && rec.due <= now) items.push({ type: 'word', lessonId, word: w, itemId });
-      });
-      (lesson.listening || []).forEach((it, idx) => {
-        const itemId = Storage.listenItemId(currentBook, lessonId, idx);
-        const rec = Storage.getSrsRecord(itemId);
-        if (rec && rec.due <= now) items.push({ type: 'listen', lessonId, item: it, itemId });
-      });
-      (lesson.sentenceBuilder || []).forEach((it, idx) => {
-        const itemId = Storage.buildItemId(currentBook, lessonId, idx);
-        const rec = Storage.getSrsRecord(itemId);
-        if (rec && rec.due <= now) items.push({ type: 'build', lessonId, item: it, itemId });
+    Books.listBooks().forEach(({ id: bookId }) => {
+      Books.getLessonOrder(bookId).forEach((lessonId) => {
+        const lesson = Books.getLesson(bookId, lessonId);
+        lesson.words.forEach((w) => {
+          const itemId = Storage.wordItemId(bookId, lessonId, w.h);
+          const rec = Storage.getSrsRecord(itemId);
+          if (rec && rec.due <= now) items.push({ type: 'word', book: bookId, lessonId, word: w, itemId });
+        });
+        (lesson.listening || []).forEach((it, idx) => {
+          const itemId = Storage.listenItemId(bookId, lessonId, idx);
+          const rec = Storage.getSrsRecord(itemId);
+          if (rec && rec.due <= now) items.push({ type: 'listen', book: bookId, lessonId, item: it, itemId });
+        });
+        (lesson.sentenceBuilder || []).forEach((it, idx) => {
+          const itemId = Storage.buildItemId(bookId, lessonId, idx);
+          const rec = Storage.getSrsRecord(itemId);
+          if (rec && rec.due <= now) items.push({ type: 'build', book: bookId, lessonId, item: it, itemId });
+        });
       });
     });
     return shuffle(items);
@@ -87,7 +91,7 @@ const Review = (() => {
     return `
       <div class="lamp"></div>
       <h1>Review</h1>
-      <div class="sub">Everything due for review right now, pulled from every ${Books.bookLabel(currentBook)} lesson</div>
+      <div class="sub">Everything due for review right now, pulled from every lesson across ${Books.listBooks().map((b) => b.label).join(', ')}</div>
       <div class="progress-row">
         <span id="posLabel"></span>
         <span id="lessonLabel"></span>
@@ -218,7 +222,7 @@ const Review = (() => {
     const current = queue[0];
     const typeLabel = { listen: 'Listening · Lesson ', build: 'Sentence Builder · Lesson ' };
     root.querySelector('#posLabel').textContent = (sessionReviewed + 1) + ' of ' + totalStart;
-    root.querySelector('#lessonLabel').textContent = (typeLabel[current.type] || 'Vocabulary · Lesson ') + current.lessonId;
+    root.querySelector('#lessonLabel').textContent = Books.bookLabel(current.book) + ' · ' + (typeLabel[current.type] || 'Vocabulary · Lesson ') + current.lessonId;
     root.querySelector('#progressFill').style.width = ((sessionReviewed / totalStart) * 100) + '%';
 
     const cardArea = root.querySelector('#cardArea');
@@ -229,7 +233,6 @@ const Review = (() => {
 
   function mount(container) {
     root = container;
-    currentBook = Storage.getCurrentBook();
     queue = buildQueue();
     flipped = false;
     selectedOpt = null;

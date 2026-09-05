@@ -197,6 +197,10 @@ const Storage = (() => {
   function getAutoplay(section) { return readRaw('hsk:autoplay:' + section, section === 'lessons'); }
   function setAutoplay(section, val) { writeRaw('hsk:autoplay:' + section, val); }
 
+  // ---- appearance (dark amber "night shift" is the default; light is an explicit opt-in) ----
+  function getTheme() { return readRaw('hsk:theme', 'dark'); }
+  function setTheme(theme) { writeRaw('hsk:theme', theme); }
+
   // ---- shared voice preference (used by lessons, review, numbers, and pinyin reference) ----
   // Default rate is "Slow" (0.6) — beginners consistently found Listening mode's old fixed
   // 0.75 rate too fast; better to start slow and let the person speed up than the reverse.
@@ -240,6 +244,7 @@ const Storage = (() => {
     wordItemId, listenItemId, buildItemId, getSrsRecord, recordSrsResult, isDue, itemStatus, clearLessonSrs,
     getDailyGoal, getStreak, recordActivity,
     getAutoplay, setAutoplay,
+    getTheme, setTheme,
     getVoicePref, setVoicePref,
     getLastPosition, setLastPosition,
     getCurrentBook, setCurrentBook,

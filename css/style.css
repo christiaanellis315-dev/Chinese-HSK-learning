@@ -1,10 +1,32 @@
-/* HSK1 Night Shift — shared amber night-shift theme.
+/* HSK1 Night Shift — shared amber night-shift theme (the default/night-shift option, deliberately
+   chosen for low eye strain — never replaced, only offered alongside a light alternative below).
    Extracted/unified from the original hsk1_lessons_*.html and hsk1_pinyin_reference.html files,
-   plus new styles for the bottom nav, dashboard and review screens. */
+   plus new styles for the bottom nav, dashboard and review screens.
 
+   --on-accent is the text color used ON TOP of solid amber/red fills (buttons, active tabs, the
+   listening "play" circle, ...) — in this dark theme that's just the page background color again
+   (dark text reads fine on the bright amber/red fills), so it's defined here as an alias rather
+   than a second hardcoded value that could drift out of sync with --bg. The light theme below
+   gives --on-accent its own (light) value instead, since its amber/red fills are deliberately
+   darkened and need light text on top instead. */
 :root {
   --bg: #14120f; --panel: #1d1a15; --card: #23201a; --amber: #e8a545; --amber-dim: #a97a35;
   --text: #ede6d8; --text-dim: #9c9384; --green: #7fb069; --red: #c96a5a; --border: #37322a;
+  --on-accent: var(--bg);
+  --body-glow: #241f16;
+}
+/* Light mode — a toggle-able alternative (Settings > Appearance), not a system-preference-based
+   default: this app always opens in the dark amber theme above unless the person has explicitly
+   switched, and that choice persists (see Storage.getTheme/setTheme in js/storage.js). Every
+   color below was re-picked for contrast against a light background, not just inverted — the
+   dark theme's bright amber/green/red would all fail contrast as text or button fills on white,
+   so this uses deliberately deeper/darker shades of each while keeping the same warm-amber
+   identity. See Storage.setTheme's caller in js/settings.js for how [data-theme] gets applied. */
+:root[data-theme="light"] {
+  --bg: #faf6ee; --panel: #f0e9dc; --card: #ffffff; --amber: #b45309; --amber-dim: #92601f;
+  --text: #2a231c; --text-dim: #6f6558; --green: #15803d; --red: #b91c1c; --border: #e2d9c8;
+  --on-accent: #fffaf2;
+  --body-glow: #fff1d9;
 }
 * { box-sizing: border-box; }
 /* No fixed height on html/body: a specified (not min-) height on a page taller than the
@@ -12,7 +34,12 @@
    below for the fixed bottom nav — gets rendered at that fixed height instead of after the
    real (taller) content, so it stops actually reserving space. min-height avoids that trap. */
 body {
-  background: radial-gradient(ellipse at 50% -10%, #241f16 0%, var(--bg) 55%);
+  /* background-color explicitly, not just the gradient's background-image: the `background:`
+     shorthand alone resets background-color to transparent, which let the browser's own default
+     canvas (dark, independent of this app's theme) show through in any overscroll/rubber-band
+     area — most visible as a black strip while scrolling in light mode. */
+  background-color: var(--bg);
+  background-image: radial-gradient(ellipse at 50% -10%, var(--body-glow) 0%, var(--bg) 55%);
   color: var(--text); font-family: -apple-system, "Segoe UI", sans-serif; margin: 0;
   padding: 24px 16px calc(112px + env(safe-area-inset-bottom, 0px));
   min-height: 100vh;
@@ -51,11 +78,11 @@ h1 { text-align: center; font-size: 20px; font-weight: 600; letter-spacing: 0.3p
 
 .tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
 .tab { background: var(--panel); border: 1px solid var(--border); color: var(--text-dim); padding: 9px 14px; border-radius: 16px; font-size: 12px; cursor: pointer; min-height: 36px; display: flex; align-items: center; }
-.tab.active { color: var(--bg); background: var(--amber); border-color: var(--amber); }
+.tab.active { color: var(--on-accent); background: var(--amber); border-color: var(--amber); }
 
 .mode-toggle { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
 .mode-btn { background: var(--panel); border: 1px solid var(--border); color: var(--text-dim); padding: 10px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; min-height: 40px; display: flex; align-items: center; }
-.mode-btn.active { color: var(--bg); background: var(--amber); border-color: var(--amber); }
+.mode-btn.active { color: var(--on-accent); background: var(--amber); border-color: var(--amber); }
 
 .progress-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-dim); margin-bottom: 10px; padding: 0 4px; }
 .progress-bar { height: 3px; background: var(--border); border-radius: 3px; margin-bottom: 24px; overflow: hidden; }
@@ -78,14 +105,14 @@ h1 { text-align: center; font-size: 20px; font-weight: 600; letter-spacing: 0.3p
 
 .speak-btn { background: none; border: 1px solid var(--amber-dim); color: var(--amber); width: 44px; height: 44px; border-radius: 50%; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 10px auto 0; }
 .speak-btn:active { transform: scale(0.94); }
-.speak-btn.speaking { color: var(--bg); background: var(--amber); }
+.speak-btn.speaking { color: var(--on-accent); background: var(--amber); }
 
 /* ===== pronunciation practice (mic) ===== */
 .audio-row { display: flex; gap: 10px; align-items: center; justify-content: center; margin: 10px 0 0; min-height: 44px; }
 .audio-row .speak-btn { margin: 0; }
 .mic-btn { background: none; border: 1px solid var(--amber-dim); color: var(--amber); width: 44px; height: 44px; border-radius: 50%; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .mic-btn:active { transform: scale(0.94); }
-.mic-btn.recording { color: var(--bg); background: var(--red); border-color: var(--red); animation: mic-pulse 1s ease-in-out infinite; }
+.mic-btn.recording { color: var(--on-accent); background: var(--red); border-color: var(--red); animation: mic-pulse 1s ease-in-out infinite; }
 .mic-btn.mic-btn-small { width: 34px; height: 34px; font-size: 13px; }
 @keyframes mic-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 .mic-row { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
@@ -96,7 +123,8 @@ h1 { text-align: center; font-size: 20px; font-weight: 600; letter-spacing: 0.3p
 .type-input { width: 100%; max-width: 300px; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; font-size: 16px; text-align: center; margin-top: 16px; }
 .type-input:focus { outline: none; border-color: var(--amber); }
 .type-input.wrong-input { border-color: var(--red); }
-.submit-btn { background: var(--amber); color: var(--bg); border: none; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px; min-height: 44px; }
+.submit-btn { background: var(--amber); color: var(--on-accent); border: none; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px; min-height: 44px; }
+.submit-btn:disabled { opacity: 0.4; cursor: default; }
 .error-text { color: var(--red); font-size: 12px; margin-top: 8px; }
 
 .feedback-badge { font-size: 15px; font-weight: 600; padding: 6px 16px; border-radius: 20px; margin-bottom: 12px; display: inline-block; }
@@ -104,7 +132,7 @@ h1 { text-align: center; font-size: 20px; font-weight: 600; letter-spacing: 0.3p
 .feedback-badge.wrong { background: rgba(201,106,90,0.15); color: var(--red); }
 .your-answer { font-size: 13px; color: var(--text-dim); margin-bottom: 4px; }
 
-.listen-play { background: var(--amber); color: var(--bg); border: none; width: 64px; height: 64px; border-radius: 50%; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.listen-play { background: var(--amber); color: var(--on-accent); border: none; width: 64px; height: 64px; border-radius: 50%; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
 .listen-play:active { transform: scale(0.95); }
 .listen-hint { font-size: 12px; color: var(--text-dim); margin-bottom: 18px; }
 .question-text { font-size: 16px; color: var(--text); margin-bottom: 4px; }
@@ -130,10 +158,10 @@ h1 { text-align: center; font-size: 20px; font-weight: 600; letter-spacing: 0.3p
 .tile-btn, .built-tile { display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; cursor: pointer; min-height: 44px; justify-content: center; }
 .tile-btn.speaking { border-color: var(--amber); }
 .tile-btn:active, .built-tile:active { transform: scale(0.95); }
-.built-tile { background: var(--amber); border-color: var(--amber); color: var(--bg); }
+.built-tile { background: var(--amber); border-color: var(--amber); color: var(--on-accent); }
 .tile-btn .tile-h, .built-tile .tile-h { font-size: 16px; }
 .tile-btn .tile-p, .built-tile .tile-p { font-size: 11px; color: var(--amber-dim); }
-.built-tile .tile-p { color: var(--bg); opacity: 0.75; }
+.built-tile .tile-p { color: var(--on-accent); opacity: 0.75; }
 
 .controls { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
 button.nav-btn { flex: 1; background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 14px; border-radius: 10px; font-size: 14px; cursor: pointer; min-height: 48px; }
@@ -169,7 +197,7 @@ button.nav-btn:active { transform: scale(0.97); }
 .letter-header { font-size: 12px; color: var(--text-dim); margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 1px; }
 .top-row { display:flex; justify-content:center; gap:10px; margin-bottom: 16px; flex-wrap: wrap; }
 .speed-btn { background: var(--panel); border: 1px solid var(--border); color: var(--text-dim); padding: 14px 16px; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; min-height: 48px; display: flex; align-items: center; flex: 1; max-width: 130px; justify-content: center; }
-.speed-btn.active { color: var(--bg); background: var(--amber-dim); border-color: var(--amber-dim); }
+.speed-btn.active { color: var(--on-accent); background: var(--amber-dim); border-color: var(--amber-dim); }
 .voice-row { display: flex; justify-content: center; margin-bottom: 18px; }
 .voice-select {
   background: var(--panel); border: 1px solid var(--border); color: var(--text);
@@ -249,3 +277,20 @@ button.nav-btn:active { transform: scale(0.97); }
 .gc-example-raw { color: var(--text); font-size: 14px; line-height: 1.5; }
 .gc-example-pinyin { color: var(--amber-dim); font-size: 12px; margin-top: 2px; }
 .gc-example-en { color: var(--text-dim); font-size: 12px; line-height: 1.5; margin-top: 3px; }
+
+/* ===== settings ===== */
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px 18px; margin-bottom: 10px; min-height: 60px;
+}
+.settings-row .sr-label { font-size: 14px; color: var(--text); }
+.settings-row .sr-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+.theme-options { display: flex; gap: 10px; margin-bottom: 18px; }
+.theme-option {
+  flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px 12px; text-align: center; cursor: pointer; color: var(--text-dim); font-size: 13px;
+}
+.theme-option .to-swatch { width: 100%; height: 40px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border); }
+.theme-option.active { border-color: var(--amber); color: var(--text); }
+.theme-option.active .to-swatch { border-color: var(--amber); }

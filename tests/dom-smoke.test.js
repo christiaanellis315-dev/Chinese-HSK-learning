@@ -129,6 +129,37 @@
       assert(tiles.length > 0, 'expected the tile bank to render at least one tile');
     });
 
+    test('Lessons — Sentence Builder shows what was built plus the correct answer when wrong, and omits it when right', () => {
+      const c = freshContainer();
+      Storage.clearSession('lessons:hsk1:4:build');
+      Lessons.mount(c, { book: 'hsk1', lesson: '4', mode: 'build' }, noopNavigate);
+      (c.querySelector('#goBtn') || c.querySelector('#resumeBtn')).click();
+
+      // Tap two arbitrary bank tiles — not the real answer sequence — to force a wrong submission.
+      const bankBtns = Array.from(c.querySelectorAll('#tileBank .tile-btn'));
+      bankBtns.slice(0, 2).forEach((b) => b.click());
+      c.querySelector('#sbSubmitBtn').click();
+      assert(c.querySelector('.feedback-badge').className.indexOf('wrong') !== -1, 'expected this submission to be wrong');
+      const yourAnswer = c.querySelector('.your-answer');
+      assert(yourAnswer && /You built:/.test(yourAnswer.textContent), 'expected a "You built" line showing what was tapped');
+      assert(c.querySelector('.ex-h'), 'expected the correct answer to still be shown alongside it');
+      Storage.clearSession('lessons:hsk1:4:build');
+
+      // Now build the actual correct sequence — "You built" should be omitted since it would only
+      // repeat what the correct-answer line right below it already says.
+      Lessons.mount(c, { book: 'hsk1', lesson: '4', mode: 'build' }, noopNavigate);
+      (c.querySelector('#goBtn') || c.querySelector('#resumeBtn')).click();
+      const item = Books.getLesson('hsk1', '4').sentenceBuilder[0];
+      item.tiles.forEach((t) => {
+        const btn = Array.from(c.querySelectorAll('#tileBank .tile-btn')).find((b) => b.querySelector('.tile-h').textContent === t.h);
+        btn.click();
+      });
+      c.querySelector('#sbSubmitBtn').click();
+      assert(c.querySelector('.feedback-badge').className.indexOf('correct') !== -1, 'expected this submission to be correct');
+      assert(!c.querySelector('.your-answer'), '"You built" should be omitted for a correct answer');
+      Storage.clearSession('lessons:hsk1:4:build');
+    });
+
     test('Lessons — Sentence Builder shows the "not built yet" fallback for HSK1 L1', () => {
       const c = freshContainer();
       Lessons.mount(c, { book: 'hsk1', lesson: '1', mode: 'build' }, noopNavigate);
@@ -272,6 +303,65 @@
       assert(c.querySelector('.lamp'), 'missing .lamp marker');
     });
 
+    test('Review pools due items across ALL books at once, regardless of which book is currently selected', () => {
+      const savedBook = Storage.getCurrentBook();
+      function forceDue(book, hanzi) {
+        const key = 'hsk:srs:' + book;
+        const blob = JSON.parse(localStorage.getItem(key) || '{}');
+        blob['word:5:' + hanzi] = { box: 2, due: Date.now() - 1000, lastReviewed: Date.now() - 2000 };
+        localStorage.setItem(key, JSON.stringify(blob));
+      }
+      function wipe(book, hanzi) {
+        const key = 'hsk:srs:' + book;
+        const blob = JSON.parse(localStorage.getItem(key) || '{}');
+        delete blob['word:5:' + hanzi];
+        localStorage.setItem(key, JSON.stringify(blob));
+      }
+      const w1 = Books.getLesson('hsk1', '5').words[0];
+      const w2 = Books.getLesson('hsk2', '5').words[0];
+      forceDue('hsk1', w1.h);
+      forceDue('hsk2', w2.h);
+
+      // With HSK1 selected as the "current" book, Review should still show both due items, not
+      // just HSK1's — this is the multi-book pooling fix (previously it only ever showed the
+      // currently-selected book's due items, so HSK2's due word would have been invisible here).
+      Storage.setCurrentBook('hsk1');
+      const c = freshContainer();
+      Review.mount(c);
+      assertEqual(c.querySelector('#posLabel').textContent, '1 of 2', 'expected both books\' due items pooled into one queue of 2');
+
+      wipe('hsk1', w1.h); wipe('hsk2', w2.h);
+      Storage.setCurrentBook(savedBook);
+    });
+
+    test('Dashboard\'s "due for review" count matches Review\'s pooled total, not just the current book\'s', () => {
+      const savedBook = Storage.getCurrentBook();
+      function forceDue(book, hanzi) {
+        const key = 'hsk:srs:' + book;
+        const blob = JSON.parse(localStorage.getItem(key) || '{}');
+        blob['word:5:' + hanzi] = { box: 2, due: Date.now() - 1000, lastReviewed: Date.now() - 2000 };
+        localStorage.setItem(key, JSON.stringify(blob));
+      }
+      function wipe(book, hanzi) {
+        const key = 'hsk:srs:' + book;
+        const blob = JSON.parse(localStorage.getItem(key) || '{}');
+        delete blob['word:5:' + hanzi];
+        localStorage.setItem(key, JSON.stringify(blob));
+      }
+      const w2 = Books.getLesson('hsk2', '5').words[0];
+      // Due item lives only in HSK2, but HSK1 is the currently-selected book on Dashboard.
+      forceDue('hsk2', w2.h);
+      Storage.setCurrentBook('hsk1');
+
+      const c = freshContainer();
+      Dashboard.mount(c, noopNavigate);
+      assert(c.querySelector('#reviewCta').textContent.indexOf('1 due for review') !== -1, 'Dashboard should surface HSK2\'s due item even while HSK1 is selected');
+      assert(c.querySelector('#reviewCta').className.indexOf('empty') === -1, 'the review CTA should not render as empty/unclickable when another book has a due item');
+
+      wipe('hsk2', w2.h);
+      Storage.setCurrentBook(savedBook);
+    });
+
     test('NumbersDrill mounts without throwing', () => {
       const c = freshContainer();
       NumbersDrill.mount(c, noopNavigate);
@@ -288,6 +378,59 @@
       const c = freshContainer();
       Pinyin.mount(c);
       assert(c.querySelector('.lamp'), 'missing .lamp marker');
+    });
+
+    test('Games mounts without throwing, defaulting to Numbers', () => {
+      const c = freshContainer();
+      Games.mount(c, noopNavigate);
+      assert(c.querySelector('.lamp'), 'missing .lamp marker');
+      assert(c.querySelector('#numbersGameBtn').className.indexOf('active') !== -1, 'Numbers should be the default game');
+    });
+
+    test('Games — switching to Mahjong Tiles renders its Go screen', () => {
+      const c = freshContainer();
+      Storage.clearSession('mahjong');
+      Games.mount(c, noopNavigate);
+      c.querySelector('#mahjongGameBtn').click();
+      assert(c.querySelector('#mjGoBtn') || c.querySelector('#mjResumeBtn'), 'expected a Go or Resume button for Mahjong Tiles');
+    });
+
+    test('Mahjong Tiles — a round shows a real tile with a disabled Check button until something is typed', () => {
+      const c = freshContainer();
+      Storage.clearSession('mahjong');
+      MahjongGame.mount(c, noopNavigate);
+      const entryBtn = c.querySelector('#mjGoBtn') || c.querySelector('#mjResumeBtn');
+      entryBtn.click();
+      const hanzi = c.querySelector('.hanzi');
+      assert(hanzi && hanzi.textContent.trim().length > 0, 'expected a real tile hanzi on the card');
+      const submitBtn = c.querySelector('#mjSubmitBtn');
+      assert(submitBtn.disabled, 'Check should start disabled with an empty input');
+      const input = c.querySelector('#mjInput');
+      input.value = 'x';
+      input.dispatchEvent(new Event('input'));
+      assert(!submitBtn.disabled, 'Check should enable once something is typed');
+      input.value = '';
+      input.dispatchEvent(new Event('input'));
+      assert(submitBtn.disabled, 'Check should re-disable if the input is cleared back to empty');
+      Storage.clearSession('mahjong');
+    });
+
+    test('Settings mounts without throwing and shows both theme options', () => {
+      const c = freshContainer();
+      Settings.mount(c);
+      assert(c.querySelector('.lamp'), 'missing .lamp marker');
+      assert(c.querySelector('#darkOption') && c.querySelector('#lightOption'), 'expected both Dark and Light theme options');
+    });
+
+    test('Settings — picking Light applies data-theme="light" and persists; switching back to Dark clears it', () => {
+      const c = freshContainer();
+      Settings.mount(c);
+      c.querySelector('#lightOption').click();
+      assertEqual(document.documentElement.getAttribute('data-theme'), 'light');
+      assertEqual(Storage.getTheme(), 'light');
+      c.querySelector('#darkOption').click();
+      assert(!document.documentElement.getAttribute('data-theme'), 'dark (default) should clear the data-theme attribute');
+      assertEqual(Storage.getTheme(), 'dark');
     });
 
     test('cleanup — restore real localStorage to its pre-test state', () => {

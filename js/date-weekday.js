@@ -242,7 +242,7 @@ const DateWeekdayGame = (() => {
           <div class="audio-row"><button class="speak-btn" id="dwSpeakBtn" aria-label="Play date">&#128266;</button></div>
           <input type="text" class="type-input" id="dwInput" placeholder='e.g. &quot;September 1, Monday&quot;' autocomplete="off">
           <div class="error-text" id="dwError"></div>
-          <button class="submit-btn" id="dwSubmitBtn">Check</button>
+          <button class="submit-btn" id="dwSubmitBtn" disabled>Check</button>
         </div>
         <div class="controls"><button class="nav-btn" id="dwSkipBtn">skip &rarr;</button></div>
       `;
@@ -250,17 +250,25 @@ const DateWeekdayGame = (() => {
       speakBtn.onclick = () => Speech.speak(speak, speakBtn);
       if (Storage.getAutoplay('lessons')) Speech.speak(speak, speakBtn);
       const input = root.querySelector('#dwInput');
+      const submitBtn = root.querySelector('#dwSubmitBtn');
       const doSubmit = () => {
         const val = input.value.trim();
+        // Belt-and-suspenders: submitBtn is disabled whenever val is empty, but even if that's
+        // somehow bypassed, checkDateAnswer('', q) still returns false (normalizeTokens('') is
+        // an empty array), so an empty submission still can't be scored correct.
         if (!val) { root.querySelector('#dwError').textContent = 'Type a date first.'; input.classList.add('wrong-input'); return; }
         correct = checkDateAnswer(val, q);
         if (correct) correctCount++;
         Storage.recordActivity();
         typedAnswer = val; answered = true; render();
       };
-      root.querySelector('#dwSubmitBtn').onclick = doSubmit;
-      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSubmit(); });
-      input.addEventListener('input', () => { input.classList.remove('wrong-input'); root.querySelector('#dwError').textContent = ''; });
+      submitBtn.onclick = doSubmit;
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !submitBtn.disabled) doSubmit(); });
+      input.addEventListener('input', () => {
+        input.classList.remove('wrong-input');
+        root.querySelector('#dwError').textContent = '';
+        submitBtn.disabled = !input.value.trim();
+      });
       input.focus();
       root.querySelector('#dwSkipBtn').onclick = () => advanceRound();
     } else {
