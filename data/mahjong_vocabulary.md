@@ -1,5 +1,13 @@
 # Mahjong Tile Vocabulary — Game Data
 
+**Update — the live app now drills Sichuan (Blood Battle / 血战到底) rules
+specifically, not the general/Cantonese 34-type set this file was originally
+written against.** Sichuan mahjong is played with no honor tiles at all — no
+winds, no dragons, no flowers — so `js/mahjong.js`'s `ALL_TILES` is just the
+three suits below, 27 types. The Winds and Dragons sections further down are
+kept as reference only (in case a traditional-set variant of the game ever
+gets added back), but nothing in them is currently quizzed in-app.
+
 Source: standard 34-tile Mahjong set (三种花色 three suits + 风牌 winds + 三元牌
 dragons), the core tile set used in virtually every regional variant. Numbers
 1-9 are already covered by the existing Numbers game, so mnemonics below focus
@@ -63,7 +71,7 @@ traditional-character variant).
 
 ---
 
-## Winds (风牌 fēngpái)
+## Winds (风牌 fēngpái) — *reference only, not used in-app (Sichuan mahjong has no honor tiles)*
 
 - **东风** (dōngfēng) — East Wind — *东(east) + 风(wind).*
 - **南风** (nánfēng) — South Wind — *南(south) + 风(wind).*
@@ -73,7 +81,7 @@ traditional-character variant).
 *(Note: in casual play at the table, these are usually just called 东/南/西/北
 without "风" — worth accepting either the short or long form as correct.)*
 
-## Dragons (三元牌 sānyuánpái)
+## Dragons (三元牌 sānyuánpái) — *reference only, not used in-app (Sichuan mahjong has no honor tiles)*
 
 - **红中** (hóngzhōng) — Red Dragon — *红(red) + 中(middle/center) — often
   just called "中" (zhōng) at the table.*
@@ -95,3 +103,9 @@ not "东风"), the "type the answer" checker should probably accept:
 - Common shorthand ("Red", "East")
 - The suit+number format for numbered tiles ("2 Bamboo", "two bamboo",
   "2bamboo" etc. — same lenient formatting rule as the Date game)
+
+**Suit-name shorthand (in-app, per user request):** since honor tiles were
+dropped for Sichuan rules, the three suit names are now the only "vocabulary"
+to get lenient about, and the checker accepts casual abbreviations for two of
+them: Characters also accepts "character"/"char"/"chars", Bamboo also accepts
+"bam". Dots is left as just "dot"/"dots" — already short enough as-is.

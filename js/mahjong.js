@@ -1,5 +1,10 @@
 // Mahjong Tiles game: the third game under the Games screen (see games.js), drilling recall of
-// the standard 34-tile set (three suits x 1-9, four winds, three dragons) — see
+// the Sichuan (Blood Battle / 血战到底) tile set — the three suits, 1-9, 27 tile types — which,
+// unlike the "standard"/Cantonese 34-type set, plays with NO honor tiles at all: no winds
+// (东南西北), no dragons (中发白), no flowers. That's a deliberate, well-documented rules
+// difference (see e.g. https://mahjongpros.com/blogs/mahjong-rules-and-scoring-tables/official-
+// sichuan-sbr-mahjong-rules), not an oversight — the winds/dragons this file used to include have
+// been removed rather than just hidden, since they'd never come up at a Sichuan table. See
 // data/mahjong_vocabulary.md for the source vocabulary, mnemonics and the answer-leniency notes
 // this file's checkMahjongAnswer() implements. Same recall-first, no-multiple-choice pattern as
 // NumbersDrill and DateWeekdayGame: each tile is shown as hanzi + pinyin with a speaker button,
@@ -21,22 +26,23 @@ const MahjongGame = (() => {
   let completed = false;
 
   const NUMBER_WORDS = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+  const NUM_HAN = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
 
-  // Full English name is answers[0] (shown on the answer-reveal screen); every entry in
-  // `answers` is an accepted spelling, matched leniently (see checkMahjongAnswer) — spacing,
-  // case, and digit-vs-word numerals all fall out for free there, so this list only needs to
-  // spell out genuinely distinct wordings (the full name vs. the at-the-table shorthand).
-  function suitTiles(hanChar, pinSuit, label, pluralLabel) {
+  // Full English name is answers[0] (shown on the answer-reveal screen, so `aliasesForOne`/
+  // `aliasesForOther` must list the full formal suit name FIRST) — every entry in `answers` is an
+  // accepted spelling, matched leniently (see checkMahjongAnswer): spacing, case, and digit-vs-
+  // word numerals all fall out for free there, so the alias lists only need to spell out genuinely
+  // distinct wordings for the suit name itself (full name vs. common shorthand like "bam"/"char").
+  // `kind` + `num` (added here, not derived from `han`/`pin` later) drive the SVG tile-face
+  // artwork below — keeping them explicit avoids parsing meaning back out of display strings.
+  function suitTiles(kind, hanChar, pinSuit, aliasesForOne, aliasesForOther) {
     const tiles = [];
     for (let n = 1; n <= 9; n++) {
-      const numHan = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'][n];
       const word = NUMBER_WORDS[n];
-      const suitWord = n === 1 && label ? label : pluralLabel;
-      tiles.push({
-        han: numHan + hanChar,
-        pin: pinSuit[n],
-        answers: [n + ' ' + suitWord, word + ' ' + suitWord],
-      });
+      const suitWords = n === 1 ? aliasesForOne : aliasesForOther;
+      const answers = [];
+      suitWords.forEach((suitWord) => { answers.push(n + ' ' + suitWord, word + ' ' + suitWord); });
+      tiles.push({ kind, num: n, han: NUM_HAN[n] + hanChar, pin: pinSuit[n], answers });
     }
     return tiles;
   }
@@ -45,21 +51,133 @@ const MahjongGame = (() => {
   const BAMBOO_PINYIN = ['', 'yī tiáo', 'èr tiáo', 'sān tiáo', 'sì tiáo', 'wǔ tiáo', 'liù tiáo', 'qī tiáo', 'bā tiáo', 'jiǔ tiáo'];
   const DOT_PINYIN = ['', 'yī tǒng', 'èr tǒng', 'sān tǒng', 'sì tǒng', 'wǔ tǒng', 'liù tǒng', 'qī tǒng', 'bā tǒng', 'jiǔ tǒng'];
 
-  const HONOR_TILES = [
-    { han: '东风', pin: 'dōngfēng', answers: ['east wind', 'east'] },
-    { han: '南风', pin: 'nánfēng', answers: ['south wind', 'south'] },
-    { han: '西风', pin: 'xīfēng', answers: ['west wind', 'west'] },
-    { han: '北风', pin: 'běifēng', answers: ['north wind', 'north'] },
-    { han: '红中', pin: 'hóngzhōng', answers: ['red dragon', 'red'] },
-    { han: '发财', pin: 'fācái', answers: ['green dragon', 'green'] },
-    { han: '白板', pin: 'báibǎn', answers: ['white dragon', 'white'] },
-  ];
-
+  // No HONOR_TILES here on purpose — Sichuan mahjong doesn't use winds or dragons at all (see the
+  // file header), so the full tile set is just the three numbered suits: 27 types.
   const ALL_TILES = []
-    .concat(suitTiles('万', CHAR_PINYIN, 'characters', 'characters'))
-    .concat(suitTiles('条', BAMBOO_PINYIN, 'bamboo', 'bamboo'))
-    .concat(suitTiles('筒', DOT_PINYIN, 'dot', 'dots'))
-    .concat(HONOR_TILES);
+    .concat(suitTiles('characters', '万', CHAR_PINYIN, ['characters', 'character', 'char', 'chars'], ['characters', 'character', 'char', 'chars']))
+    .concat(suitTiles('bamboo', '条', BAMBOO_PINYIN, ['bamboo', 'bam'], ['bamboo', 'bam']))
+    .concat(suitTiles('dots', '筒', DOT_PINYIN, ['dot'], ['dots']));
+
+  // ===== Tile face artwork (SVG) =====
+  // Renders a stylized ivory tile face resembling the real physical tile — shown ALONGSIDE the
+  // existing hanzi+pinyin text below it, never replacing it. Colors are fixed (not the app's
+  // --amber/--text theme variables): a mahjong tile looks the same regardless of the app's
+  // light/dark mode, same as it would on a real table.
+  const TILE_W = 96, TILE_H = 144;
+  const HANZI_FONT = "'PingFang SC','Microsoft YaHei','Heiti SC','Segoe UI',sans-serif";
+  const DOT_COLORS = ['#1c4fa0', '#1f7d32', '#b3231c']; // blue, green, red — traditional alternation
+  let svgIdCounter = 0;
+
+  // Pip positions for counts 1-9, normalized [0,1] within the pip drawing area, shared by the
+  // Bamboo and Dots suits (same physical layout, different icon drawn at each spot). 1-6 match
+  // the layouts real tiles use (diagonal 2/3, corners+center for 4/5, a 2x3 grid for 6); 7-9 are
+  // a reasonable simplification (still grid-based and recognizable) rather than the full ornate
+  // traditional arrangement, per the brief's allowance for the higher counts.
+  const PIP_LAYOUTS = {
+    1: [[0.5, 0.5]],
+    2: [[0.22, 0.2], [0.78, 0.8]],
+    3: [[0.2, 0.15], [0.5, 0.5], [0.8, 0.85]],
+    4: [[0.22, 0.22], [0.78, 0.22], [0.22, 0.82], [0.78, 0.82]],
+    5: [[0.22, 0.2], [0.78, 0.2], [0.5, 0.5], [0.22, 0.82], [0.78, 0.82]],
+    6: [[0.28, 0.12], [0.72, 0.12], [0.28, 0.5], [0.72, 0.5], [0.28, 0.88], [0.72, 0.88]],
+    7: [[0.5, 0.08], [0.28, 0.42], [0.5, 0.42], [0.72, 0.42], [0.28, 0.78], [0.5, 0.78], [0.72, 0.78]],
+    8: [[0.28, 0.1], [0.72, 0.1], [0.28, 0.37], [0.72, 0.37], [0.28, 0.64], [0.72, 0.64], [0.28, 0.91], [0.72, 0.91]],
+    9: [[0.22, 0.12], [0.5, 0.12], [0.78, 0.12], [0.22, 0.5], [0.5, 0.5], [0.78, 0.5], [0.22, 0.88], [0.5, 0.88], [0.78, 0.88]],
+  };
+  const PIP_BOX = { x: 15, y: 15, w: 66, h: 114 };
+  function pipXY([nx, ny]) { return [PIP_BOX.x + nx * PIP_BOX.w, PIP_BOX.y + ny * PIP_BOX.h]; }
+
+  function tileFrame(inner) {
+    const id = svgIdCounter++;
+    return `
+      <svg viewBox="0 0 ${TILE_W} ${TILE_H}" width="${TILE_W}" height="${TILE_H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+        <defs>
+          <filter id="mjShadow${id}" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#000" flood-opacity="0.4"/>
+          </filter>
+          <linearGradient id="mjFaceGrad${id}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#fffdf7"/>
+            <stop offset="100%" stop-color="#ece1c4"/>
+          </linearGradient>
+        </defs>
+        <rect x="3" y="3" width="${TILE_W - 6}" height="${TILE_H - 6}" rx="9" ry="9"
+          fill="url(#mjFaceGrad${id})" stroke="#28211a" stroke-width="2.5" filter="url(#mjShadow${id})"/>
+        <rect x="7.5" y="7.5" width="${TILE_W - 15}" height="${TILE_H - 15}" rx="6" ry="6"
+          fill="none" stroke="#cabb95" stroke-width="1"/>
+        ${inner}
+      </svg>
+    `;
+  }
+
+  function bambooStickSVG(cx, cy, s) {
+    const w = 9 * s, h = 24 * s;
+    const x = cx - w / 2, y = cy - h / 2;
+    return `<g>
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${w / 2}" fill="#2f7d32" stroke="#1c4d1e" stroke-width="0.7"/>
+      <line x1="${x + 1}" y1="${y + h * 0.33}" x2="${x + w - 1}" y2="${y + h * 0.33}" stroke="#1c4d1e" stroke-width="0.7"/>
+      <line x1="${x + 1}" y1="${y + h * 0.66}" x2="${x + w - 1}" y2="${y + h * 0.66}" stroke="#1c4d1e" stroke-width="0.7"/>
+    </g>`;
+  }
+
+  // Simplified, colorful sparrow silhouette — the 1-Bamboo tile's traditional bird motif,
+  // replacing what would otherwise be the odd one out (every other suit tile is a pip pattern).
+  function birdSVG(cx, cy, scale) {
+    return `<g transform="translate(${cx},${cy}) scale(${scale})">
+      <path d="M 12 6 L 24 -3 L 22 4 L 28 2 L 18 9 Z" fill="#2f6fb3"/>
+      <ellipse cx="0" cy="1" rx="13" ry="9.5" fill="#2f7d32"/>
+      <path d="M -3 -3 Q 7 -10 14 -2 Q 6 1 -3 -3 Z" fill="#b3231c"/>
+      <circle cx="-13" cy="-8" r="6.5" fill="#256b2b"/>
+      <path d="M -19 -8 L -26 -6 L -19 -4 Z" fill="#d9a422"/>
+      <circle cx="-14.5" cy="-9" r="1.1" fill="#111"/>
+      <line x1="-3" y1="11" x2="-5" y2="18" stroke="#3a2a18" stroke-width="1.4"/>
+      <line x1="3" y1="11" x2="5" y2="18" stroke="#3a2a18" stroke-width="1.4"/>
+    </g>`;
+  }
+
+  function dotSVG(cx, cy, r, color) {
+    return `<g>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" stroke="#00000055" stroke-width="0.6"/>
+      <circle cx="${cx - r * 0.3}" cy="${cy - r * 0.3}" r="${r * 0.28}" fill="#ffffff" opacity="0.35"/>
+    </g>`;
+  }
+
+  // 1-Dot's traditional ornate/coin-like design, standing in for a plain single pip.
+  function bigDotSVG(cx, cy, rOuter) {
+    return `<g>
+      <circle cx="${cx}" cy="${cy}" r="${rOuter}" fill="#1c4fa0" stroke="#0d2c5c" stroke-width="1"/>
+      <circle cx="${cx}" cy="${cy}" r="${rOuter * 0.68}" fill="#b3231c"/>
+      <circle cx="${cx}" cy="${cy}" r="${rOuter * 0.36}" fill="#1f7d32"/>
+      <circle cx="${cx - rOuter * 0.2}" cy="${cy - rOuter * 0.2}" r="${rOuter * 0.12}" fill="#ffffff" opacity="0.4"/>
+    </g>`;
+  }
+
+  function charactersFace(num) {
+    return `
+      <text x="${TILE_W / 2}" y="50" text-anchor="middle" font-family="${HANZI_FONT}" font-size="32" fill="#1a1a1a" font-weight="600">${NUM_HAN[num]}</text>
+      <text x="${TILE_W / 2}" y="102" text-anchor="middle" font-family="${HANZI_FONT}" font-size="38" fill="#b3231c" font-weight="600">万</text>
+    `;
+  }
+
+  function bambooFace(num) {
+    if (num === 1) return birdSVG(TILE_W / 2, TILE_H / 2 - 4, 1.15);
+    const scale = num <= 3 ? 1.15 : num <= 6 ? 0.95 : 0.8;
+    return PIP_LAYOUTS[num].map((p) => { const [cx, cy] = pipXY(p); return bambooStickSVG(cx, cy, scale); }).join('');
+  }
+
+  function dotsFace(num) {
+    if (num === 1) return bigDotSVG(TILE_W / 2, TILE_H / 2, 25);
+    const r = num <= 3 ? 10.5 : num <= 6 ? 8.5 : 7;
+    return PIP_LAYOUTS[num].map((p, i) => { const [cx, cy] = pipXY(p); return dotSVG(cx, cy, r, DOT_COLORS[i % DOT_COLORS.length]); }).join('');
+  }
+
+  function tileFaceInner(tile) {
+    if (tile.kind === 'characters') return charactersFace(tile.num);
+    if (tile.kind === 'bamboo') return bambooFace(tile.num);
+    if (tile.kind === 'dots') return dotsFace(tile.num);
+    return '';
+  }
+
+  function tileArtSVG(tile) { return tileFrame(tileFaceInner(tile)); }
 
   function displayName(tile) {
     return tile.answers[0].split(' ').map((w) => /^\d+$/.test(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -113,7 +231,7 @@ const MahjongGame = (() => {
     if (ratio === 1) return { emoji: '🎉', message: 'Perfect round!' };
     if (ratio >= 0.7) return { emoji: '✨', message: 'Well done!' };
     if (ratio >= 0.4) return { emoji: '👍', message: 'Nice work — a few more rounds and you’ll have it.' };
-    return { emoji: '💪', message: 'Good effort! 34 tiles take practice — try another round.' };
+    return { emoji: '💪', message: 'Good effort! 27 tiles take practice — try another round.' };
   }
 
   const SESSION_KEY = 'mahjong';
@@ -142,7 +260,7 @@ const MahjongGame = (() => {
     root.querySelector('#mjCardArea').innerHTML = `
       <div class="card" style="cursor:default;">
         <div class="back-english" style="margin-bottom:14px;">Mahjong Tiles</div>
-        <div class="mnemonic" style="margin-bottom:0;">You'll see 10 mahjong tiles (the three suits, winds, and dragons) written in Chinese, one at a time — type the English name, e.g. "2 Bamboo", "East Wind", or just "Red" for a dragon. Numerals or number words both work, and spacing/capitalization don't matter.</div>
+        <div class="mnemonic" style="margin-bottom:0;">Sichuan-style — just the three suits (万/条/筒), no winds or dragons. You'll see 10 mahjong tiles written in Chinese, one at a time — type the English name back, e.g. "2 Bamboo" or "5 Dots" (shorthand works too, like "2 bam" or "5 char"). Numerals or number words both work, and spacing/capitalization don't matter.</div>
         ${buttonsHtml}
       </div>
     `;
@@ -223,6 +341,7 @@ const MahjongGame = (() => {
     if (!answered) {
       cardArea.innerHTML = `
         <div class="card" style="cursor:default;">
+          <div class="mj-tile-art">${tileArtSVG(tile)}</div>
           <div class="hanzi">${tile.han}</div>
           <div class="pinyin">${tile.pin}</div>
           <div class="audio-row"><button class="speak-btn" id="mjSpeakBtn" aria-label="Play tile name">&#128266;</button></div>
@@ -258,6 +377,7 @@ const MahjongGame = (() => {
       cardArea.innerHTML = `
         <div class="card" style="cursor:default;">
           <div class="feedback-badge ${correct ? 'correct' : 'wrong'}">${correct ? 'Correct!' : 'Not quite'}</div>
+          <div class="mj-tile-art">${tileArtSVG(tile)}</div>
           <div class="hanzi">${tile.han}</div>
           <div class="pinyin">${tile.pin}</div>
           <div class="audio-row"><button class="speak-btn" id="mjSpeakBtn2" aria-label="Play tile name">&#128266;</button></div>
@@ -285,5 +405,5 @@ const MahjongGame = (() => {
     root.querySelector('#mjResetBtn').onclick = () => { newRound(); render(); };
   }
 
-  return { mount, checkMahjongAnswer };
+  return { mount, checkMahjongAnswer, ALL_TILES };
 })();

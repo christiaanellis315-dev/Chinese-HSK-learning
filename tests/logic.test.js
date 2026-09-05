@@ -195,6 +195,10 @@
   });
 
   // ---- MahjongGame: lenient answer checking per data/mahjong_vocabulary.md's rules ----
+  // checkMahjongAnswer() is generic (just matches against whatever `answers` a tile-shaped object
+  // carries) — the eastWind/redDragon fixtures below exercise that generality, they don't imply
+  // honor tiles are actually in ALL_TILES. The live game is Sichuan rules (suits only, no honor
+  // tiles), see the header comment in js/mahjong.js.
   group('MahjongGame — checkMahjongAnswer', () => {
     const twoBamboo = { han: '二条', pin: 'èr tiáo', answers: ['2 bamboo', 'two bamboo'] };
     const oneDot = { han: '一筒', pin: 'yī tǒng', answers: ['1 dot', 'one dot'] };
@@ -235,6 +239,38 @@
     });
     test('unrelated input is wrong', () => {
       assert(!MahjongGame.checkMahjongAnswer('hello', redDragon));
+    });
+
+    // ---- suit-name shorthand (per user request) — exercised against the real ALL_TILES data,
+    // since the alias lists live there, not in the ad-hoc fixtures above. ----
+    test('Bamboo also accepts the shorthand "bam"', () => {
+      const tile = MahjongGame.ALL_TILES.find((t) => t.han === '二条');
+      assert(MahjongGame.checkMahjongAnswer('2 bam', tile));
+      assert(MahjongGame.checkMahjongAnswer('2bam', tile));
+      assert(MahjongGame.checkMahjongAnswer('two bam', tile));
+    });
+    test('Characters also accepts "character", "char", and "chars"', () => {
+      const tile = MahjongGame.ALL_TILES.find((t) => t.han === '五万');
+      assert(MahjongGame.checkMahjongAnswer('5 character', tile));
+      assert(MahjongGame.checkMahjongAnswer('5 char', tile));
+      assert(MahjongGame.checkMahjongAnswer('5 chars', tile));
+    });
+    test('Dots is left exactly as-is — no extra shorthand accepted', () => {
+      const tile = MahjongGame.ALL_TILES.find((t) => t.han === '三筒');
+      assert(MahjongGame.checkMahjongAnswer('3 dots', tile));
+      assert(!MahjongGame.checkMahjongAnswer('3 dt', tile), 'made-up shorthand should still be rejected for Dots');
+    });
+    test('shorthand does not loosen suit or number matching — still has to be the right tile', () => {
+      const twoBambooReal = MahjongGame.ALL_TILES.find((t) => t.han === '二条');
+      assert(!MahjongGame.checkMahjongAnswer('3 bam', twoBambooReal), 'right suit shorthand, wrong number');
+      assert(!MahjongGame.checkMahjongAnswer('2 char', twoBambooReal), 'right number, wrong suit shorthand');
+    });
+
+    test('the live tile set is Sichuan rules: 27 suit tiles only, no winds or dragons', () => {
+      assertEqual(MahjongGame.ALL_TILES.length, 27, 'expected exactly 3 suits x 9 numbers, no honor tiles');
+      assert(!MahjongGame.ALL_TILES.some((t) => t.kind === 'wind' || t.kind === 'dragon'), 'no wind/dragon tiles should be in the Sichuan-rules tile set');
+      const kinds = MahjongGame.ALL_TILES.reduce((acc, t) => { acc[t.kind] = (acc[t.kind] || 0) + 1; return acc; }, {});
+      assertEqual(kinds, { characters: 9, bamboo: 9, dots: 9 });
     });
   });
 })();

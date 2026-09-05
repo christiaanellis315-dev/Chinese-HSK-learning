@@ -177,6 +177,12 @@ button.nav-btn:active { transform: scale(0.97); }
 .num-hint { font-size: 12px; color: var(--text-dim); margin-bottom: 18px; }
 .soon-box { text-align: center; padding: 50px 20px; color: var(--text-dim); font-size: 14px; }
 
+/* ===== Mahjong Tiles game ===== */
+/* The tile artwork's own ivory/black/red/green/blue palette is intentionally fixed, not themed
+   via --amber/--text/etc. — a physical tile looks the same in dark or light mode. */
+.mj-tile-art { margin-bottom: 6px; line-height: 0; }
+.mj-tile-art svg { display: block; }
+
 /* ===== pinyin reference ===== */
 .section-title { font-size: 16px; font-weight: 600; color: var(--amber); margin: 26px 0 4px; }
 .section-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; line-height: 1.5; }
