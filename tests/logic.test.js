@@ -4,6 +4,36 @@
 (() => {
   const { group, test, assert, assertEqual } = TestRunner;
 
+  // ---- Speech: resolving a saved voice preference back to a real voice ----
+  // window.speechSynthesis.getVoices() is not guaranteed to return voices in a stable order
+  // across calls — some browsers/OSes reshuffle it (e.g. when `voiceschanged` fires again after
+  // more voices finish loading). Storing a raw array index and trusting it forever meant a
+  // reshuffle could silently swap in a different voice with a different natural speaking pace,
+  // while the person's chosen "speed" (rate) stayed exactly the same — reported as "sometimes it
+  // feels a lot faster than it should". resolveVoiceIndex() fixes that by preferring a stable
+  // voice *name* match, falling back to the index only for a pref saved before names existed.
+  group('Speech — resolveVoiceIndex', () => {
+    const voices = [{ name: 'Tingting' }, { name: 'Huihui' }, { name: 'Kangkang' }];
+
+    test('matches by name even if that voice is no longer at the stored index (a reorder happened)', () => {
+      const pref = { voiceName: 'Kangkang', index: 0 }; // stale index would point at Tingting
+      assertEqual(Speech.resolveVoiceIndex(pref, voices), 2);
+    });
+    test('a legacy pref with no voiceName yet falls back to the stored index', () => {
+      const pref = { index: 1 };
+      assertEqual(Speech.resolveVoiceIndex(pref, voices), 1);
+    });
+    test('an unrecognized name AND an out-of-range index both fall back to voice 0', () => {
+      assertEqual(Speech.resolveVoiceIndex({ voiceName: 'NoSuchVoice', index: 99 }, voices), 0);
+    });
+    test('a completely empty pref falls back to voice 0', () => {
+      assertEqual(Speech.resolveVoiceIndex({}, voices), 0);
+    });
+    test('an empty voice list resolves to -1 (nothing to select)', () => {
+      assertEqual(Speech.resolveVoiceIndex({ voiceName: 'Kangkang' }, []), -1);
+    });
+  });
+
   // ---- Storage: spaced repetition ----
   // Storage is backed by real localStorage, which this test page shares with the live app if
   // served from the same origin. Every id here lives under the fake book id "__TEST__", which

@@ -54,6 +54,24 @@ const Speech = (() => {
     });
   }
 
+  // Resolves which entry in `voices` a saved pref points at — by stable name first, since
+  // window.speechSynthesis.getVoices() is NOT guaranteed to return voices in the same order on
+  // every call (some browsers/OSes reshuffle it, e.g. when `voiceschanged` fires again later
+  // after more voices finish loading). A pref that only ever stored a raw array index would then
+  // silently start resolving to a DIFFERENT voice — same chosen speed, different underlying
+  // engine's natural pace — which is exactly the "sometimes plays faster than it should" bug this
+  // fixes. `pref.index` is kept only as a fallback for a pref saved before `voiceName` existed;
+  // once a voice is resolved by name it's saved back with a name every time from then on. Takes
+  // `voices` as a parameter (rather than closing over zhVoices) so it's a pure, testable function.
+  function resolveVoiceIndex(pref, voices) {
+    if (!voices.length) return -1;
+    if (pref.voiceName) {
+      const i = voices.findIndex((v) => v.name === pref.voiceName);
+      if (i !== -1) return i;
+    }
+    return pref.index != null && voices[pref.index] ? pref.index : 0;
+  }
+
   function speak(hanzi, el, rateOverride) {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
@@ -61,7 +79,16 @@ const Speech = (() => {
     const utter = new SpeechSynthesisUtterance(hanzi);
     utter.lang = 'zh-CN';
     utter.rate = rateOverride || pref.rate || 0.85;
-    if (zhVoices.length) utter.voice = zhVoices[pref.index] || zhVoices[0];
+    if (zhVoices.length) {
+      const idx = resolveVoiceIndex(pref, zhVoices);
+      const voice = zhVoices[idx];
+      utter.voice = voice;
+      // Self-heals a pre-existing/legacy pref (or a stale index after a reorder): once resolved,
+      // lock this voice in by name so this index-based fallback path doesn't need to run again.
+      if (voice && (pref.voiceName !== voice.name || pref.index !== idx)) {
+        Storage.setVoicePref(Object.assign({}, pref, { voiceName: voice.name, index: idx }));
+      }
+    }
     if (el) {
       el.classList.add('speaking');
       utter.onend = () => el.classList.remove('speaking');
@@ -70,5 +97,5 @@ const Speech = (() => {
     window.speechSynthesis.speak(utter);
   }
 
-  return { onReady, getVoices, guessGender, speak, buildSpeedControl };
+  return { onReady, getVoices, guessGender, speak, buildSpeedControl, resolveVoiceIndex };
 })();

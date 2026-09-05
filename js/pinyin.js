@@ -45,10 +45,15 @@ const Pinyin = (() => {
     const select = document.createElement('select');
     select.className = 'voice-select';
     select.innerHTML = voices.map((v, i) => `<option value="${i}">${v.name}${Speech.guessGender(v)}</option>`).join('');
-    select.value = pref.index;
+    // Highlight by stable name (see Speech.resolveVoiceIndex), not the raw stored index — the
+    // device's voice list order isn't guaranteed stable, so a stale index could highlight the
+    // wrong option here even though the actually-selected voice is still available.
+    select.value = Speech.resolveVoiceIndex(pref, voices);
     select.onchange = () => {
       const p = Storage.getVoicePref();
-      p.index = parseInt(select.value, 10);
+      const idx = parseInt(select.value, 10);
+      p.index = idx;
+      p.voiceName = voices[idx].name;
       Storage.setVoicePref(p);
       Speech.speak('你好', null);
     };
