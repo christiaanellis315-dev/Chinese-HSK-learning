@@ -210,4 +210,43 @@
       assert(FINALS && Object.keys(FINALS).length > 0, 'FINALS should have entries');
     });
   });
+
+  // Phone numbers, years, and room/ID numbers are always read digit-by-digit in Mandarin (e.g.
+  // "88302755" as "bā bā sān líng èr qī wǔ wǔ", never as the compound cardinal number a TTS
+  // engine would otherwise read Arabic digits as). The pinyin fields already encode this
+  // correctly, but the actual spoken hanzi text has to use Chinese numeral characters (一/二/三...,
+  // or 幺 for "1" specifically in phone/room numbers) for that pinyin to match what's actually
+  // said aloud — an Arabic-digit hanzi field gets normalized by the TTS engine into a totally
+  // different (and wrong) reading regardless of what the pinyin says. Locks in the three spots
+  // this was found wrong in (HSK1 L13's phone number, HSK1 L15's two years, HSK3 L2's room
+  // number) so a future data edit can't silently reintroduce raw digits into a spoken field.
+  group('Digit-by-digit numbers (phone/year/room) use Chinese numerals in spoken fields, not Arabic digits', () => {
+    test('HSK1 L13 listening: the phone number is spelled out in hanzi, not "88302755"', () => {
+      const item = Books.getLesson('hsk1', '13').listening.find((it) => it.sentenceP.indexOf('diànhuà') !== -1);
+      assert(item, 'expected to find the phone-number listening item');
+      assert(!/\d/.test(item.sentence), 'sentence should have no raw digits: ' + item.sentence);
+      assertEqual(item.sentence, '八八三零二七五五是张老师的电话。');
+      item.options.forEach((opt) => assert(!/\d/.test(opt), 'option should have no raw digits: ' + opt));
+    });
+    test('HSK1 L15 listening: the year is spelled out in hanzi, not "2008"', () => {
+      const item = Books.getLesson('hsk1', '15').listening.find((it) => it.sentenceP.indexOf('Běijīng') !== -1);
+      assert(item, 'expected to find the 2008-in-Beijing listening item');
+      assert(!/\d/.test(item.sentence), 'sentence should have no raw digits: ' + item.sentence);
+      item.options.forEach((opt) => assert(!/\d/.test(opt), 'option should have no raw digits: ' + opt));
+    });
+    test('HSK1 L15 Sentence Builder: the "2011年" tile and its answer are spelled out in hanzi', () => {
+      const ex = Books.getLesson('hsk1', '15').sentenceBuilder.find((e) => e.promptE.indexOf('meet') !== -1);
+      assert(ex, 'expected to find the "when did you first meet" exercise');
+      const yearTile = ex.tiles.find((t) => t.p === 'èr líng yī yī nián');
+      assert(yearTile, 'expected a tile for the year, matched by its pinyin');
+      assert(!/\d/.test(yearTile.h), 'year tile hanzi should have no raw digits: ' + yearTile.h);
+      assert(!/\d{4}/.test(ex.answer), 'answer should not contain a raw 4-digit year: ' + ex.answer);
+    });
+    test('HSK3 L2 listening: the room number is spelled out in hanzi (with 幺 for "1"), not "1202"', () => {
+      const item = Books.getLesson('hsk3', '2').listening.find((it) => it.sentenceP.indexOf('bàngōngshì') !== -1);
+      assert(item, 'expected to find the office-room-number listening item');
+      assert(!/\d/.test(item.sentence), 'sentence should have no raw digits: ' + item.sentence);
+      assert(item.sentence.indexOf('幺二零二') !== -1, 'expected the room number spelled "幺二零二" (幺 for "1", matching the "yāo" in sentenceP)');
+    });
+  });
 })();
