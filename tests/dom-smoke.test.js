@@ -466,6 +466,128 @@
       Storage.clearSession('mahjong');
     });
 
+    test('Games — switching to Colors renders its Go screen', () => {
+      const c = freshContainer();
+      Storage.clearSession('colors');
+      Games.mount(c, noopNavigate);
+      c.querySelector('#colorsGameBtn').click();
+      assert(c.querySelector('#colGoBtn') || c.querySelector('#colResumeBtn'), 'expected a Go or Resume button for Colors');
+      Storage.clearSession('colors');
+    });
+
+    test('Colors — the swatch stays hidden until answered, then reveals with the right color', () => {
+      const c = freshContainer();
+      Storage.clearSession('colors');
+      ColorsGame.mount(c, noopNavigate);
+      (c.querySelector('#colGoBtn') || c.querySelector('#colResumeBtn')).click();
+      assert(!c.querySelector('.color-swatch'), 'the swatch should not exist before an answer is submitted — it would give the answer away');
+
+      const submitBtn = c.querySelector('#colSubmitBtn');
+      assert(submitBtn.disabled, 'Check should start disabled with an empty input');
+      const input = c.querySelector('#colInput');
+      input.value = 'x';
+      input.dispatchEvent(new Event('input'));
+      assert(!submitBtn.disabled, 'Check should enable once something is typed');
+      submitBtn.click();
+
+      const swatch = c.querySelector('.color-swatch');
+      assert(swatch, 'expected a swatch to appear once answered');
+      assert(swatch.style.background, 'expected the swatch to have an actual background color set');
+      Storage.clearSession('colors');
+    });
+
+    test('Colors — White\'s swatch gets the visible-outline treatment', () => {
+      const c = freshContainer();
+      Storage.clearSession('colors');
+      ColorsGame.mount(c, noopNavigate);
+      let found = false;
+      for (let attempt = 0; attempt < 10 && !found; attempt++) {
+        Storage.clearSession('colors');
+        ColorsGame.mount(c, noopNavigate);
+        c.querySelector('#colGoBtn').click();
+        for (let i = 0; i < 10; i++) {
+          if (c.querySelector('.hanzi').textContent === '白色') { found = true; break; }
+          c.querySelector('#colSkipBtn').click();
+        }
+      }
+      assert(found, 'expected White to come up within 10 fresh rounds (pool of 14, round of 10)');
+      const input = c.querySelector('#colInput');
+      input.value = 'white';
+      input.dispatchEvent(new Event('input'));
+      c.querySelector('#colSubmitBtn').click();
+      assert(c.querySelector('.color-swatch').className.indexOf('needs-outline') !== -1, 'White’s swatch should get the needs-outline class');
+      Storage.clearSession('colors');
+    });
+
+    test('Dashboard — a "Final Test" pill appears after the last lesson, for every book, scoped to only that book', () => {
+      const savedBook = Storage.getCurrentBook();
+      Books.listBooks().forEach(({ id: bookId }) => {
+        if (!Books.hasContent(bookId)) return;
+        Storage.setCurrentBook(bookId);
+        const c = freshContainer();
+        Dashboard.mount(c, noopNavigate);
+        const pills = Array.from(c.querySelectorAll('.mastery-pill'));
+        const finalPill = pills[pills.length - 1];
+        assert(finalPill && finalPill.className.indexOf('final-test-pill') !== -1, `${bookId}: expected the Final Test pill to be the last pill in the lesson list`);
+        assert(finalPill.textContent.indexOf('Final Test') !== -1, `${bookId}: expected the pill to say "Final Test"`);
+        const totalWords = Books.getLessonOrder(bookId).reduce((n, id) => n + Books.getLesson(bookId, id).words.length, 0);
+        assert(finalPill.textContent.indexOf(String(totalWords)) !== -1, `${bookId}: expected the pill to mention this book's own word count (${totalWords})`);
+      });
+      Storage.setCurrentBook(savedBook);
+    });
+
+    test('FinalTest — each book\'s test draws only from that book\'s own vocabulary, never mixing books', () => {
+      const c = freshContainer();
+      ['hsk1', 'hsk2', 'hsk3'].forEach((bookId) => {
+        if (!Books.hasContent(bookId)) return;
+        Storage.clearSession('finalTest:' + bookId);
+        FinalTest.mount(c, bookId, noopNavigate);
+        c.querySelector('#ftGoBtn').click();
+        const session = Storage.getSession('finalTest:' + bookId);
+        assert(session, `${bookId}: expected a session to be saved once the test starts`);
+        const ownWords = new Set();
+        Books.getLessonOrder(bookId).forEach((id) => Books.getLesson(bookId, id).words.forEach((w) => ownWords.add(w.h)));
+        session.roundItems.forEach((item) => {
+          assert(ownWords.has(item.word.h), `${bookId}: drew a word ("${item.word.h}") that isn't in this book's own vocabulary`);
+        });
+        assertEqual(session.roundItems.length, Math.min(30, ownWords.size), `${bookId}: expected a 30-question round (or fewer if the book has under 30 words)`);
+        Storage.clearSession('finalTest:' + bookId);
+      });
+    });
+
+    test('FinalTest — empty input is disabled, wrong/skipped words are collected for the missed-words list, and resume continues the same word', () => {
+      const c = freshContainer();
+      Storage.clearSession('finalTest:hsk1');
+      FinalTest.mount(c, 'hsk1', noopNavigate);
+      c.querySelector('#ftGoBtn').click();
+      assert(c.querySelector('#ftSubmitBtn').disabled, 'Check should start disabled with an empty input');
+
+      // Answer wrong once, skip once, then leave and resume — should land back on the 3rd word.
+      let input = c.querySelector('#ftInput');
+      input.value = 'zzz-deliberately-wrong';
+      input.dispatchEvent(new Event('input'));
+      c.querySelector('#ftSubmitBtn').click();
+      assert(c.querySelector('.feedback-badge').className.indexOf('wrong') !== -1, 'expected that answer to be marked wrong');
+      c.querySelector('#ftNextBtn').click();
+      c.querySelector('#ftSkipBtn').click();
+      const wordAt3Before = c.querySelector('.hanzi').textContent;
+
+      FinalTest.mount(c, 'hsk1', noopNavigate); // simulates navigating away and back
+      const resumeBtn = c.querySelector('#ftResumeBtn');
+      assert(resumeBtn, 'expected a Resume option after leaving mid-test');
+      resumeBtn.click();
+      assertEqual(c.querySelector('.hanzi').textContent, wordAt3Before, 'resume should land on the same word, not a reshuffled position');
+
+      // Finish the rest of the round (skipping) and confirm both the wrong AND the skipped word
+      // show up in the completion screen's missed-words list.
+      for (let i = 0; i < 30; i++) {
+        if (!c.querySelector('#ftSkipBtn')) break;
+        c.querySelector('#ftSkipBtn').click();
+      }
+      assert(c.querySelectorAll('.missed-word').length >= 3, 'expected at least the 3 words touched above in the missed-words list');
+      Storage.clearSession('finalTest:hsk1');
+    });
+
     test('Settings mounts without throwing and shows both theme options', () => {
       const c = freshContainer();
       Settings.mount(c);

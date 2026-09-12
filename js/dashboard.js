@@ -135,6 +135,18 @@ const Dashboard = (() => {
       pill.onclick = () => goTo('lessons', { book: currentBook, lesson: lessonId, mode: 'flip' });
       grid.appendChild(pill);
     });
+
+    // Always last, after every real lesson — same book-agnostic Books.getLessonOrder() the rest
+    // of this grid uses, so a future book gets its own Final Test entry for free, scoped to only
+    // that book's vocabulary, with no per-book code to add.
+    const finalPill = document.createElement('div');
+    finalPill.className = 'mastery-pill final-test-pill';
+    finalPill.innerHTML = `
+      <div class="mp-title">🏆 Final Test</div>
+      <div class="mp-frac">All ${Books.getLessonOrder(currentBook).reduce((n, id) => n + Books.getLesson(currentBook, id).words.length, 0)} words · 30 questions</div>
+    `;
+    finalPill.onclick = () => goTo('finalTest', { book: currentBook });
+    grid.appendChild(finalPill);
   }
 
   function mount(container, navigate) {

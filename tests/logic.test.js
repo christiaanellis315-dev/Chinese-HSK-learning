@@ -303,4 +303,48 @@
       assertEqual(kinds, { characters: 9, bamboo: 9, dots: 9 });
     });
   });
+
+  // ---- ColorsGame: lenient answer checking per data/colors_vocabulary.md ----
+  group('ColorsGame — checkColorAnswer', () => {
+    const red = { han: '红色', pin: 'hóngsè', answers: ['red'] };
+    const gray = { han: '灰色', pin: 'huīsè', answers: ['gray', 'grey'] };
+    const cyan = { han: '青色', pin: 'qīngsè', answers: ['cyan', 'turquoise'] };
+
+    test('exact match, case- and spacing-insensitive', () => {
+      assert(ColorsGame.checkColorAnswer('Red', red));
+      assert(ColorsGame.checkColorAnswer('  red  ', red));
+      assert(ColorsGame.checkColorAnswer('RED', red));
+    });
+    test('both spellings of a color with more than one accepted answer both match', () => {
+      assert(ColorsGame.checkColorAnswer('gray', gray));
+      assert(ColorsGame.checkColorAnswer('grey', gray));
+      assert(ColorsGame.checkColorAnswer('cyan', cyan));
+      assert(ColorsGame.checkColorAnswer('turquoise', cyan));
+    });
+    test('empty input is always wrong', () => {
+      assert(!ColorsGame.checkColorAnswer('', red));
+      assert(!ColorsGame.checkColorAnswer('   ', red));
+    });
+    test('unrelated or wrong-color input is wrong', () => {
+      assert(!ColorsGame.checkColorAnswer('blue', red));
+      assert(!ColorsGame.checkColorAnswer('hello', red));
+    });
+    test('the live color set has all 14 colors from colors_vocabulary.md, each with a hex and English answer', () => {
+      assertEqual(ColorsGame.COLORS.length, 14);
+      ColorsGame.COLORS.forEach((c) => {
+        assert(/^#[0-9A-Fa-f]{6}$/.test(c.hex), 'expected a 6-digit hex color for ' + c.han);
+        assert(Array.isArray(c.answers) && c.answers.length > 0, 'expected at least one accepted answer for ' + c.han);
+      });
+    });
+    test('White is flagged as needing a swatch outline; no other color is', () => {
+      const white = ColorsGame.COLORS.find((c) => c.answers[0] === 'white');
+      assert(white && white.outline === true, 'White should be flagged outline:true');
+      const othersFlagged = ColorsGame.COLORS.filter((c) => c !== white && c.outline);
+      assertEqual(othersFlagged.length, 0, 'no color other than White should need the outline treatment');
+    });
+  });
+
+  // ---- FinalTest: book-scoped word pooling (the actual round-building/scoring logic lives in
+  // final-test.js as private, DOM-coupled functions — its data isolation is instead verified as a
+  // DOM smoke test in dom-smoke.test.js, alongside its Go-screen/resume/empty-input behavior). ----
 })();

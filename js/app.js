@@ -41,6 +41,9 @@
     else if (screen === 'grammar') Grammar.mount(screenEl);
     else if (screen === 'pinyin') Pinyin.mount(screenEl);
     else if (screen === 'settings') Settings.mount(screenEl);
+    // No bottom-nav entry for this one on purpose — it's reached via the "Final Test" pill at the
+    // end of Dashboard's lesson list (see dashboard.js), not a primary tab of its own.
+    else if (screen === 'finalTest') FinalTest.mount(screenEl, opts && opts.book, navigate);
   }
 
   if ('serviceWorker' in navigator) {
