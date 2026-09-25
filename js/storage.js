@@ -68,13 +68,19 @@ const Storage = (() => {
     return blob[srsShortId(itemId)] || null;
   }
 
-  function recordSrsResult(itemId, correct) {
+  // `weight` (default 1) shortens the effective interval for content that should resurface more
+  // often than a normal item at the same box — e.g. Survival Phrases' "When You're Stuck" group
+  // (weight 3, see js/survival-phrases.js) stays front-of-mind even after being answered
+  // correctly several times, instead of drifting out to the same multi-week gap a well-known
+  // word would get. Every existing caller omits it and is unaffected (weight defaults to 1).
+  function recordSrsResult(itemId, correct, weight) {
     const blob = getSrsBlob(itemId);
     const shortId = srsShortId(itemId);
     const curBox = (blob[shortId] && blob[shortId].box) || 1;
     const newBox = correct ? Math.min(curBox + 1, 5) : 1;
     const now = Date.now();
-    blob[shortId] = { box: newBox, due: now + BOX_INTERVAL_DAYS[newBox - 1] * DAY_MS, lastReviewed: now };
+    const intervalDays = BOX_INTERVAL_DAYS[newBox - 1] / (weight || 1);
+    blob[shortId] = { box: newBox, due: now + intervalDays * DAY_MS, lastReviewed: now };
     setSrsBlob(itemId, blob);
     recordActivity();
   }

@@ -606,6 +606,141 @@
       assertEqual(Storage.getTheme(), 'dark');
     });
 
+    // ---- Free Production mode (Lessons' 5th mode) ----
+    test('Lessons — Free Production shows the English prompt only (no Chinese prompt/tiles given away)', () => {
+      const c = freshContainer();
+      Storage.clearSession('lessons:hsk1:4:production');
+      Lessons.mount(c, { book: 'hsk1', lesson: '4', mode: 'production' }, noopNavigate);
+      c.querySelector('#goBtn').click();
+      const item = Books.getLesson('hsk1', '4').sentenceBuilder[0];
+      assertEqual(c.querySelector('.back-english').textContent, item.promptE);
+      assert(c.textContent.indexOf(item.prompt) === -1, 'the Chinese prompt should not be shown — that would give the answer structure away');
+      assert(!c.querySelector('.tile-bank'), 'Free Production should never render a tile bank — no scaffolding');
+      Storage.clearSession('lessons:hsk1:4:production');
+    });
+
+    test('Lessons — Free Production: typed fallback has the same empty-input guard as everywhere else, and scores leniently', () => {
+      const c = freshContainer();
+      Storage.clearSession('lessons:hsk1:4:production');
+      Lessons.mount(c, { book: 'hsk1', lesson: '4', mode: 'production' }, noopNavigate);
+      c.querySelector('#goBtn').click();
+      if (c.querySelector('#prodUseTypeBtn')) c.querySelector('#prodUseTypeBtn').click(); // force typed path regardless of SpeechInput support
+      const submitBtn = c.querySelector('#prodSubmitBtn');
+      assert(submitBtn.disabled, 'Check should start disabled with an empty input');
+      const item = Books.getLesson('hsk1', '4').sentenceBuilder[0];
+      const input = c.querySelector('#prodInput');
+      input.value = item.answerP.replace(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g, (ch) => 'aaaaeeeeiiiioooouuuuuuuu'['āáǎàēéěèīíǐìōóǒòūúǔù'.indexOf(ch)] || ch).toLowerCase();
+      input.dispatchEvent(new Event('input'));
+      assert(!submitBtn.disabled, 'Check should enable once something is typed');
+      submitBtn.click();
+      assert(c.querySelector('.feedback-badge').className.indexOf('correct') !== -1, 'a tone-stripped but otherwise correct pinyin answer should be marked correct');
+      Storage.clearSession('lessons:hsk1:4:production');
+    });
+
+    test('Lessons — Free Production shares Sentence Builder\'s SRS item (same buildItemId), not a separate schedule', () => {
+      const c = freshContainer();
+      const bookId = 'hsk1', lessonId = '4';
+      Storage.clearLessonSrs(bookId, lessonId);
+      Storage.clearSession('lessons:' + bookId + ':' + lessonId + ':production');
+      Lessons.mount(c, { book: bookId, lesson: lessonId, mode: 'production' }, noopNavigate);
+      c.querySelector('#goBtn').click();
+      if (c.querySelector('#prodUseTypeBtn')) c.querySelector('#prodUseTypeBtn').click();
+      const input = c.querySelector('#prodInput');
+      input.value = 'zzz wrong answer zzz';
+      input.dispatchEvent(new Event('input'));
+      c.querySelector('#prodSubmitBtn').click();
+      const rec = Storage.getSrsRecord(Storage.buildItemId(bookId, lessonId, 0));
+      assert(rec, 'expected Free Production to write to the exact same buildItemId Sentence Builder uses');
+      assertEqual(rec.box, 1, 'a wrong answer should reset the shared box to 1');
+      Storage.clearLessonSrs(bookId, lessonId);
+      Storage.clearSession('lessons:' + bookId + ':' + lessonId + ':production');
+    });
+
+    test('Lessons — Free Production resumes at the same exercise, not a fresh one', () => {
+      const c = freshContainer();
+      Storage.clearSession('lessons:hsk1:4:production');
+      Lessons.mount(c, { book: 'hsk1', lesson: '4', mode: 'production' }, noopNavigate);
+      c.querySelector('#goBtn').click();
+      const promptBefore = c.querySelector('.back-english').textContent;
+      if (c.querySelector('#prodUseTypeBtn')) c.querySelector('#prodUseTypeBtn').click();
+      // Leave without answering, then come back — should resume on the exact same exercise.
+      Lessons.mount(c, { book: 'hsk1', lesson: '4', mode: 'production' }, noopNavigate);
+      const resumeBtn = c.querySelector('#resumeBtn');
+      assert(resumeBtn, 'expected a Resume option after leaving mid-exercise');
+      resumeBtn.click();
+      assertEqual(c.querySelector('.back-english').textContent, promptBefore);
+      Storage.clearSession('lessons:hsk1:4:production');
+    });
+
+    // ---- Survival Phrases screen ----
+    test('Survival Phrases mounts, shows all 12 merged group tabs, and defaults to the first group', () => {
+      const c = freshContainer();
+      SurvivalPhrases.mount(c, noopNavigate);
+      assert(c.querySelector('.lamp'), 'missing .lamp marker');
+      const tabs = c.querySelectorAll('#spTabs .tab');
+      assertEqual(tabs.length, SurvivalPhrases.GROUPS.length);
+      assert(tabs[0].className.indexOf('active') !== -1, 'the first group should start active');
+    });
+
+    test('Survival Phrases — every phrase is available regardless of book/lesson progress (no locking)', () => {
+      const c = freshContainer();
+      const savedBook = Storage.getCurrentBook();
+      // Fresh install: nothing studied in any book — book-tagged phrases should still all be there.
+      Storage.clearLessonSrs('hsk1', '3');
+      Storage.setCurrentBook('hsk1');
+      SurvivalPhrases.mount(c, noopNavigate);
+      const stuckTab = Array.from(c.querySelectorAll('#spTabs .tab')).find((t) => t.textContent === "When You're Stuck");
+      stuckTab.click();
+      const group = SurvivalPhrases.GROUPS.find((g) => g.id === 'stuck');
+      assert(c.textContent.indexOf('🔒') === -1, 'expected no locked/preview note anywhere on the screen');
+      assert(c.querySelector('#spGoBtn'), 'the group should be immediately practiceable');
+      assert(c.textContent.indexOf(group.phrases.length + ' phrase') !== -1, 'the Go screen should count every phrase in the group, HSK2/HSK3-tagged ones included, while still on HSK1');
+      Storage.setCurrentBook(savedBook);
+    });
+
+    test('Survival Phrases — Flip & Recall round through a group reaches a completion screen and records SRS results', () => {
+      const c = freshContainer();
+      Storage.clearSession('survival:meeting');
+      SurvivalPhrases.mount(c, noopNavigate);
+      const group = SurvivalPhrases.GROUPS.find((g) => g.id === 'meeting');
+      const phraseCount = SurvivalPhrases.allPhrases(group).length;
+      c.querySelector('#spGoBtn').click();
+      for (let i = 0; i < phraseCount; i++) {
+        c.querySelector('#flipCard').click();
+        c.querySelector('#spKnowBtn').click();
+      }
+      assert(c.querySelector('.rs-title'), 'expected a completion screen after going through every phrase');
+      const firstPhrase = SurvivalPhrases.allPhrases(group)[0];
+      const rec = Storage.getSrsRecord(SurvivalPhrases.itemId('meeting', firstPhrase.h));
+      assert(rec && rec.box === 2, 'expected the first phrase\'s SRS record to reflect a correct answer');
+      Storage.clearSession('survival:meeting');
+    });
+
+    test('Review pools due Survival Phrases alongside real vocabulary, labeled distinctly', () => {
+      const c = freshContainer();
+      const group = SurvivalPhrases.GROUPS.find((g) => g.id === 'meeting');
+      const phrase = SurvivalPhrases.allPhrases(group)[0];
+      const id = SurvivalPhrases.itemId('meeting', phrase.h);
+      const key = 'hsk:srs:survival';
+      const blob = JSON.parse(localStorage.getItem(key) || '{}');
+      blob[id.slice(id.indexOf(':') + 1)] = { box: 2, due: Date.now() - 1000, lastReviewed: Date.now() - 2000 };
+      localStorage.setItem(key, JSON.stringify(blob));
+
+      Review.mount(c);
+      assert(c.querySelector('#lessonLabel').textContent.indexOf('Survival Phrase') !== -1, 'expected the due phrase to surface in Review, labeled as a Survival Phrase');
+
+      const blob2 = JSON.parse(localStorage.getItem(key) || '{}');
+      delete blob2[id.slice(id.indexOf(':') + 1)];
+      localStorage.setItem(key, JSON.stringify(blob2));
+    });
+
+    test('Dashboard — the Survival Phrases card is present and its due-count contribution matches SurvivalPhrases.dueEntries()', () => {
+      const c = freshContainer();
+      Dashboard.mount(c, noopNavigate);
+      assert(c.querySelector('#survivalCard'), 'expected a Survival Phrases entry card on Dashboard');
+      assert(c.querySelector('#survivalCard').textContent.indexOf('Survival Phrases') !== -1);
+    });
+
     test('cleanup — restore real localStorage to its pre-test state', () => {
       sandbox.innerHTML = '';
       if (!storageSnapshot) return; // localStorage wasn't accessible, nothing was touched

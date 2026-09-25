@@ -347,4 +347,125 @@
   // ---- FinalTest: book-scoped word pooling (the actual round-building/scoring logic lives in
   // final-test.js as private, DOM-coupled functions — its data isolation is instead verified as a
   // DOM smoke test in dom-smoke.test.js, alongside its Go-screen/resume/empty-input behavior). ----
+
+  // ---- Free Production: the two lenient checkers, one per input channel ----
+  group('Lessons — Free Production checkers (checkProductionHanzi / checkProductionPinyin)', () => {
+    // A minimal Sentence Builder-shaped exercise: tiles are the content words that must all
+    // appear, in order, for an answer to count.
+    const item = { tiles: [{ h: '她', p: 'Tā' }, { h: '是', p: 'shì' }, { h: '我', p: 'wǒ' }, { h: '朋友', p: 'péngyou' }], answer: '她是我朋友。' };
+
+    test('checkProductionHanzi: exact answer matches', () => {
+      assert(Lessons.checkProductionHanzi('她是我朋友。', item));
+    });
+    test('checkProductionHanzi: tolerates extra filler/particles around the content words', () => {
+      assert(Lessons.checkProductionHanzi('嗯，她是我的朋友呢', item), 'the four content words still all appear in order');
+    });
+    test('checkProductionHanzi: scrambled word order fails', () => {
+      assert(!Lessons.checkProductionHanzi('我是她朋友', item), 'wrong order should not count as "roughly the right structure"');
+    });
+    test('checkProductionHanzi: a missing content word fails', () => {
+      assert(!Lessons.checkProductionHanzi('她是朋友', item), 'missing 我 entirely should fail');
+    });
+    test('checkProductionHanzi: empty input is always wrong', () => {
+      assert(!Lessons.checkProductionHanzi('', item));
+      assert(!Lessons.checkProductionHanzi('   ', item));
+    });
+
+    test('checkProductionPinyin: exact pinyin (with tone marks) matches', () => {
+      assert(Lessons.checkProductionPinyin('Tā shì wǒ péngyou', item));
+    });
+    test('checkProductionPinyin: tone marks are ignored entirely', () => {
+      assert(Lessons.checkProductionPinyin('ta shi wo pengyou', item));
+    });
+    test('checkProductionPinyin: spacing/capitalization/punctuation do not matter', () => {
+      assert(Lessons.checkProductionPinyin('  TA SHI-WO, PENGYOU!  ', item));
+    });
+    test('checkProductionPinyin: "v" is accepted in place of ü', () => {
+      const withU = { tiles: [{ h: '绿', p: 'lǜ' }] };
+      assert(Lessons.checkProductionPinyin('lv', withU));
+      assert(Lessons.checkProductionPinyin('lü', withU));
+    });
+    test('checkProductionPinyin: scrambled order or a missing syllable fails', () => {
+      assert(!Lessons.checkProductionPinyin('wo shi ta pengyou', item));
+      assert(!Lessons.checkProductionPinyin('ta shi pengyou', item));
+    });
+    test('checkProductionPinyin: empty input is always wrong', () => {
+      assert(!Lessons.checkProductionPinyin('', item));
+      assert(!Lessons.checkProductionPinyin('   ', item));
+    });
+  });
+
+  // ---- Survival Phrases: merge integrity, availability, and weighting ----
+  group('SurvivalPhrases — merged data, availability, weight', () => {
+    test('no duplicate phrases anywhere across the merged groups', () => {
+      const all = SurvivalPhrases.GROUPS.flatMap((g) => g.phrases.map((p) => p.h));
+      assertEqual(new Set(all).size, all.length, 'expected every hanzi phrase to be unique across the whole module');
+    });
+    test('reconciled duplicates: the fuller phrasing is present, the shorter original is gone', () => {
+      const all = SurvivalPhrases.GROUPS.flatMap((g) => g.phrases.map((p) => p.h));
+      assert(all.includes('这个多少钱？'), 'expected the fuller "这个多少钱？" to be present');
+      assert(!all.includes('多少钱？'), 'expected the shorter original to have been replaced, not duplicated');
+      assert(all.includes('你好吗？我很好，谢谢，你呢？'), 'expected the fuller greeting exchange to be present');
+      assert(!all.includes('你好吗？'), 'expected the shorter original greeting to have been replaced, not duplicated');
+    });
+    test('"When You\'re Stuck" is the only group weighted above 1, and it pulls from every batch', () => {
+      const stuck = SurvivalPhrases.GROUPS.find((g) => g.id === 'stuck');
+      assertEqual(stuck.weight, 3);
+      SurvivalPhrases.GROUPS.filter((g) => g.id !== 'stuck').forEach((g) => {
+        assertEqual(g.weight, 1, g.label + ' should not be weighted above the default');
+      });
+      const books = new Set(stuck.phrases.map((p) => p.book || 'original'));
+      assert(books.has('original') && books.has('hsk2') && books.has('hsk3'), 'expected the Stuck group to include phrases from the original set plus HSK2 and HSK3');
+    });
+    test('allPhrases(): every phrase in every group is returned — nothing is locked or gated by book', () => {
+      SurvivalPhrases.GROUPS.forEach((g) => {
+        assertEqual(SurvivalPhrases.allPhrases(g).length, g.phrases.length, g.label + ': every phrase should be available regardless of book/lesson progress');
+      });
+    });
+    test('itemId() is namespaced by group so the same hanzi in two groups never collides', () => {
+      assert(SurvivalPhrases.itemId('meeting', '你好') !== SurvivalPhrases.itemId('stuck', '你好'));
+    });
+    test('dueEntries(): a book-tagged phrase becomes due purely from its own SRS record — no book-progress check blocks it', () => {
+      const group = SurvivalPhrases.GROUPS.find((g) => g.id === 'meeting');
+      const hsk3Phrase = group.phrases.find((p) => p.book === 'hsk3');
+      const id = SurvivalPhrases.itemId(group.id, hsk3Phrase.h);
+      const key = 'hsk:srs:survival';
+      const shortId = id.slice(id.indexOf(':') + 1);
+      const blob = JSON.parse(localStorage.getItem(key) || '{}');
+      const prior = blob[shortId];
+      blob[shortId] = { box: 2, due: Date.now() - 1000, lastReviewed: Date.now() - 2000 };
+      localStorage.setItem(key, JSON.stringify(blob));
+
+      const due = SurvivalPhrases.dueEntries();
+      assert(due.some((e) => e.itemId === id), 'expected the hsk3-tagged phrase to be due, with nothing checking book progress');
+
+      const blob2 = JSON.parse(localStorage.getItem(key) || '{}');
+      if (prior === undefined) delete blob2[shortId]; else blob2[shortId] = prior;
+      localStorage.setItem(key, JSON.stringify(blob2));
+    });
+  });
+
+  // ---- Storage.recordSrsResult's weight parameter ----
+  group('Storage — recordSrsResult weight parameter', () => {
+    test('a weight of 3 gives roughly a 3x shorter due interval than the default weight of 1', () => {
+      const idA = '__TEST_WEIGHT__:word:1:a';
+      const idB = '__TEST_WEIGHT__:word:1:b';
+      try { localStorage.removeItem('hsk:srs:__TEST_WEIGHT__'); } catch (e) { /* no-op */ }
+      const before = Date.now();
+      Storage.recordSrsResult(idA, true); // default weight 1
+      Storage.recordSrsResult(idB, true, 3);
+      const dueA = Storage.getSrsRecord(idA).due - before;
+      const dueB = Storage.getSrsRecord(idB).due - before;
+      const ratio = dueA / dueB;
+      assert(ratio > 2.9 && ratio < 3.1, `expected roughly a 3x shorter interval, got a ${ratio.toFixed(2)}x ratio`);
+      try { localStorage.removeItem('hsk:srs:__TEST_WEIGHT__'); } catch (e) { /* no-op */ }
+    });
+    test('omitting weight (existing callers) behaves exactly as before — unaffected', () => {
+      const id = '__TEST_WEIGHT__:word:1:c';
+      try { localStorage.removeItem('hsk:srs:__TEST_WEIGHT__'); } catch (e) { /* no-op */ }
+      Storage.recordSrsResult(id, true);
+      assertEqual(Storage.getSrsRecord(id).box, 2);
+      try { localStorage.removeItem('hsk:srs:__TEST_WEIGHT__'); } catch (e) { /* no-op */ }
+    });
+  });
 })();

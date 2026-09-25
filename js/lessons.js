@@ -45,7 +45,7 @@ const Lessons = (() => {
     return a;
   }
   function freshOrder() {
-    if (mode === 'build') return null;
+    if (mode === 'build' || mode === 'production') return null;
     return shuffle(identityOrder(modeTotal()));
   }
 
@@ -58,6 +58,18 @@ const Lessons = (() => {
   let buildSubmitted = false;
   let buildCorrect = null;
   let buildAutoplayed = false; // has the prompt already auto-played for this exercise?
+
+  // ---- Free Production mode state ----
+  // Draws from the exact same currentBuilder() exercises Sentence Builder uses (same lesson, same
+  // fixed order, same SRS item id via Storage.buildItemId) — no tiles this time, and no scaffold:
+  // the person produces the whole answer sentence from scratch, by speech (preferred) or typed
+  // pinyin (fallback). prodPreferType is session-only (not persisted) — once speech is unavailable
+  // or denied once, stop re-prompting for mic permission on every subsequent question.
+  let prodSubmitted = false;
+  let prodCorrect = null;
+  let prodTypedAnswer = '';
+  let prodChannel = null; // 'speech' | 'type' — which input path produced the answer just shown
+  let prodPreferType = false;
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -80,6 +92,12 @@ const Lessons = (() => {
     buildCorrect = null;
     buildAutoplayed = false;
   }
+  function resetProductionExercise() {
+    prodSubmitted = false;
+    prodCorrect = null;
+    prodTypedAnswer = '';
+    prodChannel = null;
+  }
 
   function normalize(s) { return s.toLowerCase().trim().replace(/[.!?]/g, ''); }
   function checkAnswer(input, w) {
@@ -98,6 +116,51 @@ const Lessons = (() => {
   // Lessons' copy, and so it's directly unit-testable without going through the DOM.
   function checkBuildAnswer(builtHanzi, answerHanzi) {
     return builtHanzi.length === answerHanzi.length && builtHanzi.every((h, i) => h === answerHanzi[i]);
+  }
+
+  // ---- Free Production's two lenient checkers, one per input channel ----
+  // Both check that the exercise's content words (item.tiles — the same word/phrase segments
+  // Sentence Builder's tile bank is built from) all appear, IN ORDER, somewhere in what was said
+  // or typed. That's lenient about extra/missing filler (particles the recognizer mis-hears,
+  // hedge words a typed answer skips) without being so loose that scrambled word order or a
+  // missing content word still passes — "roughly the right structure", not an exact match.
+  //
+  // Speech comes back from SpeechRecognition as hanzi text already (tones are irrelevant to a
+  // hanzi transcript — the recognizer already resolved them), so hanzi-side leniency is really
+  // just "ignore punctuation/whitespace, tolerate extra words around the ones that matter".
+  function normalizeHanziLoose(s) { return (s || '').replace(/[，。？！,.?!\s]/g, ''); }
+  function checkProductionHanzi(input, item) {
+    const norm = normalizeHanziLoose(input);
+    if (!norm) return false;
+    let pos = 0;
+    for (const tile of item.tiles) {
+      const i = norm.indexOf(tile.h, pos);
+      if (i === -1) return false;
+      pos = i + tile.h.length;
+    }
+    return true;
+  }
+
+  // Typed fallback is pinyin, not hanzi (typing hanzi without an IME isn't realistic) — leniency
+  // here means tone-mark-insensitive (NFD-decompose then strip the combining diacritics, so
+  // ā/á/ǎ/à all collapse to plain "a") and tolerant of ü commonly being typed as "v" (no ü key on
+  // most keyboards), not true fuzzy spelling correction beyond that.
+  function stripToneMarks(s) { return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+  function normalizePinyinLoose(s) {
+    return stripToneMarks(s).toLowerCase().replace(/v/g, 'u').replace(/[^a-z]/g, '');
+  }
+  function checkProductionPinyin(input, item) {
+    const norm = normalizePinyinLoose(input);
+    if (!norm) return false;
+    let pos = 0;
+    for (const tile of item.tiles) {
+      const syl = normalizePinyinLoose(tile.p);
+      if (!syl) continue;
+      const i = norm.indexOf(syl, pos);
+      if (i === -1) return false;
+      pos = i + syl.length;
+    }
+    return true;
   }
 
   // ===== shared flashcard component (also used by Review) =====
@@ -202,16 +265,19 @@ const Lessons = (() => {
       <div class="mode-btn ${mode === 'type' ? 'active' : ''}" id="typeModeBtn">Type the answer</div>
       <div class="mode-btn ${mode === 'listen' ? 'active' : ''}" id="listenModeBtn">Listening (A/B/C)</div>
       <div class="mode-btn ${mode === 'build' ? 'active' : ''}" id="buildModeBtn">Sentence Builder</div>
+      <div class="mode-btn ${mode === 'production' ? 'active' : ''}" id="productionModeBtn">Free Production</div>
     `;
     root.querySelector('#flipModeBtn').onclick = () => switchMode('flip');
     root.querySelector('#typeModeBtn').onclick = () => switchMode('type');
     root.querySelector('#listenModeBtn').onclick = () => switchMode('listen');
     root.querySelector('#buildModeBtn').onclick = () => switchMode('build');
+    root.querySelector('#productionModeBtn').onclick = () => switchMode('production');
   }
 
   function switchMode(m) {
     mode = m; idx = 0; roundOrder = []; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
     resetBuildExercise();
+    resetProductionExercise();
     buildModeToggle();
     saveLastPosition();
     render();
@@ -219,6 +285,7 @@ const Lessons = (() => {
   function switchLesson(key) {
     currentLesson = key; idx = 0; roundOrder = []; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
     resetBuildExercise();
+    resetProductionExercise();
     saveLastPosition();
     Storage.setCurrentLesson(currentBook, currentLesson);
     buildTabs();
@@ -234,29 +301,30 @@ const Lessons = (() => {
   function sessionKey() { return 'lessons:' + currentBook + ':' + currentLesson + ':' + mode; }
   function saveSession() {
     const session = { idx };
-    if (mode !== 'build') session.order = roundOrder;
+    if (mode !== 'build' && mode !== 'production') session.order = roundOrder;
     Storage.setSession(sessionKey(), session);
   }
   function clearSession() { Storage.clearSession(sessionKey()); }
   function clearAllModeSessions(bookId, lessonId) {
-    ['flip', 'type', 'listen', 'build'].forEach((m) => Storage.clearSession('lessons:' + bookId + ':' + lessonId + ':' + m));
+    ['flip', 'type', 'listen', 'build', 'production'].forEach((m) => Storage.clearSession('lessons:' + bookId + ':' + lessonId + ':' + m));
   }
 
   function currentWords() { return Books.getLesson(currentBook, currentLesson).words; }
   function currentListening() { return Books.getLesson(currentBook, currentLesson).listening || null; }
   function currentBuilder() { return Books.getLesson(currentBook, currentLesson).sentenceBuilder || null; }
 
-  const MODE_TITLE = { flip: 'Flip & Recall', type: 'Type the Answer', listen: 'Listening', build: 'Sentence Builder' };
+  const MODE_TITLE = { flip: 'Flip & Recall', type: 'Type the Answer', listen: 'Listening', build: 'Sentence Builder', production: 'Free Production' };
   const MODE_BLURB = {
     flip: 'Flip through this lesson’s words — tap each card to reveal the meaning, then mark yourself “I know this” or “still learning.”',
     type: 'Type the English meaning for each word in this lesson, then check your answer.',
     listen: 'Listen to a sentence, then pick the correct answer from three options.',
     build: 'Tap the tiles in order to build the answer to each question — a couple of decoy words are mixed in, so read carefully.',
+    production: 'Harder than Sentence Builder — no tiles. See the English, then say (or type) the whole Chinese sentence yourself, from scratch.',
   };
 
   function modeTotal() {
     if (mode === 'listen') { const items = currentListening(); return items ? items.length : 0; }
-    if (mode === 'build') { const items = currentBuilder(); return items ? items.length : 0; }
+    if (mode === 'build' || mode === 'production') { const items = currentBuilder(); return items ? items.length : 0; }
     return currentWords().length;
   }
 
@@ -266,6 +334,7 @@ const Lessons = (() => {
     flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false;
     listenOptionOrders = {};
     resetBuildExercise();
+    resetProductionExercise();
     started = true;
     render();
   }
@@ -368,6 +437,19 @@ const Lessons = (() => {
       if (idx >= items.length) idx = items.length - 1;
       setProgressBar(idx, items.length);
       renderBuildMode(items[idx], items.length);
+      renderStats();
+    } else if (mode === 'production') {
+      const items = currentBuilder();
+      if (!items) {
+        root.querySelector('#progressFill').style.width = '0%';
+        root.querySelector('#posLabel').textContent = '';
+        root.querySelector('#cardArea').innerHTML = '<div class="soon-box">Free Production starts at Lesson 3 — lessons 1 and 2 are fixed greetings with no sentence structure to produce.<br>Try Flip &amp; recall or Type the answer instead.</div>';
+        root.querySelector('#statsRow').innerHTML = '';
+        return;
+      }
+      if (idx >= items.length) idx = items.length - 1;
+      setProgressBar(idx, items.length);
+      renderProductionMode(items[idx], items.length);
       renderStats();
     }
   }
@@ -665,6 +747,137 @@ const Lessons = (() => {
     }
   }
 
+  // Free Production: same exercise data as Sentence Builder (item.tiles/prompt/answer), but no
+  // tile bank at all — English prompt only, the person produces the whole Chinese answer sentence
+  // themselves, by speech (preferred) or typed pinyin (fallback). Shares Sentence Builder's SRS
+  // item id (Storage.buildItemId) on purpose: this is the same underlying "can you produce this
+  // sentence" skill at a harder bar, not a separate thing to schedule independently.
+  function renderProductionMode(item, total) {
+    const cardArea = root.querySelector('#cardArea');
+    const itemId = Storage.buildItemId(currentBook, currentLesson, idx);
+
+    function submitProduction(rawInput, channel) {
+      const correct = channel === 'speech' ? checkProductionHanzi(rawInput, item) : checkProductionPinyin(rawInput, item);
+      Storage.recordSrsResult(itemId, correct);
+      prodCorrect = correct;
+      prodTypedAnswer = rawInput;
+      prodChannel = channel;
+      prodSubmitted = true;
+      render();
+    }
+
+    function renderTypedFallback(container) {
+      container.innerHTML = `
+        <input type="text" class="type-input" id="prodInput" placeholder="type the sentence in pinyin" autocomplete="off">
+        <button class="submit-btn" id="prodSubmitBtn" disabled>Check</button>
+        ${SpeechInput.isSupported() ? '<button class="reset" id="prodUseMicBtn" style="margin-top:10px;">or use the microphone instead</button>' : ''}
+      `;
+      const input = container.querySelector('#prodInput');
+      const submitBtn = container.querySelector('#prodSubmitBtn');
+      const doSubmit = () => {
+        const val = input.value;
+        // Belt-and-suspenders: submitBtn is disabled whenever the trimmed value is empty, but
+        // even if that's somehow bypassed, checkProductionPinyin('') also returns false on its
+        // own — an empty answer can never be recorded as correct here either.
+        if (!val.trim()) { root.querySelector('#prodError').textContent = 'Type an answer first.'; input.classList.add('wrong-input'); return; }
+        submitProduction(val, 'type');
+      };
+      submitBtn.onclick = doSubmit;
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !submitBtn.disabled) doSubmit(); });
+      input.addEventListener('input', () => {
+        input.classList.remove('wrong-input');
+        root.querySelector('#prodError').textContent = '';
+        submitBtn.disabled = !input.value.trim();
+      });
+      input.focus();
+      const useMicBtn = container.querySelector('#prodUseMicBtn');
+      if (useMicBtn) useMicBtn.onclick = () => { prodPreferType = false; renderProductionInput(container); };
+    }
+
+    function renderSpeechInput(container) {
+      container.innerHTML = `
+        <button class="mic-btn" id="prodMicBtn" aria-label="Tap to speak your answer" style="width:64px; height:64px; font-size:26px; margin:10px auto;">&#127908;</button>
+        <div class="listen-hint" id="prodMicHint">Tap and say the whole sentence in Chinese</div>
+        <button class="reset" id="prodUseTypeBtn" style="margin-top:2px;">or type your answer instead</button>
+      `;
+      const micBtn = container.querySelector('#prodMicBtn');
+      const hint = container.querySelector('#prodMicHint');
+      micBtn.onclick = async () => {
+        root.querySelector('#prodError').textContent = '';
+        micBtn.classList.add('recording');
+        hint.textContent = 'Listening…';
+        const transcript = await SpeechInput.listenOnce({
+          onError: (err) => {
+            // Don't keep re-prompting for mic permission every question after one denial.
+            if (err === 'not-allowed' || err === 'service-not-allowed') prodPreferType = true;
+          },
+        });
+        if (!root.contains(container)) return; // mode/lesson switched away while we were listening
+        micBtn.classList.remove('recording');
+        if (transcript === null) {
+          // No usable result — denied, unsupported, or genuinely no speech heard. Never scored as
+          // an attempt; just fall back to typed input so the person isn't stuck.
+          renderProductionInput(container);
+          root.querySelector('#prodError').textContent = "Didn't catch that — try again, or type your answer below.";
+          return;
+        }
+        submitProduction(transcript, 'speech');
+      };
+      container.querySelector('#prodUseTypeBtn').onclick = () => { prodPreferType = true; renderProductionInput(container); };
+    }
+
+    function renderProductionInput(container) {
+      if (prodPreferType || !SpeechInput.isSupported()) renderTypedFallback(container);
+      else renderSpeechInput(container);
+    }
+
+    if (!prodSubmitted) {
+      Recorder.cleanup();
+      const controlsHtml = `
+        <div class="controls">
+          <button class="nav-btn" id="prevBtn" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>&larr; back</button>
+          <button class="nav-btn" id="nextBtn" ${idx === total - 1 ? 'disabled style="opacity:0.3"' : ''}>next &rarr;</button>
+        </div>`;
+      cardArea.innerHTML = `
+        <div class="card" style="cursor:default;">
+          <div class="back-english" style="margin-bottom:6px;">${item.promptE}</div>
+          <div class="mnemonic" style="margin-bottom:10px;">Say (or type) the full answer in Chinese — no tiles this time.</div>
+          <div id="prodInputArea"></div>
+          <div class="error-text" id="prodError"></div>
+        </div>
+        ${controlsHtml}
+      `;
+      renderProductionInput(root.querySelector('#prodInputArea'));
+      const prevBtn = root.querySelector('#prevBtn'), nextBtn = root.querySelector('#nextBtn');
+      if (prevBtn) prevBtn.onclick = () => { if (idx > 0) { idx--; resetProductionExercise(); render(); } };
+      if (nextBtn) nextBtn.onclick = () => { if (idx < total - 1) { idx++; resetProductionExercise(); render(); } };
+    } else {
+      const controlsHtml = `
+        <div class="controls">
+          <button class="nav-btn" id="nextProdBtn">${idx < total - 1 ? 'next question →' : 'lesson complete →'}</button>
+        </div>`;
+      cardArea.innerHTML = `
+        <div class="card" style="cursor:default;">
+          <div class="feedback-badge ${prodCorrect ? 'correct' : 'wrong'}">${prodCorrect ? 'Correct!' : 'Not quite'}</div>
+          <div class="back-english">${item.promptE}</div>
+          <div class="your-answer">You ${prodChannel === 'speech' ? 'said' : 'typed'}: "${prodTypedAnswer}"</div>
+          <div class="example" style="margin-top:14px;">
+            <div class="ex-row"><div class="ex-h">${item.answer}</div><button class="speak-btn" id="prodAnswerSpeakBtn" aria-label="Play answer sentence">&#128266;</button></div>
+            <div class="ex-p">${item.answerP}</div>
+            <div>${item.answerE}</div>
+          </div>
+        </div>
+        ${controlsHtml}
+      `;
+      const speakBtn = root.querySelector('#prodAnswerSpeakBtn');
+      speakBtn.onclick = () => Speech.speak(item.answer, speakBtn);
+      root.querySelector('#nextProdBtn').onclick = () => {
+        if (idx < total - 1) { idx++; resetProductionExercise(); } else { completed = true; }
+        render();
+      };
+    }
+  }
+
   function renderListenMode(item, total, origIdx) {
     const cardArea = root.querySelector('#cardArea');
     // origIdx (the item's stable position in currentListening(), not its shuffled round
@@ -722,7 +935,7 @@ const Lessons = (() => {
         const status = Storage.itemStatus(Storage.listenItemId(currentBook, currentLesson, i));
         if (status === 'known') known++; else if (status === 'learning') learning++;
       });
-    } else if (mode === 'build') {
+    } else if (mode === 'build' || mode === 'production') {
       const items = currentBuilder();
       total = items ? items.length : 0;
       (items || []).forEach((it, i) => {
@@ -742,7 +955,7 @@ const Lessons = (() => {
 
   function renderStats() {
     const { known, learning, total } = computeTally();
-    const label = (mode === 'listen' || mode === 'build') ? ['correct', 'missed', 'not attempted'] : ['known', 'still learning', 'not reviewed'];
+    const label = (mode === 'listen' || mode === 'build' || mode === 'production') ? ['correct', 'missed', 'not attempted'] : ['known', 'still learning', 'not reviewed'];
     root.querySelector('#statsRow').innerHTML = `<span><b>${known}</b> ${label[0]}</span><span><b>${learning}</b> ${label[1]}</span><span><b>${total - known - learning}</b> ${label[2]}</span>`;
   }
 
@@ -832,6 +1045,7 @@ const Lessons = (() => {
     if (initial && initial.mode) mode = initial.mode;
     idx = 0; roundOrder = []; flipped = false; typed = false; lastCorrect = null; selectedOpt = null; completed = false; started = false;
     resetBuildExercise();
+    resetProductionExercise();
     root.innerHTML = html();
     buildAutoplayToggle();
     Speech.buildSpeedControl(root.querySelector('#speedRow'));
@@ -848,5 +1062,5 @@ const Lessons = (() => {
     };
   }
 
-  return { mount, renderFlashcard, renderListenQuestion, renderBuildQuestion, checkAnswer, checkBuildAnswer };
+  return { mount, renderFlashcard, renderListenQuestion, renderBuildQuestion, checkAnswer, checkBuildAnswer, checkProductionHanzi, checkProductionPinyin };
 })();

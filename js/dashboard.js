@@ -40,6 +40,7 @@ const Dashboard = (() => {
         });
       });
     });
+    n += SurvivalPhrases.dueEntries().length;
     return n;
   }
 
@@ -80,6 +81,14 @@ const Dashboard = (() => {
           <div class="rc-sub">${dueCount > 0 ? 'Words and listening questions due today, pulled from every lesson' : 'Study a lesson to get words into the review schedule'}</div>
         </div>
         <div class="rc-arrow">${dueCount > 0 ? '→' : ''}</div>
+      </div>
+
+      <div class="continue-card" id="survivalCard">
+        <div>
+          <div class="cc-title">Survival Phrases</div>
+          <div class="cc-sub">Whole phrases for real moments — meeting people, getting stuck, the table</div>
+        </div>
+        <div class="rc-arrow">→</div>
       </div>
 
       <div class="mastery-list-title">Studying</div>
@@ -159,6 +168,7 @@ const Dashboard = (() => {
 
     const dueCount = countDueItems();
     root.querySelector('#reviewCta').onclick = () => { if (dueCount > 0) goTo('review'); };
+    root.querySelector('#survivalCard').onclick = () => goTo('survivalPhrases');
 
     const continueCard = root.querySelector('#continueCard');
     if (continueCard) {

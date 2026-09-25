@@ -1,9 +1,10 @@
 // Review screen: the daily spaced-repetition entry point. Pulls every word, listening item, and
 // Sentence Builder exercise, across every lesson in EVERY book (HSK1/HSK2/HSK3 at once, not just
-// whichever book happens to be selected on Dashboard), whose shared SRS schedule says it's due
-// right now — not "pick a lesson and start from card 1," but "here's what you should practice
-// today." Getting an item right pushes its next appearance further out; getting it wrong drops
-// it back to a 1-day box, so it resurfaces here again tomorrow.
+// whichever book happens to be selected on Dashboard), plus every unlocked Survival Phrase (see
+// js/survival-phrases.js), whose shared SRS schedule says it's due right now — not "pick a lesson
+// and start from card 1," but "here's what you should practice today." Getting an item right
+// pushes its next appearance further out; getting it wrong drops it back to a 1-day box, so it
+// resurfaces here again tomorrow.
 const Review = (() => {
   let root = null;
   let queue = [];
@@ -84,6 +85,14 @@ const Review = (() => {
         });
       });
     });
+    // Survival Phrases share the same flashcard UI and 'word' item type as real vocabulary —
+    // dueEntries() already only returns unlocked (book-reached) phrases, so no extra gating is
+    // needed here. `isPhrase`/`groupLabel` let renderCurrent() label these distinctly from a real
+    // book+lesson word, and `weight` carries "When You're Stuck"'s faster-resurfacing schedule
+    // through to the recordSrsResult() calls in renderWordItem.
+    SurvivalPhrases.dueEntries().forEach(({ group, phrase, itemId }) => {
+      items.push({ type: 'word', word: phrase, itemId, isPhrase: true, groupLabel: group.label, weight: group.weight });
+    });
     return shuffle(items);
   }
 
@@ -129,13 +138,13 @@ const Review = (() => {
         wireControls: () => {
           root.querySelector('#knowBtn').onclick = (e) => {
             e.stopPropagation();
-            Storage.recordSrsResult(itemId, true);
+            Storage.recordSrsResult(itemId, true, current.weight);
             sessionReviewed++; sessionKnown++;
             advance();
           };
           root.querySelector('#learnBtn').onclick = (e) => {
             e.stopPropagation();
-            Storage.recordSrsResult(itemId, false);
+            Storage.recordSrsResult(itemId, false, current.weight);
             sessionReviewed++;
             advance();
           };
@@ -222,7 +231,9 @@ const Review = (() => {
     const current = queue[0];
     const typeLabel = { listen: 'Listening · Lesson ', build: 'Sentence Builder · Lesson ' };
     root.querySelector('#posLabel').textContent = (sessionReviewed + 1) + ' of ' + totalStart;
-    root.querySelector('#lessonLabel').textContent = Books.bookLabel(current.book) + ' · ' + (typeLabel[current.type] || 'Vocabulary · Lesson ') + current.lessonId;
+    root.querySelector('#lessonLabel').textContent = current.isPhrase
+      ? 'Survival Phrase · ' + current.groupLabel
+      : Books.bookLabel(current.book) + ' · ' + (typeLabel[current.type] || 'Vocabulary · Lesson ') + current.lessonId;
     root.querySelector('#progressFill').style.width = ((sessionReviewed / totalStart) * 100) + '%';
 
     const cardArea = root.querySelector('#cardArea');

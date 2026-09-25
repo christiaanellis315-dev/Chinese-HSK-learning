@@ -1,9 +1,10 @@
-// App shell: router between the seven screens, plus the persistent bottom nav. The book selector
+// App shell: router between the eight screens, plus the persistent bottom nav. The book selector
 // (HSK1/HSK2/HSK3) lives inside Dashboard itself, not here — see dashboard.js.
 (function () {
   const NAV_ITEMS = [
     { id: 'dashboard', icon: '🏠', label: 'Dashboard' },
     { id: 'lessons', icon: '📖', label: 'Lessons' },
+    { id: 'survivalPhrases', icon: '💬', label: 'Phrases' },
     { id: 'review', icon: '🔁', label: 'Review' },
     { id: 'games', icon: '🎮', label: 'Games' },
     { id: 'grammar', icon: '📝', label: 'Grammar' },
@@ -31,6 +32,7 @@
 
   function navigate(screen, opts) {
     Recorder.cleanup(); // never carry a mic recording/stream across screens
+    SpeechInput.stop(); // ditto for an in-flight speech-recognition listen (Free Production)
     currentScreen = screen;
     buildNav();
     window.scrollTo(0, 0);
@@ -41,8 +43,9 @@
     else if (screen === 'grammar') Grammar.mount(screenEl);
     else if (screen === 'pinyin') Pinyin.mount(screenEl);
     else if (screen === 'settings') Settings.mount(screenEl);
-    // No bottom-nav entry for this one on purpose — it's reached via the "Final Test" pill at the
-    // end of Dashboard's lesson list (see dashboard.js), not a primary tab of its own.
+    else if (screen === 'survivalPhrases') SurvivalPhrases.mount(screenEl, navigate);
+    // Final Test has no bottom-nav entry, on purpose — it's reached via its pill at the end of
+    // Dashboard's lesson list, once a book's last lesson is done, not as a standing destination.
     else if (screen === 'finalTest') FinalTest.mount(screenEl, opts && opts.book, navigate);
   }
 
